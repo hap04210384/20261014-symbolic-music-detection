@@ -1,0 +1,11 @@
+{"n_pieces": 1000, "ours": {"build_secs": 0.377, "peak_mem_mb": 14.9, "postings": 34107, "query_p50_ms": 0.0, "query_p95_ms": 1.0, "recall": "47/47"}, "ours_total_secs": 0.4, "jaccard_scan": {"query_p50_ms": 5.0, "top1_acc": "17/18"}, "jaccard_total_secs": 0.1}
+{"n_pieces": 3000, "ours": {"build_secs": 0.714, "peak_mem_mb": 32.8, "postings": 49696, "query_p50_ms": 1.0, "query_p95_ms": 2.0, "recall": "46/46"}, "ours_total_secs": 0.8, "jaccard_scan": {"query_p50_ms": 19.5, "top1_acc": "18/19"}, "jaccard_total_secs": 0.8}
+{"n_pieces": 10000, "ours": {"build_secs": 8.007, "peak_mem_mb": 76.8, "postings": 71374, "query_p50_ms": 12.0, "query_p95_ms": 25.0, "recall": "42/42"}, "ours_total_secs": 8.7, "jaccard_scan": {"query_p50_ms": 238.0, "top1_acc": "17/18"}, "jaccard_total_secs": 4.2}
+{"n_pieces": 25357, "ours": {"build_secs": 3.482, "peak_mem_mb": 177.8, "postings": 90507, "query_p50_ms": 6.0, "query_p95_ms": 12.0, "recall": "48/48"}, "ours_total_secs": 3.8}
+{"n_pieces": 30000, "ours": {"build_secs": 4.451, "peak_mem_mb": 205.2, "postings": 93881, "query_p50_ms": 7.51, "query_p95_ms": 16.24, "recall": "37/37"}, "ours_total_secs": 4.8}
+{"n_pieces": 44371, "ours": {"build_secs": 6.25, "peak_mem_mb": 289.9, "postings": 103401, "query_p50_ms": 10.92, "query_p95_ms": 25.71, "recall": "34/34"}, "ours_total_secs": 6.7}
+{"n_pieces": 50000, "ours": {"build_secs": 20.025, "peak_mem_mb": 323.2, "postings": 106083, "query_p50_ms": 63.94, "query_p95_ms": 86.44, "recall": "29/29"}, "ours_total_secs": 22.0}
+{"n_pieces": 50709, "ours": {"build_secs": 7.602, "peak_mem_mb": 327.6, "postings": 106533, "query_p50_ms": 11.63, "query_p95_ms": 16.13, "recall": "29/29"}, "ours_total_secs": 8.0}
+{"n_pieces": 69723, "ours": {"build_secs": 9.671, "peak_mem_mb": 438.9, "postings": 113444, "query_p50_ms": 15.24, "query_p95_ms": 31.34, "recall": "47/47"}, "ours_total_secs": 10.6}
+{"n_pieces": 100000, "ours": {"build_secs": 16.715, "peak_mem_mb": 615.3, "postings": 121743, "query_p50_ms": 23.13, "query_p95_ms": 46.93, "recall": "44/44"}, "ours_total_secs": 18.0}
+{"n_pieces": 174300, "ours": {"build_secs": 24.747, "peak_mem_mb": 1053.2, "postings": 132894, "query_p50_ms": 41.94, "query_p95_ms": 123.45, "recall": "47/47"}, "ours_total_secs": 28.9}

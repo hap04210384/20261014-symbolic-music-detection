@@ -1,0 +1,13 @@
+{"ablation": "E5.4_L", "factor": 0.75, "recall": "29/29", "false_candidates": 21467}
+{"ablation": "E5.4_L", "factor": 1.0, "recall": "29/29", "false_candidates": 18887}
+{"ablation": "E5.4_L", "factor": 1.25, "recall": "29/29", "false_candidates": 15952}
+{"ablation": "E5.4_L", "factor": 1.5, "recall": "29/29", "false_candidates": 12061}
+{"ablation": "E5.5_k", "k_pitch": 0, "k_bin": 0, "k_vel": 0, "recall": "23/29", "false_candidates": 338, "wall_p50_ms": 1.0039806365966797}
+{"ablation": "E5.5_k", "k_pitch": 1, "k_bin": 0, "k_vel": 0, "recall": "25/29", "false_candidates": 2099, "wall_p50_ms": 2.005338668823242}
+{"ablation": "E5.5_k", "k_pitch": 2, "k_bin": 0, "k_vel": 0, "recall": "26/29", "false_candidates": 3906, "wall_p50_ms": 3.0002593994140625}
+{"ablation": "E5.5_k", "k_pitch": 2, "k_bin": 1, "k_vel": 0, "recall": "29/29", "false_candidates": 12110, "wall_p50_ms": 7.535457611083984}
+{"ablation": "E5.5_k", "k_pitch": 2, "k_bin": 1, "k_vel": 1, "recall": "29/29", "false_candidates": 18887, "wall_p50_ms": 13.005256652832031}
+{"ablation": "E5.5_k", "k_pitch": 3, "k_bin": 1, "k_vel": 1, "recall": "29/29", "false_candidates": 19815, "wall_p50_ms": 16.021013259887695}
+{"ablation": "E5.7_grid", "tpb": 4, "grid_ms": 250, "recall": "29/29", "false_candidates": 21043, "postings": 21976, "wall_p50_ms": 13.03243637084961}
+{"ablation": "E5.7_grid", "tpb": 8, "grid_ms": 125, "recall": "29/29", "false_candidates": 18887, "postings": 34333, "wall_p50_ms": 25.587797164916992}
+{"ablation": "E5.7_grid", "tpb": 16, "grid_ms": 62, "recall": "29/29", "false_candidates": 15918, "postings": 51127, "wall_p50_ms": 12.026071548461914}
