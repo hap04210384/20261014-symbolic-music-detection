@@ -486,11 +486,33 @@ def para(doc, text, indent=0.36, size=10, align="justify"):
 def caption(doc, text, size=9):
     p = doc.add_paragraph(style="Figure Caption")
     p.add_run(text)
+    # keep the caption glued to the figure above it (no orphaned
+    # captions across page/column breaks)
+    prev = p._p.getprevious()
+    if prev is not None and prev.findall(qn("w:drawing")):
+        from docx.text.paragraph import Paragraph
+        Paragraph(prev, p._parent).paragraph_format.keep_with_next = True
+    return p
+
+
+def _keep_table(t, head_paras=()):
+    """Keep a table inside one column: rows never split across a page,
+    and every row keeps with the next, so the table moves whole to the
+    next column instead of breaking across columns."""
+    for p in head_paras:
+        p.paragraph_format.keep_with_next = True
+    rows = list(t.rows)
+    for i, row in enumerate(rows):
+        trPr = row._tr.get_or_add_trPr()
+        trPr.append(parse_xml('<w:cantSplit %s/>' % nsdecls("w")))
+        if i < len(rows) - 1:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    p.paragraph_format.keep_with_next = True
 
 
 def table(doc, header, rows, widths=None, size=9, title=None):
-    if title:
-        caption(doc, title)
+    heads = [caption(doc, title)] if title else []
     t = doc.add_table(rows=1 + len(rows), cols=len(header))
     t.style = "Table Grid"
     t.alignment = 1
@@ -508,6 +530,7 @@ def table(doc, header, rows, widths=None, size=9, title=None):
             r = cell.paragraphs[0].add_run(str(val))
             r.font.size = Pt(size)
             r.font.name = "Times New Roman"
+    _keep_table(t, heads)
     doc.add_paragraph().paragraph_format.space_after = Pt(2)
     return t
 
@@ -532,9 +555,10 @@ def three_line_table(doc, header, rows, size=8, title=None, full=False):
     single-column (spanning) section."""
     if full:
         switch_to(doc, SECT_2COL[0])
+    heads = []
     if title:
         label, _, rest = title.partition(".")
-        tabletitle(doc, label.strip() + ".", rest.strip())
+        heads = tabletitle(doc, label.strip() + ".", rest.strip())
     t = doc.add_table(rows=1 + len(rows), cols=len(header))
     t.alignment = 1
     t.autofit = True
@@ -567,6 +591,7 @@ def three_line_table(doc, header, rows, size=8, title=None, full=False):
             r.font.name = "Times New Roman"
             if i == nrows - 1:
                 _cell_edge(cell, "bottom", 12)
+    _keep_table(t, heads)
     doc.add_paragraph().paragraph_format.space_after = Pt(2)
     if full:
         switch_to(doc, SECT_1COL[0])
@@ -730,6 +755,7 @@ def tabletitle(doc, label, title):
     p.add_run(label)
     p2 = doc.add_paragraph(style="Table Title")
     p2.add_run(title)
+    return [p, p2]
 
 
 def full_width(doc, emit):
@@ -755,6 +781,11 @@ def build() -> None:
     for child in list(body):
         if child is not final_sect:
             body.remove(child)
+    # the template restarts page numbering in its body section; a
+    # submission must number pages continuously
+    for sect in (SECT_1COL[0], SECT_2COL[0], final_sect):
+        for pg in sect.findall(qn("w:pgNumType")):
+            sect.remove(pg)
 
     # --- front matter (one column) -------------------------------------
     p = doc.add_paragraph(style="Title")
