@@ -37,6 +37,11 @@ data/README.md               dataset registry (sources, licenses, checksums)
 - Figures are embedded as EMF: the manuscript build calls Inkscape
   (`inkscape` on PATH) to convert SVG→EMF. Without Inkscape the docx build
   skips EMF embedding; all SVG/PNG sources are in `results/figures/`.
+- The manuscript build starts from a two-column Transactions-style Word
+  template (for layout styles and section geometry). The template is not
+  redistributed; download the official "IEEE Article Templates" (MS Word)
+  from IEEE's template page and point `TEMPLATE` in
+  `src/publish/build_manuscript.py` at it.
 - The two FIM engines reused from our companion paper (under review at EAAI)
   are needed **only** for the G2 FIM-enumeration baseline stage. Their
   provenance and version-locked sources are registered in `src/SOURCES.txt`.

@@ -14,6 +14,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from xml.sax.saxutils import escape as xesc
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -435,6 +436,40 @@ def h2(doc, text):
     p.add_run(text)
 
 
+def drop_cap(doc, text):
+    """First Introduction paragraph with an IEEE-style 3-line dropped
+    capital, replicating the Transactions template exactly (framePr
+    dropCap=drop lines=3, small-caps lead-in, exact 724-twip frame line).
+    """
+    from docx.oxml.ns import nsdecls
+
+    letter, rest = text[0], text[1:]
+    head, tail = rest[:4], xesc(rest[4:])
+    p1 = parse_xml(
+        f'<w:p {nsdecls("w")}><w:pPr>'
+        '<w:pStyle w:val="Normal"/><w:keepNext/>'
+        '<w:framePr w:dropCap="drop" w:lines="3" w:wrap="around" '
+        'w:vAnchor="text" w:hAnchor="text"/>'
+        '<w:spacing w:line="724" w:lineRule="exact"/>'
+        '<w:jc w:val="both"/><w:textAlignment w:val="baseline"/></w:pPr>'
+        '<w:r><w:rPr><w:smallCaps/><w:color w:val="000000"/>'
+        '<w:position w:val="-9"/><w:sz w:val="97"/></w:rPr>'
+        f'<w:t xml:space="preserve">{letter}</w:t></w:r></w:p>')
+    p2 = parse_xml(
+        f'<w:p {nsdecls("w")}><w:pPr><w:pStyle w:val="Normal"/>'
+        '<w:widowControl w:val="0"/>'
+        '<w:spacing w:line="252" w:lineRule="auto"/>'
+        '<w:jc w:val="both"/></w:pPr>'
+        '<w:r><w:rPr><w:smallCaps/><w:color w:val="000000"/></w:rPr>'
+        f'<w:t xml:space="preserve">{head}</w:t></w:r>'
+        f'<w:r><w:rPr><w:color w:val="000000"/></w:rPr>'
+        f'<w:t xml:space="preserve">{tail}</w:t></w:r></w:p>')
+    body = doc.element.body
+    sect = body.find(qn("w:sectPr"))
+    sect.addprevious(p1)
+    sect.addprevious(p2)
+
+
 def para(doc, text, indent=0.36, size=10, align="justify"):
     p = doc.add_paragraph()
     if indent:
@@ -655,7 +690,8 @@ def build() -> None:
     r.font.size = Pt(9)
 
     # --- abstract / index terms ----------------------------------------
-    p = doc.add_paragraph(style="Abstract")
+    p = doc.add_paragraph(style="Normal")
+    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     r = p.add_run("Abstract\u2014")
     r.bold = True
     r2 = p.add_run(
@@ -686,21 +722,20 @@ def build() -> None:
          "system localizing spliced segments and transposed covers with "
          "publisher-readable alignment evidence.")
     r2.bold = False
-    r2.font.size = Pt(9)
-    p = doc.add_paragraph(style="IndexTerms")
+    p = doc.add_paragraph(style="Normal")
+    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     r = p.add_run("Index Terms\u2014")
     r.bold = True
     r2 = p.add_run("Anytime algorithms, copyright, music information "
                    "retrieval, plagiarism screening, symbolic music.")
     r2.bold = False
-    r2.font.size = Pt(9)
 
     # continuous break into the two-column body
     switch_to(doc, SECT_1COL[0])
 
     # --- I. introduction ----------------------------------------------------
     h1(doc, "I. Introduction")
-    para(doc,
+    drop_cap(doc,
          "Music publishers, dataset curators, and generative-music "
          "deployments share a common need: given a corpus of symbolic "
          "music (MIDI and its derivatives) and a query\u2014a new "
