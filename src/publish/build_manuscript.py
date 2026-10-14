@@ -99,8 +99,11 @@ REFERENCES = [
  "C. Landmeyer, \u201cAudio forensics meets music information "
  "retrieval\u2014A toolbox for inspection of music plagiarism claims,"
  "\u201d in Proc. AES Int. Conf. Semantic Audio, 2012.",
- "T. He et al., \u201cMusic plagiarism detection via bipartite graph "
- "matching,\u201d arXiv preprint, 2021.",
+ "W. Liu, T. He, C. Gong, N. Zhang, H. Yang, and J. Yan, "
+ "\u201cFine-grained music plagiarism detection: Revealing "
+ "plagiarists through bipartite graph matching and a "
+ "comprehensive large-scale dataset,\u201d in Proc. ACM Int. "
+ "Conf. Multimedia, 2023, pp. 8839\u20138848.",
  "S. Park, H. Kim, J. Jung, J. Park, J. Kim, and J. Nam, \u201c"
  "Quantitative analysis of melodic similarity in music copyright "
  "infringement cases,\u201d in Proc. ISMIR, 2024.",
@@ -186,6 +189,10 @@ def nums():
     e62 = load("e62/memorization.jsonl")
     n["e62_l1"] = float(np.mean([r["confirmed"] for r in e62
                                  if r["lam"] == 1.0]))
+    for cell, tag in (("m8_l0.0", "e62_m8_l0"), ("m8_l1.0", "e62_m8_l1")):
+        sub = [r for r in e62 if r["cell"] == cell]
+        n[f"{tag}_det"] = float(np.mean([r["confirmed"] for r in sub]))
+        n[f"{tag}_src"] = float(np.mean([r["is_source"] for r in sub]))
     e63 = load("e63/cases.jsonl")
     n["e63_pairs"] = sum(1 for _ in (ROOT / "runs/e63/pairs.jsonl")
                          .open(encoding="utf-8"))
@@ -214,6 +221,67 @@ def nums():
         n[f"e19f_{key}_n"] = st["n"]
     n["e19f_pools"] = s19["pools"]
     n["e19f_est"] = s19["estimated_confirmed_corpus"]
+    # e20 MinHash-LSH baseline (matrix: e1 protocol on 1k corpus; scale:
+    # same subsampled corpora as e4)
+    e20m = load("e20/matrix.jsonl")
+    n["e20_total"] = len(e20m)
+    n["e20_screen_recall"] = n["e1_ok"] / n["e1_total"] * 100
+    for cfg in ((8, 0.10), (2, 0.10), (1, 0.05)):
+        sub = [r for r in e20m
+               if r.get("rpb", 8) == cfg[0] and r["tau"] == cfg[1]]
+        tag = f"e20_m{cfg[0]}_{str(cfg[1]).replace('.', '')}"
+        n[f"{tag}_n"] = len(sub)
+        n[f"{tag}_dic"] = sum(r["donor_in_cands"] for r in sub) \
+            / len(sub) * 100
+        n[f"{tag}_hit"] = sum(r["hit"] for r in sub) / len(sub) * 100
+        n[f"{tag}_cand"] = float(np.median([r["n_candidates"] for r in sub]))
+        n[f"{tag}_ge"] = float(np.median([r["n_ge_tau"] for r in sub]))
+    dj = np.array([r["donor_jaccard"] for r in e20m
+                   if r.get("rpb", 8) == 8])
+    n["e20_dj_p25"] = float(np.percentile(dj, 25))
+    n["e20_dj_p50"] = float(np.percentile(dj, 50))
+    n["e20_dj_p75"] = float(np.percentile(dj, 75))
+    n["e20_dj_ge10"] = int((dj >= 0.10).sum())
+    e20s = sorted(load("e20/scale.jsonl"), key=lambda r: r["n_pieces"])
+    top = [r for r in e20s if r["n_pieces"] == e20s[-1]["n_pieces"]]
+    t10 = [r for r in top if r["tau"] == 0.10][0]
+    n["e20_max"] = e20s[-1]["n_pieces"]
+    n["e20_build"] = t10["build_secs"]
+    n["e20_bucket"] = t10["bucket_secs"]
+    n["e20_mem"] = t10["peak_mem_mb"]
+    n["e20_p50"] = t10["query_p50_ms"]
+    n["e20_recall"] = t10["recall"]
+    # e21 real-transformer memorization audit (M5)
+    log = load("e21/train_log.jsonl")
+    n["e21_epochs"] = log[-1]["epoch"]
+    n["e21_train"] = log[-1]["train_loss"]
+    n["e21_val"] = log[-1]["val_loss"]
+    pl = load("e21/piece_loss.jsonl")
+    for split in ("trained", "untrained"):
+        sub = [r["loss"] for r in pl if r["split"] == split]
+        n[f"e21_loss_{split}"] = float(np.mean(sub))
+    tr = [r["loss"] for r in pl if r["split"] == "trained"]
+    ut = [r["loss"] for r in pl if r["split"] == "untrained"]
+    wins = sum(1 for x in tr for y in ut if x < y)
+    ties = sum(1 for x in tr for y in ut if x == y)
+    n["e21_auc"] = (wins + 0.5 * ties) / (len(tr) * len(ut))
+    n["e21_tail"] = min(tr)
+    cal = load("e21/calibration.jsonl")
+    n["e21_cal_n"] = len(cal)
+    n["e21_cal_pos_max"] = max(r["pos_pitch_acc"] for r in cal)
+    n["e21_cal_ov4_max"] = max(r["ov4"] for r in cal)
+    n["e21_cal_pos_mean"] = float(np.mean([r["pos_pitch_acc"]
+                                           for r in cal]))
+    mem = [json.loads(l) for l in
+           (ROOT / "runs/e21/memorization.jsonl")
+           .read_text(encoding="utf-8").splitlines() if l.strip()]
+    for grp in ("memorized", "control", "random_trained"):
+        sub = [r for r in mem if r["group"] == grp]
+        n[f"e21_{grp}_n"] = len(sub)
+        n[f"e21_{grp}_det"] = float(np.mean([r["confirmed"] for r in sub]))
+        n[f"e21_{grp}_src"] = float(np.mean([r["is_source"] for r in sub]))
+        n[f"e21_{grp}_ret"] = float(np.mean([r["retained_source"]
+                                             for r in sub]))
     return n
 
 
@@ -308,18 +376,25 @@ def e3_table_rows():
 
 
 def e4_table_rows():
-    """Scaling table: ours versus Jaccard-scan baseline."""
+    """Scaling table: ours versus Jaccard-scan and MinHash-LSH baselines."""
     rows = sorted(load("e4/scaling.jsonl"), key=lambda r: r["n_pieces"])
+    e20 = {}
+    for r in load("e20/scale.jsonl"):
+        if r["tau"] == 0.10:
+            e20[r["n_pieces"]] = r
     out = []
     for r in rows:
         o = r["ours"]
         jac = r.get("jaccard_scan") or {}
         jp = jac.get("query_p50_ms")
+        lsh = e20.get(r["n_pieces"]) or {}
         out.append([f"{r['n_pieces']:,}", f"{o['build_secs']:.2f}",
                     f"{o['peak_mem_mb']:.0f}",
                     f"{o['query_p50_ms']:.1f}", f"{o['query_p95_ms']:.1f}",
                     o["recall"],
-                    ("infeasible" if jp is None else f"{jp:.0f}")])
+                    ("infeasible" if jp is None else f"{jp:.0f}"),
+                    (f"{lsh['query_p50_ms']:.1f}" if lsh else "\u2013"),
+                    (lsh.get("recall", "\u2013") if lsh else "\u2013")])
     return out
 
 
@@ -747,13 +822,11 @@ def add_affiliation_footnote(doc):
             ("Manuscript received [month] [day], 2026; revised [month] "
              "[day], 2026; accepted [month] [day], 2026. ", False),
             (ACK + " ", False),
-            ("(Corresponding author: Yalong Zhang, e-mail: "
-             "[to be added]).", True),
+            ("(Corresponding author: Yalong Zhang.)", True),
         ]),
         _fn_para([
             ("Xuemei Li and Jianping Deng are with the Faculty of Teacher "
-             "Education, Quzhou University, Quzhou 324000, China "
-             "(e-mail: [to be added]).", False),
+             "Education, Quzhou University, Quzhou 324000, China.", False),
         ]),
         _fn_para([
             ("Meng Huang, Bao Wang, and Yalong Zhang are with the College "
@@ -1221,16 +1294,19 @@ def build() -> None:
         " 1: order <- positions of q sorted by |N_k(item_i)| ascending",
         " 2: score <- {P: 0}; u <- 0",
         " 3: while u < q and budget(B) do",
-        " 4:     for P in I[N_k(item_order[u])] do score[P] += 1",
-        " 5:     u <- u + 1",
-        " 6:     open <- {P : score[P] + (q-u) >= tau}   // Thm. 1",
-        " 7: C <- top-C union of tolerant and verbatim rankings of open",
-        " 8: for P in C do",
-        " 9:     A <- strict-anchor matches of q against P",
-        "10:     delta <- modal offset (j - i) over A;  // transposition",
-        "11:     if weak vote then delta <- interval-sketch estimate",
-        "12:     chain <- windowed LCS over A under offset delta",
-        "13:     if |chain| >= rho * q then emit (P, chain, delta)",
+        " 4:     for P in I[N_k(item_order[u])] do",
+        " 5:         score[P] <- score[P] + 1",
+        " 6:     u <- u + 1",
+        " 7:     open <- {P : score[P] + (q-u) >= tau}   // Thm. 1",
+        " 8: end while",
+        " 9: C <- top-C union of tolerant and verbatim rankings of open",
+        "10: for P in C do",
+        "11:     A <- strict-anchor matches of q against P",
+        "12:     delta <- modal offset (j - i) over A   // transposition",
+        "13:     if weak vote then delta <- interval-sketch estimate",
+        "14:     chain <- windowed LCS over A under offset delta",
+        "15:     if |chain| >= rho * q then emit (P, chain, delta)",
+        "16: end for",
     ])
 
     # --- IV. setup ------------------------------------------------------------
@@ -1306,6 +1382,19 @@ def build() -> None:
          "every size. The set-Jaccard scan, the strongest naive "
          "baseline, is already 20\u00d7 slower than the screen at 10k "
          "pieces (238 ms vs. 12 ms p50) and infeasible beyond it. "
+         f"MinHash-LSH (128 permutations, 16 bands x 8 rows), the standard "
+         f"accelerated form of the same set-Jaccard semantics, scales "
+         f"gracefully in isolation\u2014{N['e20_build']:.0f} s of signature "
+         f"construction plus {N['e20_bucket']:.0f} s of bucket building, "
+         f"{N['e20_mem']:.0f} MB, {N['e20_p50']:.0f} ms p50 at "
+         f"{N['e20_max']:,} pieces\u2014yet retrieves none of the planted "
+         f"donors at any corpus size ({N['e20_recall']} at tau = 0.10; "
+         "identical at tau = 0.05 and 0.20): the S-curve of the band "
+         "configuration activates only above Jaccard ~0.7, while a "
+         "contained span of 40 items inside a ~700-item query reaches "
+         "Jaccard ~0.1 at best, so the index answers every query with an "
+         "empty candidate set. Section V-G analyses this geometry "
+         "directly on the recall-matrix protocol. "
          "Corpus-side FIM "
          "enumeration\u2014the engines of our previous work "
          "[31], [32]\u2014was measured "
@@ -1316,13 +1405,17 @@ def build() -> None:
     add_emf(doc, "fig2_scaling", 8.0)
     caption(doc, "Fig. 2. Index build and query latency versus corpus "
                  "size (log-log); planted recall 100% at all sizes; "
-                 "Jaccard scan baseline shown where feasible.")
+                 "Jaccard scan baseline shown where feasible; MinHash-LSH "
+                 "is fast at every size but retrieves nothing (V-G).")
     three_line_table(doc,
         ["Pieces", "Build (s)", "Mem (MB)", "p50 (ms)", "p95 (ms)",
-         "Planted recall", "Jaccard p50 (ms)"],
+         "Planted recall", "Jaccard p50 (ms)", "LSH p50 (ms)",
+         "LSH recall"],
         e4_table_rows(), size=8, full=True,
         title="TABLE II. Index scaling and baseline feasibility; "
-              "Jaccard scan infeasible beyond 10,000 pieces.")
+              "Jaccard scan infeasible beyond 10,000 pieces; MinHash-LSH "
+              "(128 permutations, 16 bands x 8 rows, tau = 0.10) returns "
+              "empty candidate sets at every size.")
     h2(doc, "B. Recall matrix and the evidence bound")
     para(doc,
          f"Table III summarizes and Fig. 3 visualizes the 337-cell "
@@ -1491,6 +1584,67 @@ def build() -> None:
         title="TABLE IX. Component ablations on the 29-cell planted "
               "audit; false candidates measured on the hard-negative "
               "pool.")
+    h2(doc, "G. Set-similarity retrieval: the MinHash-LSH baseline")
+    para(doc,
+         f"Why does the LSH index return nothing? The reason is "
+         f"geometric, not engineering. A planted query of the recall "
+         f"matrix embeds a 40-item span in 300 noise items and probes a "
+         f"corpus of pieces of ~700 items each, so even a perfect "
+         f"set-Jaccard oracle scores the donor at only "
+         f"{N['e20_dj_p25']:.2f} / {N['e20_dj_p50']:.2f} / "
+         f"{N['e20_dj_p75']:.2f} (quartiles over the 337 cells; "
+         f"Fig. 10(a)); just {N['e20_dj_ge10']} of 337 donors reach "
+         f"Jaccard 0.10. Jaccard measures relative overlap, so a "
+         f"contained copy is structurally invisible to it no matter how "
+         f"faithfully the 40 shared items are preserved. Tuning the "
+         f"band configuration moves the operating point along a "
+         f"recall-versus-candidate-volume trade-off, not past it "
+         f"(Table X): with the standard 16 x 8 bands at tau = 0.10 the "
+         f"donor survives screening in "
+         f"{N['e20_m8_01_dic']:.1f}% of cells; re-tuning to 2 rows x "
+         f"64 bands\u2014an S-curve threshold near 0.12, the textbook "
+         f"choice for this regime\u2014raises donor survival to "
+         f"{N['e20_m2_01_dic']:.1f}% but still confirms only "
+         f"{N['e20_m2_01_hit']:.1f}%, because the remaining donors "
+         f"fall below the threshold by construction; dropping to 1 row "
+         f"x 128 bands at tau = 0.05 recovers the donor in "
+         f"{N['e20_m1_005_dic']:.1f}% of cells, at the price of "
+         f"returning a median of {N['e20_m1_005_cand']:.0f} of 1,000 "
+         f"candidates per query, of which a median of "
+         f"{N['e20_m1_005_ge']:.0f} pass tau = 0.05 by chance. "
+         f"Either way the screen that certifies "
+         f"{N['e20_screen_recall']:.1f}% recall on the same 337 cells "
+         f"is unreachable: set-similarity semantics, accelerated or "
+         f"not, do not express containment.")
+    three_line_table(doc,
+        ["LSH configuration", "tau",
+         "Donor in candidates (%)", "Donor confirmed (%)",
+         "Median candidates", "Median passing tau"],
+        [["16 bands x 8 rows", "0.10",
+          f"{N['e20_m8_01_dic']:.1f}", f"{N['e20_m8_01_hit']:.1f}",
+          f"{N['e20_m8_01_cand']:.0f}", f"{N['e20_m8_01_ge']:.0f}"],
+         ["2 rows x 64 bands", "0.10",
+          f"{N['e20_m2_01_dic']:.1f}", f"{N['e20_m2_01_hit']:.1f}",
+          f"{N['e20_m2_01_cand']:.0f}", f"{N['e20_m2_01_ge']:.0f}"],
+         ["1 row x 128 bands", "0.05",
+          f"{N['e20_m1_005_dic']:.1f}", f"{N['e20_m1_005_hit']:.1f}",
+          f"{N['e20_m1_005_cand']:.0f}", f"{N['e20_m1_005_ge']:.0f}"]],
+        size=8,
+        title="TABLE X. MinHash-LSH on the 337-cell recall-matrix "
+              "protocol (1,000-piece corpus, 128 permutations); "
+              "containment-hitting configurations flood candidates, "
+              "discriminating configurations starve the donor.")
+    full_width(doc, lambda: (add_emf(doc, "fig_e20_lsh", 16.0),
+                             caption(doc,
+                                 "Fig. 10. The containment-versus-"
+                                 "Jaccard geometry behind Table X. "
+                                 "(a) donor Jaccard distribution over "
+                                 "the 337 planted cells (quartiles "
+                                 "0.045/0.099/0.201) with the two "
+                                 "operating thresholds marked; "
+                                 "(b) recall of the three LSH "
+                                 "configurations versus the tolerant "
+                                 "screen on the same cells.")))
 
     # --- VI. real world -------------------------------------------------------
     h1(doc, "VI. Real-World Studies")
@@ -1501,7 +1655,7 @@ def build() -> None:
          "probability \u03bb, sweeping m\u2208{2,4,8} and "
          "\u03bb\u2208{0, 0.25, ..., 1}; 750 generated pieces are "
          "screened with the production cascade. Detection "
-         "(Fig. 10, Table X) rises monotonically: 26-34% at "
+         "(Fig. 11, Table XI) rises monotonically: 26-34% at "
          "\u03bb=0\u2014these "
          "residual hits are style-level shared structures, attributed "
          "to the source piece in only 2-4% of cases\u2014through 44-56% "
@@ -1510,16 +1664,19 @@ def build() -> None:
          "memorization (\u03bb=0.25, per-note Bernoulli copies) "
          "escapes the contiguity threshold: an honest boundary of "
          "chain-based confirmation that mirrors the distributed-"
-         "memorization blind spot of sequential detectors.")
+         "memorization blind spot of sequential detectors.  Section "
+         "VI-D replaces the emulator with an actually trained "
+         "transformer and asks whether real overfitting reproduces "
+         "this spectrum.")
     add_emf(doc, "fig6_memorization", 8.0)
-    caption(doc, "Fig. 10. Detection rate (bars) and source attribution "
+    caption(doc, "Fig. 11. Detection rate (bars) and source attribution "
                  "(ticks) over the memorization spectrum, by n-gram "
                  "order.")
     three_line_table(doc,
         ["m", "\u03bb = 0", "\u03bb = 0.25", "\u03bb = 0.5",
          "\u03bb = 0.75", "\u03bb = 1"],
         e62_table_rows(), size=8,
-        title="TABLE X. Memorization spectrum: detection % / correct "
+        title="TABLE XI. Memorization spectrum: detection % / correct "
               "source-attribution % per cell (50 generated pieces per "
               "cell; order-m pitch n-gram mixed with per-note copy at "
               "probability \u03bb).")
@@ -1529,16 +1686,16 @@ def build() -> None:
          f"(exact and interval-sketch dual index) surfaces "
          f"{N['e63_pairs']:,} candidate duplicate pairs\u2014Lakh is, "
          "in large part, many transcriptions of the same commercial "
-         "repertoire. Four publisher-style cases (Table XI) show the "
+         "repertoire. Four publisher-style cases (Table XII) show the "
          "evidence a human adjudicator receives: an identical "
          "transcription pair aligns note-for-note (3,200/3,200); a "
          "+3-semitone transposed cover is fully recovered with the "
          "transposition correctly estimated at \u22123; a piece with a "
          "30-second span of another work spliced into its middle is "
-         "localized to the exact segment (Fig. 11); and a "
+         "localized to the exact segment (Fig. 12); and a "
          "style-similar negative is correctly rejected.")
     add_emf(doc, "fig7_case", 8.0)
-    caption(doc, "Fig. 11. Alignment map for the spliced-span case: "
+    caption(doc, "Fig. 12. Alignment map for the spliced-span case: "
                  "query note index versus corpus piece note index; the "
                  "diagonal band is the copied 30 s segment.")
     three_line_table(doc,
@@ -1553,7 +1710,7 @@ def build() -> None:
          ["Style-similar negative", "31", "1",
           "rejected"]],
         size=8,
-        title="TABLE XI. Case-study evidence summary (E6.3).")
+        title="TABLE XII. Case-study evidence summary (E6.3).")
     h2(doc, "C. Full-corpus duplicate census")
     para(doc,
          f"Scaling the case-study protocol to the full corpus "
@@ -1563,7 +1720,7 @@ def build() -> None:
          f"({N['e18_exact_queries']:,} non-trivial queries per "
          f"channel; all counts extrapolate {8}\u00d7), under the same "
          f"dual exact/interval-sketch configuration "
-         f"(min-evidence 40, k=0).  Fig. 12(a) shows the candidate "
+         f"(min-evidence 40, k=0).  Fig. 13(a) shows the candidate "
          f"population by relative-score band.  At the absolute "
          f"\u226540-evidence floor the two channels report "
          f"{N['e18_exact_ge40'] / 1e9:.1f}B (exact) and "
@@ -1585,8 +1742,8 @@ def build() -> None:
          f"score \u22650.90 ({N['e19f_pools']['sketch_band3']:,})\u2014and "
          "adjudicated a stratified random sample (40 pairs per "
          "stratum) with the Layer-2 chain criterion, run in both "
-         "directions with transposition fallback (Table XII, "
-         "Fig. 12(b)).  The exact channel is a high-precision "
+         "directions with transposition fallback (Table XIII, "
+         "Fig. 13(b)).  The exact channel is a high-precision "
          f"instrument at the top of its range: {N['e19f_exact_band3_p'] * 100:.0f}% "
          f"of exact pairs with relative score \u22650.90 are confirmed "
          "copies (Wilson 95% CI "
@@ -1614,7 +1771,7 @@ def build() -> None:
          f"recall (Section V-C); they are survey estimates from a "
          f"1/8 sample, not enumerations.")
     add_emf(doc, "fig8_census", 8.6)
-    caption(doc, "Fig. 12. Full-corpus census (174,300 pieces, stride-8 "
+    caption(doc, "Fig. 13. Full-corpus census (174,300 pieces, stride-8 "
                  "survey extrapolated \u00d78).  (a) Candidate-pair "
                  "population by relative-score band and channel (log "
                  "scale).  (b) Confirmed-copy precision of the stored "
@@ -1641,11 +1798,107 @@ def build() -> None:
           f"{N['e19f_sketch_band3_hi'] * 100:.1f}]",
           f"{N['e19f_est']['sketch_band3'] / 1e6:.2f}M"]],
         size=8,
-        title="TABLE XII. Precision audit of the full-corpus screen: "
+        title="TABLE XIII. Precision audit of the full-corpus screen: "
               "stratified sample of 40 pairs per stratum, adjudicated "
               "by the Layer-2 chain criterion (both directions, "
               "transposition-aware); confirmed-copy counts "
               "extrapolate the stride-8 survey.")
+    h2(doc, "D. Memorization audit with a trained generator")
+    para(doc,
+         f"E6.2 emulates a generative model with an n-gram/copy "
+         f"operator; we now replace the emulator with an actual "
+         f"trained one.  A {934824:,}-parameter decoder-only "
+         f"transformer ({N['e21_epochs']} epochs on 250 Lakh "
+         f"pieces, production tokenization) reaches train loss "
+         f"{N['e21_train']:.1f} nats against {N['e21_val']:.1f} "
+         f"held-out\u2014a {N['e21_val'] - N['e21_train']:.1f}-nat "
+         f"generalization gap, i.e., genuine overfitting.  "
+         f"Per-piece held likelihood separates trained from "
+         f"never-trained pieces almost perfectly "
+         f"({N['e21_loss_trained']:.1f} vs. "
+         f"{N['e21_loss_untrained']:.1f} nats mean, AUC = "
+         f"{N['e21_auc']:.2f}), and the most-memorized pieces sit "
+         f"at {N['e21_tail']:.2f} nats\u2014the model demonstrably "
+         f"knows them.  Yet open-ended sampling does not "
+         f"regurgitate them: across {N['e21_cal_n']} calibration "
+         f"probes seeded from pieces spanning the full memorization "
+         f"range, position-wise pitch agreement with the true "
+         f"continuation averages {N['e21_cal_pos_mean'] * 100:.0f}% "
+         f"(max {N['e21_cal_pos_max'] * 100:.0f}%) and 4-gram "
+         f"overlap peaks at {N['e21_cal_ov4_max'] * 100:.0f}% "
+         f"(Fig. 14(b)).  Sampling at temperature 0.8 diverges "
+         f"from memorized content almost immediately.")
+    para(doc,
+         f"The production cascade agrees with this reading "
+         f"(Table XIV): 60 continuations\u201420 seeded from the "
+         f"most-memorized pieces, 20 from never-trained controls, "
+         f"20 from random trained pieces\u2014confirm at "
+         f"{N['e21_memorized_det'] * 100:.0f}% / "
+         f"{N['e21_control_det'] * 100:.0f}% / "
+         f"{N['e21_random_trained_det'] * 100:.0f}% with source "
+         f"attribution near chance in every group, the same "
+         f"style-level confirmation band as the copy-free "
+         f"(lambda = 0) cells of Table XI.  In other words, a "
+         f"real overfit transformer at this scale behaves, from "
+         f"the detector's viewpoint, like the lambda = 0 corner "
+         f"of the emulated spectrum\u2014and unlike lambda = 1, "
+         f"which confirms and attributes at 98\u2013100%.  The "
+         f"conclusion cuts both ways: extractive regurgitation, "
+         f"the family that generation-side audits can exhibit to "
+         f"a copy detector, is captured by the n-gram/copy "
+         f"emulation; but memorization that sampling never "
+         f"surfaces\u2014the 0.3-nat pieces\u2014is invisible to "
+         f"output inspection of any kind, and only likelihood "
+         f"ranking exposes it.  Copy detection and memorization "
+         f"auditing are complementary instruments, not "
+         f"substitutes.")
+    full_width(doc, lambda: (add_emf(doc, "fig_e21_memorization", 16.0),
+                             caption(doc,
+                                 "Fig. 14. Trained-generator "
+                                 "memorization audit.  (a) Training "
+                                 "and held-out loss over "
+                                 f"{N['e21_epochs']} epochs; the "
+                                 "gap is the memorization.  "
+                                 "(b) Sampling calibration: "
+                                 "position-wise pitch agreement of "
+                                 "sampled continuations versus "
+                                 "per-piece held likelihood "
+                                 "(memorization); even the most "
+                                 "memorized pieces are not "
+                                 "regurgitated.  (c) Cascade "
+                                 "confirmation and source "
+                                 "attribution for the three "
+                                 "sampling groups against the "
+                                 "lambda = 0 / lambda = 1 anchors "
+                                 "of Table XI.")))
+    three_line_table(doc,
+        ["Generator", "Group", "n", "Confirmed %",
+         "Source-attributed %", "Source in top-C %"],
+        [["n-gram/copy (E6.2)", "m=8, lambda=0", "50",
+          f"{N['e62_m8_l0_det'] * 100:.0f}",
+          f"{N['e62_m8_l0_src'] * 100:.0f}", "\u2013"],
+         ["n-gram/copy (E6.2)", "m=8, lambda=1", "50",
+          f"{N['e62_m8_l1_det'] * 100:.0f}",
+          f"{N['e62_m8_l1_src'] * 100:.0f}", "\u2013"],
+         ["transformer (E6.4)", "memorized sources", "20",
+          f"{N['e21_memorized_det'] * 100:.0f}",
+          f"{N['e21_memorized_src'] * 100:.0f}",
+          f"{N['e21_memorized_ret'] * 100:.0f}"],
+         ["transformer (E6.4)", "untrained controls", "20",
+          f"{N['e21_control_det'] * 100:.0f}",
+          f"{N['e21_control_src'] * 100:.0f}",
+          f"{N['e21_control_ret'] * 100:.0f}"],
+         ["transformer (E6.4)", "random trained", "20",
+          f"{N['e21_random_trained_det'] * 100:.0f}",
+          f"{N['e21_random_trained_src'] * 100:.0f}",
+          f"{N['e21_random_trained_ret'] * 100:.0f}"]],
+        size=8,
+        title="TABLE XIV. Trained-generator audit against the E6.2 "
+              "emulation anchors: the overfit transformer confirms in "
+              "the lambda = 0 band and attributes no better than "
+              "chance, while per-piece likelihood (AUC = "
+              f"{N['e21_auc']:.2f}) exposes the memorization that "
+              "sampling conceals.")
 
     # --- VII. discussion --------------------------------------------------------
     h1(doc, "VII. Discussion")
@@ -1672,10 +1925,14 @@ def build() -> None:
          "Hard negatives are harvested by pitch-class histogram "
          "similarity, which finds harmonically confusable peers but "
          "may miss style-similar pairs with different key "
-         "distributions; the memorization study substitutes a "
-         "transparent n-gram/copy operator for an actual trained "
-         "generator, isolating detection physics at the price of "
-         "model realism; and the in-the-wild census, while spanning "
+         "distributions; the memorization study spans both a "
+         "transparent n-gram/copy emulation and an actually "
+         "trained generator, but the latter is a 0.9M-parameter "
+         "CPU-scale transformer whose memorization is "
+         "non-extractive\u2014larger generators that regurgitate "
+         "verbatim would move samples toward the lambda = 1 "
+         "corner of Table XIV rather than challenge the "
+         "detection physics; and the in-the-wild census, while spanning "
          "the full 174,300-piece corpus, rests on a 1/8 systematic "
          "sample of queries and a 120-pair adjudication audit whose "
          "verdicts are automatic (chain criterion), not human, and "

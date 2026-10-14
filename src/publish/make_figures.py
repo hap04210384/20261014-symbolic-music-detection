@@ -214,6 +214,14 @@ def fig2_scaling() -> None:
           if "jaccard_scan" in r]
     ax.plot(jn, jp, "^:", ms=4, lw=1, color="#7f8c8d",
             label="Jaccard scan p50 (ms), infeasible beyond 10k")
+    e20 = {}
+    for r in load("e20/scale.jsonl"):
+        if r["tau"] == 0.10:
+            e20[r["n_pieces"]] = r["query_p50_ms"]
+    ln = [n_ for n_ in n if n_ in e20]
+    lp = [e20[n_] for n_ in ln]
+    ax.plot(ln, lp, "d-.", ms=4, lw=1, color="#8e44ad",
+            label="MinHash-LSH p50 (ms), recall 0")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("corpus size (pieces)")
@@ -387,6 +395,68 @@ def fig7_case() -> None:
     save(fig, "fig7_case")
 
 
+# ---------------------------------------------------------------- fig 8
+def fig8_census() -> None:
+    """Full-corpus census (e18) + stratified precision audit (e19f)."""
+    STRIDE = 8
+    rows = load("e18/queries.jsonl")
+    bands = [(0.35, 0.50), (0.50, 0.70), (0.70, 0.90), (0.90, 1.01)]
+    hist = {"exact": [0] * 4, "sketch": [0] * 4}
+    ms = {"exact": [], "sketch": []}
+    for r in rows:
+        a = hist[r["kind"]]
+        for i in range(4):
+            a[i] += r["hist"][i]
+        ms[r["kind"]].append(r["ms"])
+    p50 = {k: float(np.percentile(v, 50)) for k, v in ms.items()}
+
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.8, 2.7))
+    x = np.arange(4)
+    w = 0.38
+    for i, (kind, c, lab) in enumerate(
+            [("exact", "#1f5fb4", "exact channel"),
+             ("sketch", "#c0392b", "interval-sketch channel")]):
+        y = [h * STRIDE for h in hist[kind]]
+        ax.bar(x + (i - 0.5) * w, y, w, color=c, label=lab)
+    ax.set_yscale("log")
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"[{lo:.2f},{hi:.2f})" for lo, hi in bands],
+                       fontsize=6.5)
+    ax.set_xlabel("relative containment score")
+    ax.set_ylabel("candidate pairs (log)")
+    ax.set_title("(a) all-pairs census, 174,300 pieces", fontsize=8)
+    ax.legend(fontsize=7)
+    ax.grid(True, axis="y", lw=0.3, alpha=0.4)
+
+    summ = json.loads(
+        (ROOT / "runs/e19/e18_pairs/summary.json").read_text())
+    strata = [("exact_band2", "exact, rel 0.70-0.90"),
+              ("exact_band3", "exact, rel >= 0.90"),
+              ("sketch_band3", "sketch, rel >= 0.90")]
+    y = [summ["per_stratum"][k]["precision"] * 100 for k, _ in strata]
+    lo = [summ["per_stratum"][k]["lo"] * 100 for k, _ in strata]
+    hi = [summ["per_stratum"][k]["hi"] * 100 for k, _ in strata]
+    ax2.bar(range(3), y, 0.5,
+            color=["#4a7ebb", "#1f3f73", "#b04a3a"],
+            yerr=[np.array(y) - np.array(lo),
+                  np.array(hi) - np.array(y)],
+            capsize=3, error_kw=dict(lw=0.9))
+    for i, (k, _) in enumerate(strata):
+        n = summ["per_stratum"][k]["n"]
+        ax2.text(i, hi[i] + 2, f"n={n}", ha="center", fontsize=6.5)
+    ax2.set_xticks(range(3))
+    ax2.set_xticklabels([s[1] for s in strata], fontsize=6.5, rotation=12)
+    ax2.set_ylabel("precision of channel (%)")
+    ax2.set_ylim(0, 108)
+    ax2.set_title("(b) confirmed-copy precision, stratified audit",
+                  fontsize=8)
+    ax2.grid(True, axis="y", lw=0.3, alpha=0.4)
+    for ax_ in (ax, ax2):
+        ax_.tick_params(labelsize=7)
+    fig.tight_layout()
+    save(fig, "fig8_census")
+
+
 # ---------------------------------------------------------------- new figs
 def _e1_groups():
     """Shared group order for the recall matrix (Table I / heatmap)."""
@@ -423,7 +493,11 @@ def fig_e1_heatmap() -> None:
                 for L in lengths])
     M = np.array(mat)
     fig, ax = plt.subplots(figsize=(3.3, 5.0))
-    im = ax.imshow(M, cmap="RdYlGn", vmin=75, vmax=100, aspect="auto")
+    # scale to the data so variation is visible (previous fixed 75-100
+    # window rendered the whole matrix green); perfect cells stay green,
+    # degrading cells shift through yellow to red
+    vmin = max(0.0, float(np.floor(M.min() / 5.0) * 5.0) - 5.0)
+    im = ax.imshow(M, cmap="RdYlGn", vmin=vmin, vmax=100, aspect="auto")
     ax.set_xticks(range(4), [f"{L} s" for L in lengths])
     ax.set_yticks(range(len(labels)),
                   [f"{g}  {s}" if g else s
@@ -438,6 +512,10 @@ def fig_e1_heatmap() -> None:
             ax.text(j, i, f"{M[i, j]:.0f}", ha="center", va="center",
                     fontsize=6, weight="bold" if miss else "normal",
                     color="#7f0000" if miss else "white")
+            if M[i, j] < 95:  # box the materially-degraded cells
+                ax.add_patch(plt.Rectangle(
+                    (j - 0.5, i - 0.5), 1, 1, fill=False,
+                    edgecolor="#7f0000", lw=1.2))
     for e in ["top", "right", "bottom", "left"]:
         ax.spines[e].set_visible(False)
     cb = fig.colorbar(im, ax=ax, shrink=0.5, pad=0.02)
@@ -553,6 +631,128 @@ def fig_e5_ablation() -> None:
         ax.tick_params(labelsize=7)
         ax.grid(True, lw=0.3, alpha=0.4)
     save(fig, "fig_e5_ablation")
+
+
+# ---------------------------------------------------------------- fig 10
+def fig_e20_lsh() -> None:
+    """Containment-versus-Jaccard geometry: (a) donor Jaccard histogram
+    with the LSH operating thresholds; (b) recall of the three band
+    configurations versus the tolerant screen on the same 337 cells."""
+    rows = load("e20/matrix.jsonl")
+    fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.1))
+
+    dj = [r["donor_jaccard"] for r in rows if r.get("rpb", 8) == 8]
+    ax = axes[0]
+    ax.hist(dj, bins=np.linspace(0, 1, 51), color="#1f5fb4", alpha=0.75,
+            edgecolor="white", lw=0.3)
+    ax.axvline(0.10, color="#c0392b", ls="--", lw=1.2)
+    ax.text(0.105, ax.get_ylim()[1] * 0.93, "tau = 0.10",
+            fontsize=7.5, color="#c0392b")
+    ax.axvline(0.05, color="#e67e22", ls=":", lw=1.2)
+    ax.text(0.055, ax.get_ylim()[1] * 0.80, "tau = 0.05",
+            fontsize=7.5, color="#e67e22")
+    ax.set_xlabel("donor set-Jaccard (337 planted cells)", fontsize=8)
+    ax.set_ylabel("cells", fontsize=8)
+    ax.set_title("(a) a contained span scores Jaccard ~0.1 at best",
+                 fontsize=8.5)
+    ax.grid(True, lw=0.3, alpha=0.4)
+
+    ax = axes[1]
+    cfgs = [("16x8 bands, tau=0.10", 8, 0.10),
+            ("2x64 bands, tau=0.10", 2, 0.10),
+            ("1x128 bands, tau=0.05", 1, 0.05)]
+    labels, hits, dics = [], [], []
+    for lab, rpb, tau in cfgs:
+        sub = [r for r in rows
+               if r.get("rpb", 8) == rpb and r["tau"] == tau]
+        labels.append(lab)
+        hits.append(sum(r["hit"] for r in sub) / len(sub) * 100)
+        dics.append(sum(r["donor_in_cands"] for r in sub)
+                    / len(sub) * 100)
+    x = np.arange(len(labels))
+    ax.bar(x - 0.2, dics, width=0.38, color="#7f8c8d",
+           label="donor in candidate set")
+    ax.bar(x + 0.2, hits, width=0.38, color="#8e44ad",
+           label="donor confirmed (Jaccard >= tau)")
+    ax.axhline(99.1, color="#1f5fb4", ls="--", lw=1.2)
+    ax.text(2.45, 96, "tolerant screen:\n334/337 = 99.1%",
+            fontsize=7, color="#1f5fb4", ha="right", va="top")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=7)
+    ax.set_ylabel("% of 337 cells", fontsize=8)
+    ax.set_ylim(0, 112)
+    ax.set_title("(b) band tuning trades starvation for flooding",
+                 fontsize=8.5)
+    ax.legend(fontsize=7, loc="upper left")
+    ax.grid(True, lw=0.3, alpha=0.4)
+    ax.tick_params(labelsize=7)
+    save(fig, "fig_e20_lsh")
+
+
+# ---------------------------------------------------------------- fig 14
+def fig_e21_memorization() -> None:
+    """Trained-generator memorization audit (E6.4): (a) loss curves;
+    (b) sampling calibration vs per-piece likelihood; (c) cascade
+    confirmation/attribution vs E6.2 anchors."""
+    log = load("e21/train_log.jsonl")
+    cal = load("e21/calibration.jsonl")
+    mem = load("e21/memorization.jsonl")
+    e62 = load("e62/memorization.jsonl")
+    fig, axes = plt.subplots(1, 3, figsize=(9.6, 3.1))
+
+    ax = axes[0]
+    ep = [r["epoch"] for r in log]
+    ax.plot(ep, [r["train_loss"] for r in log], "-", lw=1,
+            color="#1f5fb4", label="train (250 pieces)")
+    ax.plot(ep, [r["val_loss"] for r in log], "-", lw=1,
+            color="#c0392b", label="held-out (50 pieces)")
+    ax.set_xlabel("epoch", fontsize=8)
+    ax.set_ylabel("4-field next-event loss (nats)", fontsize=8)
+    ax.set_title("(a) overfitting is real: the gap is memorization",
+                 fontsize=8.5)
+    ax.legend(fontsize=7)
+    ax.grid(True, lw=0.3, alpha=0.4)
+
+    ax = axes[1]
+    style = {"trained": ("o", "#1f5fb4"), "untrained": ("x", "#c0392b")}
+    for split, (mk, c) in style.items():
+        sub = [r for r in cal if r["split"] == split]
+        ax.plot([r["loss"] for r in sub],
+                [r["pos_pitch_acc"] * 100 for r in sub], mk, ms=4,
+                color=c, label=f"{split} source")
+    ax.set_xlabel("per-piece held likelihood (nats)", fontsize=8)
+    ax.set_ylabel("position-wise pitch agreement (%)", fontsize=8)
+    ax.set_title("(b) memorized is not regurgitated", fontsize=8.5)
+    ax.legend(fontsize=7)
+    ax.grid(True, lw=0.3, alpha=0.4)
+
+    ax = axes[2]
+    l0 = [r for r in e62 if r["cell"] == "m8_l0.0"]
+    l1 = [r for r in e62 if r["cell"] == "m8_l1.0"]
+    labels = ["E6.2\nlambda=0", "E6.2\nlambda=1", "E6.4\nmemorized",
+              "E6.4\ncontrol", "E6.4\nrandom"]
+    det = [np.mean([r["confirmed"] for r in l0]) * 100,
+           np.mean([r["confirmed"] for r in l1]) * 100]
+    src = [np.mean([r["is_source"] for r in l0]) * 100,
+           np.mean([r["is_source"] for r in l1]) * 100]
+    for grp in ("memorized", "control", "random_trained"):
+        sub = [r for r in mem if r["group"] == grp]
+        det.append(np.mean([r["confirmed"] for r in sub]) * 100)
+        src.append(np.mean([r["is_source"] for r in sub]) * 100)
+    x = np.arange(len(labels))
+    ax.bar(x - 0.2, det, width=0.38, color="#7f8c8d", label="confirmed")
+    ax.bar(x + 0.2, src, width=0.38, color="#8e44ad",
+           label="source-attributed")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=6.5)
+    ax.set_ylabel("% of samples", fontsize=8)
+    ax.set_title("(c) detector view: the lambda = 0 band", fontsize=8.5)
+    ax.legend(fontsize=7)
+    ax.grid(True, lw=0.3, alpha=0.4)
+
+    for ax in axes:
+        ax.tick_params(labelsize=7)
+    save(fig, "fig_e21_memorization")
 
 
 ALL = {n: f for n, f in list(globals().items()) if n.startswith("fig")}
