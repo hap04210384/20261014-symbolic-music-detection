@@ -1,0 +1,46 @@
+# 大数据与中间产物
+data/raw/
+data/processed/
+results/
+
+# 引擎源码（A 论文资产，不入 B 仓库；本地副本见 src/SOURCES.txt 登记）
+/src/engine_anyfim/
+/src/engine_tensorfim/
+
+# 稿件（Manuscript.docx 由脚本从入库源生成，属构建产物，不入库）
+/Manuscript.docx
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.ipynb_checkpoints/
+
+# 自编译引擎产物（源码拷贝与清单入库，exe/BUILD 中间产物不入库）
+/bin/
+/tools/build_anyfim/build/
+
+# 实验运行目录（结果文件经 results/ 汇总后入库，原始 runs 不入库）
+/runs/
+
+# 系统
+Thumbs.db
+.DS_Store
+
+# 编辑器
+.vscode/
+.idea/
+
+# 大模型检查点（MERT 等基线模型权重走 HuggingFace 缓存，不入库）
+models/
+*.ckpt
+*.pt
+
+# AnyFim 构建树中的上游源码拷贝与编译中间产物（构建时自动刷新，不入库）
+/tools/build_anyfim/vs_gt/CoParaCG/kernel.cu
+/tools/build_anyfim/vs_at/AnytimeMining/kernel.cu
+/tools/build_anyfim/**/x64/
+
+# 发布副本（解压后的分发包，非源文件）
+/release/

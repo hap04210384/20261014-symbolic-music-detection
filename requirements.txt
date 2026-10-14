@@ -1,0 +1,16 @@
+# Python 依赖（与 environment.yml 保持一致；论文投稿时锁定完整版本到 requirements.lock）
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+tqdm
+pyyaml
+mido
+# --- 以下为占位，启用时取消注释并锁定版本 ---
+# symusic
+# mir_eval
+# basic-pitch
+# transformers
+# miditok
+# torch

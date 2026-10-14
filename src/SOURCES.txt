@@ -1,0 +1,31 @@
+# 引擎本地副本来源登记（Provenance）
+
+B 论文复用 A 论文的两台引擎。以下为 src/ 下本地副本的来源与版本锁定。
+按可复现性规则：引擎源码不入 B 的 git 库（它们是 A 的在投资产），
+本文件 + 上游 GitHub 仓库共同构成溯源链。
+
+## AnyFIM（免阈值 anytime 调度 + 单边扩展）
+
+- 上游仓库：https://github.com/hap04210384/Anytime-Frequent-Itemset-Mining
+- 版本锁定：commit f2fbd69f1524f0226a0d645fdd8ba4963b09fb87（2026-09-28，与 main HEAD 一致）
+- 本地副本来源：`E:\2025 Paper - Anytime mining\Kimi_work\GitHub_Repo_Package\AnyFIM`（完整 git 检出）
+- B 内位置：`src/engine_anyfim/`（已去除 .git；265 文件中约 1.6 GB 为 FIMI 数据集）
+- 许可证：MIT（仓库 LICENSE）
+
+## TensorFIM（BMMA 张量核位图加速 + wave batching + MD5 验证协议）
+
+- 上游仓库：https://github.com/hap04210384/TensorFIM
+- 版本锁定：commit 706701795c2b6768f37837de3a85465662075252（2026-09-27，与 main HEAD 一致）
+- 本地副本来源：`E:\2026 Tensor Core for FIM\Kimi_work\github_package\TensorFIM`
+- B 内位置：`src/engine_tensorfim/`（已去除 .git；含预编译引擎与 gold 校验集）
+- 许可证：以仓库 LICENSE 文件为准（复现包性质，公开发布前再确认条款）
+
+## 论文对应关系
+
+| 引擎 | 论文 | 状态 |
+|---|---|---|
+| AnyFIM | *Anytime Frequent Itemset Mining: A Threshold-Free Progressive Item-Activation Framework with CPU–GPU Heterogeneous Collaboration* | 在投 |
+| TensorFIM | *TensorFIM: Exact Maximal Frequent Itemset Mining on Tensor Cores*（TKDE 在投） | 在投 |
+| 两引擎的音乐应用 | *Certified-Exact Anytime Mining of Maximal Frequent Patterns on Million-Transaction Symbolic Music…*（EAAI-26-31892） | 在投（A 论文） |
+
+登记日期：2026-10-11。哈希一致性已核对：本地副本 commit == GitHub main HEAD（经 api 树比对）。

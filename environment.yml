@@ -1,0 +1,26 @@
+name: music-replication-detection
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - seaborn
+  - jupyter
+  - tqdm
+  - pyyaml
+  # MIDI I/O 与 MIR（版本待首轮实验锁定后固定）
+  - mido
+  # 以下为占位，安装时按需启用：
+  # - pytorch
+  # - pytorch-cuda=12.1
+  # - pip
+  # - pip:
+  #     - symusic
+  #     - mir_eval
+  #     - basic-pitch        # 转录往返实验（T1 变换⑥）
+  #     - transformers       # MERT 嵌入基线
+  #     - miditok
