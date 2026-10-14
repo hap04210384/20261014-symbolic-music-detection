@@ -189,6 +189,31 @@ def nums():
     e63 = load("e63/cases.jsonl")
     n["e63_pairs"] = sum(1 for _ in (ROOT / "runs/e63/pairs.jsonl")
                          .open(encoding="utf-8"))
+    # e18 full-corpus census (stride-8 survey, extrapolate x8)
+    e18 = load("e18/queries.jsonl")
+    STR = 8
+    agg = {}
+    for kind in ("exact", "sketch"):
+        sub = [r for r in e18 if r["kind"] == kind]
+        n[f"e18_{kind}_queries"] = len(sub)
+        n[f"e18_{kind}_ge40"] = sum(r["n_ge40"] for r in sub) * STR
+        n[f"e18_{kind}_hist"] = [sum(r["hist"][i] for r in sub) * STR
+                                 for i in range(4)]
+        m = [r["ms"] for r in sub]
+        n[f"e18_{kind}_p50"] = float(np.percentile(m, 50))
+        n[f"e18_{kind}_p95"] = float(np.percentile(m, 95))
+    n["e18_rel35"] = (sum(n["e18_exact_hist"]) +
+                      sum(n["e18_sketch_hist"]))
+    # e19f precision audit
+    s19 = json.loads((ROOT / "runs/e19/e18_pairs/summary.json")
+                     .read_text(encoding="utf-8"))
+    for key, st in s19["per_stratum"].items():
+        n[f"e19f_{key}_p"] = st["precision"]
+        n[f"e19f_{key}_lo"] = st["lo"]
+        n[f"e19f_{key}_hi"] = st["hi"]
+        n[f"e19f_{key}_n"] = st["n"]
+    n["e19f_pools"] = s19["pools"]
+    n["e19f_est"] = s19["estimated_confirmed_corpus"]
     return n
 
 
@@ -929,10 +954,15 @@ def build() -> None:
          "full-budget recall; "
          "(4) detection on a controlled memorization spectrum rises "
          f"monotonically to {N['e62_l1'] * 100:.0f}% at full copying; "
-         "and (5) on 1.66 million in-the-wild duplicate pairs the "
-         "system localizes a spliced 30-second segment and recovers a "
-         "+3-semitone transposed cover with exact, score-checkable "
-         "alignment maps.")
+         "and (5) a full-corpus census over 174,300 pieces measures "
+         f"{N['e18_rel35'] / 1e9:.1f} billion candidate pairs at the "
+         "screening operating point, and a stratified audit of the "
+         "high-scoring candidates confirms an estimated "
+         f"{N['e19f_est']['exact_band3'] / 1e3:.0f}k verbatim-level "
+         "duplicate pairs at 90% channel precision, while on "
+         "in-the-wild cases the system localizes a spliced "
+         "30-second segment and recovers a +3-semitone transposed "
+         "cover with exact, score-checkable alignment maps.")
     para(doc,
          "The contributions are: "
          "(1) an architectural decomposition of copy detection into a "
@@ -956,7 +986,13 @@ def build() -> None:
          "fragment-level false positives at 83.9% recall on "
          "style-similar hard negatives, together with a controlled "
          "memorization study showing monotone detection growth and "
-         "96-100% correct source attribution under full copying; and "
+         "96-100% correct source attribution under full copying, "
+         f"together with a full-corpus census over 174,300 pieces that "
+         f"measures {N['e18_rel35'] / 1e9:.1f} billion candidate pairs "
+         "at the screening operating point and, via a stratified "
+         f"adjudication audit, an estimated "
+         f"{N['e19f_est']['exact_band3'] / 1e3:.0f}k verbatim-level "
+         "duplicate pairs at 90% channel precision; and "
          "(5) a fully scripted reproduction release that regenerates "
          "every number, table, and figure in this paper from the raw "
          "corpus download.")
@@ -1518,6 +1554,98 @@ def build() -> None:
           "rejected"]],
         size=8,
         title="TABLE XI. Case-study evidence summary (E6.3).")
+    h2(doc, "C. Full-corpus duplicate census")
+    para(doc,
+         f"Scaling the case-study protocol to the full corpus "
+         f"(174,300 pieces) turns the candidate flood from anecdote "
+         f"into measurement.  Every eighth piece serves as a query "
+         f"against the whole corpus "
+         f"({N['e18_exact_queries']:,} non-trivial queries per "
+         f"channel; all counts extrapolate {8}\u00d7), under the same "
+         f"dual exact/interval-sketch configuration "
+         f"(min-evidence 40, k=0).  Fig. 12(a) shows the candidate "
+         f"population by relative-score band.  At the absolute "
+         f"\u226540-evidence floor the two channels report "
+         f"{N['e18_exact_ge40'] / 1e9:.1f}B (exact) and "
+         f"{N['e18_sketch_ge40'] / 1e9:.1f}B (sketch) candidate "
+         f"pairs; at the case-study operating point "
+         f"(relative \u22650.35) the total is "
+         f"{N['e18_rel35'] / 1e9:.2f}B.  A self-screen of the whole "
+         f"corpus at the observed per-query cost (median "
+         f"{N['e18_exact_p50']:.0f} ms exact, "
+         f"{N['e18_sketch_p50']:.0f} ms sketch, p95 "
+         f"{N['e18_exact_p95']:.0f}/"
+         f"{N['e18_sketch_p95']:.0f} ms; one core) completes in "
+         f"roughly four hours.")
+    para(doc,
+         "How much of this flood is real?  We stored the "
+         "audit-grade subset\u2014exact pairs with relative score "
+         f"\u22650.70 ({N['e19f_pools']['exact_band2'] + N['e19f_pools']['exact_band3']:,} "
+         "after cross-channel dedup) and sketch pairs with relative "
+         f"score \u22650.90 ({N['e19f_pools']['sketch_band3']:,})\u2014and "
+         "adjudicated a stratified random sample (40 pairs per "
+         "stratum) with the Layer-2 chain criterion, run in both "
+         "directions with transposition fallback (Table XII, "
+         "Fig. 12(b)).  The exact channel is a high-precision "
+         f"instrument at the top of its range: {N['e19f_exact_band3_p'] * 100:.0f}% "
+         f"of exact pairs with relative score \u22650.90 are confirmed "
+         "copies (Wilson 95% CI "
+         f"[{N['e19f_exact_band3_lo'] * 100:.0f}, "
+         f"{N['e19f_exact_band3_hi'] * 100:.0f}]%), and even its "
+         f"0.70\u20130.90 band confirms "
+         f"{N['e19f_exact_band2_p'] * 100:.0f}%.  The "
+         "interval-sketch channel stays recall-oriented: only "
+         f"{N['e19f_sketch_band3_p'] * 100:.0f}% of its \u22650.90 "
+         "candidates confirm, so sketch hits should be treated as "
+         "leads for confirmation, not verdicts\u2014exactly the "
+         "division of labor the two-layer architecture encodes.")
+    para(doc,
+         f"Weighting each stratum by its precision, Lakh-full "
+         f"contains on the order of {N['e19f_est']['exact_band3'] / 1e3:.0f}k "
+         f"verbatim-level duplicate pairs (exact \u22650.90), "
+         f"{N['e19f_est']['exact_band2'] / 1e6:.1f}M further pairs "
+         f"in the exact 0.70\u20130.90 band, and "
+         f"{N['e19f_est']['sketch_band3'] / 1e6:.1f}M "
+         f"transposition/arrangement-level pairs reachable through "
+         f"the sketch channel\u2014each a case a publisher would "
+         f"have to adjudicate, and each receiving note-level "
+         f"alignment evidence from the confirmation layer.  These "
+         f"estimates inherit the adjudicator's precision and "
+         f"recall (Section V-C); they are survey estimates from a "
+         f"1/8 sample, not enumerations.")
+    add_emf(doc, "fig8_census", 8.6)
+    caption(doc, "Fig. 12. Full-corpus census (174,300 pieces, stride-8 "
+                 "survey extrapolated \u00d78).  (a) Candidate-pair "
+                 "population by relative-score band and channel (log "
+                 "scale).  (b) Confirmed-copy precision of the stored "
+                 "audit-grade strata, Wilson 95% CI; n=40 per stratum.")
+    three_line_table(doc,
+        ["Channel", "Relative score", "Stored pairs",
+         "Precision % [95% CI]", "Est. confirmed (corpus)"],
+        [["exact", "0.70\u20130.90",
+          f"{N['e19f_pools']['exact_band2']:,}",
+          f"{N['e19f_exact_band2_p'] * 100:.1f} "
+          f"[{N['e19f_exact_band2_lo'] * 100:.1f}, "
+          f"{N['e19f_exact_band2_hi'] * 100:.1f}]",
+          f"{N['e19f_est']['exact_band2'] / 1e6:.2f}M"],
+         ["exact", "\u22650.90",
+          f"{N['e19f_pools']['exact_band3']:,}",
+          f"{N['e19f_exact_band3_p'] * 100:.1f} "
+          f"[{N['e19f_exact_band3_lo'] * 100:.1f}, "
+          f"{N['e19f_exact_band3_hi'] * 100:.1f}]",
+          f"{N['e19f_est']['exact_band3'] / 1e3:.0f}k"],
+         ["sketch", "\u22650.90",
+          f"{N['e19f_pools']['sketch_band3']:,}",
+          f"{N['e19f_sketch_band3_p'] * 100:.1f} "
+          f"[{N['e19f_sketch_band3_lo'] * 100:.1f}, "
+          f"{N['e19f_sketch_band3_hi'] * 100:.1f}]",
+          f"{N['e19f_est']['sketch_band3'] / 1e6:.2f}M"]],
+        size=8,
+        title="TABLE XII. Precision audit of the full-corpus screen: "
+              "stratified sample of 40 pairs per stratum, adjudicated "
+              "by the Layer-2 chain criterion (both directions, "
+              "transposition-aware); confirmed-copy counts "
+              "extrapolate the stride-8 survey.")
 
     # --- VII. discussion --------------------------------------------------------
     h1(doc, "VII. Discussion")
@@ -1547,8 +1675,11 @@ def build() -> None:
          "distributions; the memorization study substitutes a "
          "transparent n-gram/copy operator for an actual trained "
          "generator, isolating detection physics at the price of "
-         "model realism; and the in-the-wild study, while spanning "
-         "1.66 million pairs, examines one corpus lineage. We "
+         "model realism; and the in-the-wild census, while spanning "
+         "the full 174,300-piece corpus, rests on a 1/8 systematic "
+         "sample of queries and a 120-pair adjudication audit whose "
+         "verdicts are automatic (chain criterion), not human, and "
+         "examines one corpus lineage. We "
          "regard the cell-by-cell bound audit and the per-length "
          "hard-negative breakdown as the load-bearing evidence, "
          "because both are exhaustive over their stated domains "
