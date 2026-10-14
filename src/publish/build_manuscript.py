@@ -28,8 +28,14 @@ ROOT = Path(__file__).resolve().parents[2]
 FIGDIR = ROOT / "results/figures"
 OUT = ROOT / "Manuscript.docx"
 
-TITLE = ("Provable-Recall Screening with Structural Confirmation: "
-         "A Two-Layer Copy Detection System for Symbolic Music")
+# Paper title is read from a local, git-ignored file (paper_title.txt) so the
+# public repository stays venue- and title-agnostic; fall back to a neutral
+# placeholder when the file is absent.
+_title_file = Path(__file__).with_name("paper_title.txt")
+if _title_file.exists():
+    TITLE = _title_file.read_text(encoding="utf-8").strip()
+else:
+    TITLE = "[Paper title - set in src/publish/paper_title.txt]"
 AUTHORS = ("Xuemei Li\u00b9, Jianping Deng\u00b9, Meng Huang\u00b2, "
            "Bao Wang\u00b2, and Yalong Zhang\u00b2*")
 AFFIL = ("\u00b9 Faculty of Teacher Education, Quzhou University, "
@@ -599,7 +605,7 @@ def full_width(doc, emit):
 def build() -> None:
     import copy as _copy
     N = nums()
-    # --- load IEEE Transactions template, keep styles & sections ------
+    # --- load two-column Transactions-style template, keep styles & sections
     doc = Document(str(TEMPLATE))
     body = doc.element.body
     sectPrs = list(body.iter(qn("w:sectPr")))
@@ -1412,7 +1418,7 @@ def build() -> None:
     cp.title = TITLE
     cp.subject = "copy detection, symbolic music"
     cp.comments = ""
-    cp.category = "IEEE TETCI submission draft"
+    cp.category = "journal submission draft"
 
     doc.save(OUT)
     print("saved", OUT)

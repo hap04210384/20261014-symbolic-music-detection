@@ -21,8 +21,19 @@ __pycache__/
 /bin/
 /tools/build_anyfim/build/
 
-# 实验运行目录（结果文件经 results/ 汇总后入库，原始 runs 不入库）
-/runs/
+# 实验运行目录：手稿数字来源（jsonl/pkl）按白名单入库；大数据与原始转储不入库
+/runs/*
+!/runs/e1/
+!/runs/e2/
+!/runs/e3/
+!/runs/e4/
+!/runs/e5/
+!/runs/e13/
+!/runs/e14/
+!/runs/e17/
+!/runs/e62/
+!/runs/e63/
+/runs/e63/pairs.jsonl
 
 # 系统
 Thumbs.db
@@ -44,3 +55,12 @@ models/
 
 # 发布副本（解压后的分发包，非源文件）
 /release/
+
+# 内部设计文档与本地配置（含投稿意向，不入公开仓库）
+/docs/B方向顶刊论文设计方案.md
+/docs/selling_points.md
+/src/publish/paper_title.txt
+
+# IEEE 投稿模板（本地资产，版权属 IEEE，不入公开仓库）
+/IEEE-Transactions-Word-templates-and-instructions
+/IEEE-Transactions-Word-templates-and-instructions.zip

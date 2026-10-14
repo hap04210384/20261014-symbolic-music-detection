@@ -1,7 +1,8 @@
 # Reproduction Package
 
-**Paper**: *Provable-Recall Screening with Structural Confirmation: A Two-Layer
-Copy Detection System for Symbolic Music* (submission target: IEEE TETCI)
+Research code and experiment outputs for a two-layer copy detection system
+for symbolic music: a provable-recall tolerant screen plus a strict
+structural confirmation layer.
 
 This archive contains everything needed to reproduce every number, table, and
 figure in the manuscript. Two routes are supported:

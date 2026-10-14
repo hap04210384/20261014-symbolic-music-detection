@@ -1,15 +1,13 @@
-# Provable-Recall Screening with Structural Confirmation for Symbolic Music
+# Copy Detection for Symbolic Music
 
-Code and experiments for the paper **"Provable-Recall Screening with Structural
-Confirmation: A Two-Layer Copy Detection System for Symbolic Music"**
-(submission target: IEEE Transactions on Emerging Topics in Computational
-Intelligence).
+Research code and experiments for a **two-layer copy detection system for
+symbolic music (MIDI and its derivatives)**.
 
-Given a corpus of symbolic music (MIDI and its derivatives) and a query — a new
-submission, a generated sample, or a suspected infringement — the system finds
-every piece that shares a substantially copied span with the query, ranks the
-candidates, and returns note-level alignment evidence that a human adjudicator
-can check against a score. It combines:
+Given a corpus of symbolic music and a query — a new submission, a generated
+sample, or a suspected infringement — the system finds every piece that
+shares a substantially copied span with the query, ranks the candidates, and
+returns note-level alignment evidence that a human adjudicator can check
+against a score. It combines:
 
 - **L1, a tolerant item-set screen** with a *provable* per-query recall
   contract: an evidence lower bound, verified cell by cell on 337 adversarial
