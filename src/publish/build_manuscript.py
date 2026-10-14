@@ -19,7 +19,7 @@ from xml.sax.saxutils import escape as xesc
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import parse_xml
-from docx.oxml.ns import qn
+from docx.oxml.ns import qn, nsdecls
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.opc.part import Part
 from docx.opc.packuri import PackURI
@@ -612,13 +612,117 @@ SECT_1COL = [None]
 SECT_2COL = [None]
 
 
-def switch_to(doc, sect_el):
+def switch_to(doc, sect_el, before=None, after=None):
     """End the current section with a continuous break carrying
-    sect_el's properties (1-col or 2-col)."""
+    sect_el's properties (1-col or 2-col).
+
+    before/after (points) plus a 9-pt paragraph mark reproduce the
+    spacing of the template's section-break paragraph; when omitted the
+    break paragraph stays neutral (used around full-width floats).
+    """
     import copy as _copy
     p = doc.add_paragraph()
+    if before is not None:
+        p.paragraph_format.space_before = Pt(before)
+    if after is not None:
+        p.paragraph_format.space_after = Pt(after)
     pPr = p._p.get_or_add_pPr()
+    if before is not None or after is not None:
+        pPr.append(parse_xml('<w:rPr %s><w:sz w:val="18"/></w:rPr>'
+                             % nsdecls("w")))
     pPr.append(_copy.deepcopy(sect_el))
+
+
+def spacer(doc, before=None, after=None):
+    """Empty spacer paragraph with a 9-pt mark, as between the template's
+    title/authors blocks."""
+    p = doc.add_paragraph()
+    if before is not None:
+        p.paragraph_format.space_before = Pt(before)
+    if after is not None:
+        p.paragraph_format.space_after = Pt(after)
+    pPr = p._p.get_or_add_pPr()
+    pPr.append(parse_xml('<w:rPr %s><w:sz w:val="18"/></w:rPr>'
+                         % nsdecls("w")))
+
+
+# ------------------------------------------------------------- 2) footnotes
+def _fn_para(runs):
+    """One footnote paragraph, 8 pt, first-line indent 202 twips, justified,
+    no borders -- replicating the Transactions template footnote format.
+
+    runs: list of (text, italic) tuples.
+    """
+    from docx.oxml.ns import nsdecls
+    rxml = ""
+    for text, italic in runs:
+        i = "<w:i/>" if italic else ""
+        rxml += ('<w:r><w:rPr>%s<w:sz w:val="16"/></w:rPr>'
+                 '<w:t xml:space="preserve">%s</w:t></w:r>'
+                 % (i, xesc(text)))
+    return ('<w:p %s><w:pPr><w:keepLines/><w:pBdr>'
+            '<w:top w:val="nil"/><w:left w:val="nil"/>'
+            '<w:bottom w:val="nil"/><w:right w:val="nil"/></w:pBdr>'
+            '<w:spacing w:before="0" w:after="0" w:line="240" '
+            'w:lineRule="auto"/>'
+            '<w:ind w:firstLine="202"/><w:jc w:val="both"/>'
+            '<w:rPr><w:sz w:val="16"/></w:rPr></w:pPr>%s</w:p>'
+            % (nsdecls("w"), rxml))
+
+
+def add_affiliation_footnote(doc):
+    """Append the received-date / funding / affiliations footnote to the
+    template's footnotes part (IEEE style: first-page footnote, no
+    end-of-paper Acknowledgment). Returns the footnote id."""
+    from lxml import etree
+    from docx.oxml.ns import nsdecls
+    part = None
+    for pp in doc.part.package.parts:
+        if str(pp.partname).endswith("/footnotes.xml"):
+            part = pp
+            break
+    assert part is not None, "footnotes.xml part not found in template"
+    root = etree.fromstring(part.blob)
+    fid = max(int(fn.get(qn("w:id")))
+              for fn in root.findall(qn("w:footnote"))) + 1
+    paras = [
+        _fn_para([
+            ("Manuscript received [month] [day], 2026; revised [month] "
+             "[day], 2026; accepted [month] [day], 2026. ", False),
+            (ACK + " ", False),
+            ("(Corresponding author: Yalong Zhang, e-mail: "
+             "[to be added]).", True),
+        ]),
+        _fn_para([
+            ("Xuemei Li and Jianping Deng are with the Faculty of Teacher "
+             "Education, Quzhou University, Quzhou 324000, China "
+             "(e-mail: [to be added]).", False),
+        ]),
+        _fn_para([
+            ("Meng Huang, Bao Wang, and Yalong Zhang are with the College "
+             "of Electrical and Information Engineering, Quzhou University, "
+             "Quzhou 324000, China.", False),
+        ]),
+    ]
+    fn = parse_xml('<w:footnote %s w:id="%d">%s</w:footnote>'
+                   % (nsdecls("w"), fid, "".join(paras)))
+    root.append(fn)
+    part._blob = etree.tostring(root, xml_declaration=True,
+                                encoding="UTF-8", standalone=True)
+    return fid
+
+
+def footnote_ref_para(doc, fid):
+    """9-pt empty paragraph carrying the footnote reference, inserted at the
+    top of the two-column section (mirrors the template)."""
+    from docx.oxml.ns import nsdecls
+    p = parse_xml(
+        '<w:p %s><w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:pPr>'
+        '<w:r><w:rPr><w:sz w:val="18"/></w:rPr>'
+        '<w:footnoteReference w:id="%d"/></w:r></w:p>'
+        % (nsdecls("w"), fid))
+    body = doc.element.body
+    body.find(qn("w:sectPr")).addprevious(p)
 
 
 def tabletitle(doc, label, title):
@@ -655,48 +759,34 @@ def build() -> None:
     # --- front matter (one column) -------------------------------------
     p = doc.add_paragraph(style="Title")
     p.add_run(TITLE)
-    doc.add_paragraph()  # spacer, as in the template
+    spacer(doc)  # spacer, as in the template
 
     p = doc.add_paragraph(style="Authors")
     for i, (name, mark) in enumerate([
             ("Xuemei Li", "1"), ("Jianping Deng", "1"),
             ("Meng Huang", "2"), ("Bao Wang", "2"),
-            ("Yalong Zhang", "2*")]):
+            ("Yalong Zhang", "2")]):
         if i:
             p.add_run(", " if i < 4 else ", and ")
         p.add_run(name)
         r = p.add_run(mark)
         r.font.superscript = True
-    doc.add_paragraph()  # spacer
+    spacer(doc, after=16)
 
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    for i, line in enumerate(AFFIL.split("\n")):
-        if i:
-            p.add_run().add_break()
-        r = p.add_run(line)
-        r.font.size = Pt(9)
-
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run("*Corresponding author: Yalong Zhang (e-mail: "
-                  "[to be added]).")
-    r.font.size = Pt(9)
-
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run("Manuscript received [month] [day], 2026; revised "
-                  "[month] [day], 2026; accepted [month] [day], 2026.")
-    r.font.size = Pt(9)
+    # affiliations, funding and the corresponding-author note go to a
+    # first-page footnote, as the IEEE Transactions template requires
+    fid = add_affiliation_footnote(doc)
 
     # continuous section break: as in the IEEE authoring template,
     # the abstract and index terms sit in the two-column section
     # (top of the left column)
-    switch_to(doc, SECT_1COL[0])
+    switch_to(doc, SECT_1COL[0], before=1, after=16)
+    footnote_ref_para(doc, fid)
 
     # --- abstract / index terms (two-column) --------------------- ----------------------------------------
     p = doc.add_paragraph(style="Normal")
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p.paragraph_format.space_before = Pt(1)
     r = p.add_run("Abstract\u2014")
     r.bold = True
     r2 = p.add_run(
@@ -1435,9 +1525,7 @@ def build() -> None:
          "contiguity threshold, and recall guarantees under "
          "transformations outside the current tolerance envelope.")
 
-    # --- acknowledgements / references --------------------------------------------
-    h1(doc, "Acknowledgment")
-    para(doc, ACK, indent=0)
+    # --- references (funding note lives in the first-page footnote) ---------------
     p = doc.add_paragraph(style="Reference Head")
     p.add_run("References")
     for i, ref in enumerate(REFERENCES, 1):
