@@ -133,6 +133,11 @@ REFERENCES = [
  "2024.",
  "S. Stober and T. W. Dornis, \u201cGenerative AI training and copyright "
  "law,\u201d arXiv preprint arXiv:2502.15858, 2025.",
+ "Y. Zhang et al., \u201cAnytime frequent itemset mining: A threshold-free "
+ "progressive item-activation framework with CPU\u2013GPU heterogeneous "
+ "collaboration,\u201d under review.",
+ "Y. Zhang et al., \u201cTensorFIM: Exact maximal frequent itemset mining "
+ "on tensor cores,\u201d under review.",
 ]
 
 # ---------------------------------------------------------------- numbers
@@ -158,11 +163,13 @@ def nums():
                        if r["donor_score"] < r["bound"])
     n["e2_n"] = len(e2)
     e3 = [r for r in load("e3/anytime.jsonl") if r["length_s"] == 16]
-    def rem(order):
-        sub = [r for r in e3 if r["order"] == order and r["fraction"] == 0.5]
+    def rem(order, frac):
+        sub = [r for r in e3 if r["order"] == order
+               and r["fraction"] == frac]
         return float(np.mean([r["n_hits"] + r["remaining_bound"] for r in sub]))
-    n["e3_rare"], n["e3_rand"], n["e3_hot"] = (rem("rare"), rem("random"),
-                                                rem("hot"))
+    n["e3_rare"], n["e3_rand"], n["e3_hot"] = (rem("rare", 0.7),
+                                                rem("random", 0.7),
+                                                rem("hot", 0.7))
     e7 = load("e17/cascade.jsonl")
     ret = lambda c: float(np.mean([r["retention"][str(c)] for r in e7]))
     n["e7_ret20"], n["e7_ret50"] = ret(20), ret(50)
@@ -916,9 +923,10 @@ def build() -> None:
          "top of the screen cuts the false-positive rate to 2.1% at "
          "83.9% recall under transcription noise, meeting the "
          "<5% screening requirement of a decision-support tool; "
-         "(3) the screen's rare-first schedule keeps the open-candidate "
-         f"bound {N['e3_hot'] / N['e3_rare']:.0f}\u00d7 cleaner than a "
-         "hot-first schedule at half budget; "
+         "(3) the screen's rare-first schedule tightens the certified "
+         f"open-candidate bound by {N['e3_hot'] / N['e3_rare']:.1f}\u00d7 "
+         "over a hot-first schedule at 70% budget, with identical "
+         "full-budget recall; "
          "(4) detection on a controlled memorization spectrum rises "
          f"monotonically to {N['e62_l1'] * 100:.0f}% at full copying; "
          "and (5) on 1.66 million in-the-wild duplicate pairs the "
@@ -938,8 +946,10 @@ def build() -> None:
          "noise model, auditable cell by cell on 337 adversarial cells "
          "with zero violations; "
          "(3) an anytime schedule analysis showing that rare-first "
-         "processing keeps the open-candidate bound an order of "
-         "magnitude cleaner than hot-first at half budget, turning an "
+         "processing tightens the certified open-candidate bound over "
+         "hot-first under partial budgets (by "
+         f"{N['e3_hot'] / N['e3_rare']:.1f}\u00d7 at 70% budget) and that "
+         "the bound is computable after any schedule prefix, turning an "
          "engineering heuristic into a schedulable guarantee; "
          "(4) a strict-tolerance ordered-chain confirmation layer that "
          "outputs note-level alignment evidence, reaching 2.1% "
@@ -1122,8 +1132,8 @@ def build() -> None:
          "ordering greedily minimizes the growth of |O_u|, because a "
          "rare position eliminates, in expectation, the largest "
          "fraction of currently open pieces per unit of budget; "
-         "Section V-C quantifies the resulting 16\u00d7 gap against "
-         "hot-first processing.")
+         "Section V-C quantifies the resulting gap in the certified "
+         "bound against hot-first processing.")
     para(doc,
          "Complexity. Index construction is O(\u03a3_P |S(P)|). A "
          "query touches, per position, the posting lists of all "
@@ -1207,9 +1217,15 @@ def build() -> None:
          "duration-weighted pitch-class histogram are collected as a "
          "negative pool; pairs whose verbatim evidence against the "
          "whole donor exceeds 30 items are removed as true duplicates. "
+         "Fragments whose extracted span, or whose encoded item set, "
+         "contains fewer than 8 notes or items are skipped, so the "
+         "valid-fragment count differs slightly between experiment "
+         "generations (238 in screening, 236 in confirmation, 233 in "
+         "the cascade suite). "
          "Baselines. Set-Jaccard corpus scan, SIATEC-family pattern "
          "discovery [2], and n-gram Jaccard (Section V-A); FIM engines "
-         "from our prior work serve as enumeration baselines.")
+         "from our prior work [31], [32] serve as enumeration "
+         "baselines.")
     para(doc,
          "Environment. All experiments run on a single commodity "
          "workstation (12th-generation Intel Core i9, 128 GB RAM) in "
@@ -1230,7 +1246,7 @@ def build() -> None:
          ["Screen tolerance k", "(2, 1, 1)",
           "pitch \u00b12 st; duration/IOI \u00b11 bin; velocity "
           "\u00b11 bin"],
-         ["Evidence threshold \u03c4", "\u23080.5\u00b7|S(q)|\u2309",
+         ["Evidence threshold \u03c4", "\u230a0.5\u00b7|S(q)|\u230b",
           "screen acceptance per query"],
          ["Confirm tolerance", "(1, 0, 0)",
           "pitch \u00b11 st; duration/IOI/velocity exact bins"],
@@ -1255,7 +1271,8 @@ def build() -> None:
          "baseline, is already 20\u00d7 slower than the screen at 10k "
          "pieces (238 ms vs. 12 ms p50) and infeasible beyond it. "
          "Corpus-side FIM "
-         "enumeration\u2014our own prior engines\u2014was measured "
+         "enumeration\u2014the engines of our previous work "
+         "[31], [32]\u2014was measured "
          "infeasible at the support levels copying detection requires "
          "(over 11 million frequent pairs at N=300 under the standard "
          "cutoff), which is precisely why the architecture places FIM "
@@ -1308,24 +1325,34 @@ def build() -> None:
                  "lower bound, 337 adversarial cells; zero violations.")
     h2(doc, "C. Anytime behaviour")
     para(doc,
-         f"Fig. 5 shows the open-candidate bound as the rare-first "
+         "Fig. 5 shows the open-candidate bound as the rare-first "
          "schedule consumes its budget on 16-second spans, and "
-         "Table V quantifies all three schedules. At half "
-         f"budget, rare-first keeps {N['e3_rare']:.1f} candidates open "
+         "Table V quantifies all three schedules. Early in the "
+         "schedule the bound is vacuous by construction: after few "
+         "positions every piece of the 1,000-piece corpus can still "
+         "reach the threshold, and the certified open set is the "
+         "whole corpus (1000.0 for all schedules through 50% "
+         "budget). Discrimination emerges late: at 70% budget "
+         f"rare-first certifies {N['e3_rare']:.1f} open candidates "
          f"versus {N['e3_rand']:.1f} (random) and {N['e3_hot']:.1f} "
-         "(hot-first); donor recovery at full budget is 100% under all "
-         "orders, confirming that the scheduling advantage is bound "
-         "quality, not recall.")
+         "(hot-first), and at full budget all schedules converge to "
+         "the same open set with 100% donor recovery \u2014 the "
+         "scheduling advantage is bound quality, not recall. The "
+         "operational value of the anytime contract is the certified "
+         "open set itself, available after any prefix: a screening "
+         "queue can trade the bound against throughput, and an audit "
+         "can stop early without losing a certified answer.")
     add_emf(doc, "fig3_anytime", 8.0)
     caption(doc, "Fig. 5. Open-candidate bound versus processed budget "
-                 "for three schedules; 16 s spans.")
+                 "for three schedules; 16 s spans, 1,000-piece corpus.")
     three_line_table(doc,
         ["Budget", "Rare-first open", "Random open", "Hot-first open",
          "Donor recovery (%)"],
         e3_table_rows(), size=8,
-        title="TABLE V. Anytime schedules on 16 s spans: mean "
-              "open-candidate bound (hits plus remaining bound) and "
-              "donor recovery per budget fraction.")
+        title="TABLE V. Anytime schedules on 16 s spans over a "
+              "1,000-piece corpus: mean open-candidate bound (hits "
+              "plus remaining bound) and donor recovery per budget "
+              "fraction.")
     h2(doc, "D. The key negative result: screening is not deciding")
     para(doc,
          "On the hard-negative pools, the tolerant screen alone "
@@ -1338,7 +1365,11 @@ def build() -> None:
          "length. This is a property of item-level "
          "encodings\u2014pop repertoire shares large amounts of "
          "grid-quantized material\u2014and it motivates the "
-         "confirmation layer.")
+         "confirmation layer. Sample sizes are small (238 fragments; "
+         "95% half-width \u2248 1.8 pp near 2% incidence and \u2248 6.3 "
+         "pp near 50%), so we treat single-percentage-point "
+         "differences as ties and rely on margins larger than the "
+         "half-width.")
     full_width(doc, lambda: (add_emf(doc, "fig_e13_margins", 16.0),
                              caption(doc, "Fig. 6. Donor score margin "
                                          "(donor minus best non-donor) "
@@ -1357,7 +1388,7 @@ def build() -> None:
     para(doc,
          f"Strict-tolerance chain confirmation reaches a 2.1% "
          f"fragment-level false-positive rate at 83.9% recall "
-         f"(\u03c1=0.5), and 7.2% at 98.3% recall (\u03c0=0.4); "
+         f"(\u03c1=0.5), and 7.2% at 98.3% recall (\u03c1=0.4); "
          f"Table VII and Fig. 7 map the full recall/FP trade-off "
          f"over three anchor-tolerance regimes and four contiguity "
          f"thresholds. "
@@ -1386,7 +1417,8 @@ def build() -> None:
     three_line_table(doc,
         ["Layer / system", "Recall", "Fragment-level FP", "Contract"],
         [["L1 tolerant screen", "100%",
-          "92.7% (t=0.5|q|); no threshold reaches <50%",
+          "92.7% (\u03c4 = \u230a0.5\u00b7|S(q)|\u230b); no threshold "
+          "reaches <50%",
           "provable recall + anytime bound"],
          ["L2 verbatim rank (top-1)", "58.8% top-1 / 93.7% top-20",
           "22.3%", "no guarantee; per-corpus tuning"],
