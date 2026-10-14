@@ -689,7 +689,12 @@ def build() -> None:
                   "[month] [day], 2026; accepted [month] [day], 2026.")
     r.font.size = Pt(9)
 
-    # --- abstract / index terms ----------------------------------------
+    # continuous section break: as in the IEEE authoring template,
+    # the abstract and index terms sit in the two-column section
+    # (top of the left column)
+    switch_to(doc, SECT_1COL[0])
+
+    # --- abstract / index terms (two-column) --------------------- ----------------------------------------
     p = doc.add_paragraph(style="Normal")
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     r = p.add_run("Abstract\u2014")
@@ -729,9 +734,6 @@ def build() -> None:
     r2 = p.add_run("Anytime algorithms, copyright, music information "
                    "retrieval, plagiarism screening, symbolic music.")
     r2.bold = False
-
-    # continuous break into the two-column body
-    switch_to(doc, SECT_1COL[0])
 
     # --- I. introduction ----------------------------------------------------
     h1(doc, "I. Introduction")
