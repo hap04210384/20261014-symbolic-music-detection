@@ -74,7 +74,7 @@ def _fig1_draw() -> None:
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     ax.axis("off")
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 58)
+    ax.set_ylim(1.4, 58)
 
     GREEN, GREEN_DK = "#0e5c45", "#093f30"
     AMBER, AMBER_DK = "#c1761a", "#9a5c12"
@@ -375,12 +375,6 @@ def _fig1_draw() -> None:
           lw=1.5)
     arrow((XC + WC / 2, YB_ - 0.2), (XC + WC / 2, 7.2), color=AMBER,
           lw=1.5)
-
-    # ================= legend =============================================
-    arrow((31.5, 1.1), (35.5, 1.1), lw=1.4)
-    txt(36.3, 1.1, "data flow", fs=6.0, c=INK)
-    arrow((52.5, 1.1), (56.5, 1.1), color=AMBER, lw=1.5)
-    txt(57.3, 1.1, "guarantee · evidence", fs=6.0, c=INK)
 
     save(fig, "fig1_architecture")
 
