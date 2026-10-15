@@ -763,7 +763,7 @@ def fig2_scaling() -> None:
     n = [r["n_pieces"] for r in rows]
     build = [r["ours"]["build_secs"] for r in rows]
     p50 = [r["ours"]["query_p50_ms"] for r in rows]
-    fig, ax = plt.subplots(figsize=(3.5, 2.6))
+    fig, ax = plt.subplots(figsize=(3.5, 2.34))
     ax.plot(n, build, "o-", ms=3.5, lw=1, color="#1f5fb4",
             label="index build (s)")
     ax.plot(n, p50, "s--", ms=3.5, lw=1, color="#c0392b",
@@ -895,20 +895,15 @@ def fig5_cascade() -> None:
             seen.add(fam)
         else:
             ax.plot(fp, rec, mk, ms=6, color=c, ls="None")
-        if fam == "cascade":
-            part = lab.split()
-            if part[2] == "r=0.5":
-                ax.annotate(f"{part[1]}, \u03c1=0.5", (fp, rec),
-                            textcoords="offset points", xytext=(6, -11),
-                            fontsize=7.5)
-            if part[1] == "C=50" and part[2] == "r=0.5":
-                ax.scatter([fp], [rec], s=140, facecolors="none",
-                           edgecolors="#1f5fb4", lw=1.4, zorder=5)
-                ax.annotate("adopted cascade\noperating point", (fp, rec),
-                            textcoords="offset points", xytext=(-8, 12),
-                            fontsize=7.5, color="#1f5fb4", ha="right",
-                            arrowprops=dict(arrowstyle="->", color="#1f5fb4",
-                                            lw=0.8))
+        if fam == "cascade" and lab == "cascade C=50 r=0.5":
+            ax.scatter([fp], [rec], s=140, facecolors="none",
+                       edgecolors="#1f5fb4", lw=1.4, zorder=5)
+            ax.annotate("adopted cascade operating point\n"
+                        "C = 50, \u03c1 = 0.5 (Table VIII)", (fp, rec),
+                        xytext=(0.48, 0.52), textcoords="data",
+                        fontsize=7.5, color="#1f5fb4",
+                        arrowprops=dict(arrowstyle="->", color="#1f5fb4",
+                                        lw=0.8))
     ax.set_xlabel("fragment-level false-positive rate")
     ax.set_ylabel("donor recall")
     ax.set_xlim(-0.03, 1.03)
@@ -953,15 +948,16 @@ def fig6_memorization() -> None:
     ax.set_xticks(x, [str(l) for l in lambdas])
     ax.set_xlabel("copy probability lambda")
     ax.set_ylabel("detection rate")
-    ax.set_ylim(0, 1.09)
+    ax.set_ylim(0, 1.28)
     ax.grid(True, axis="y", lw=0.3, alpha=0.4)
-    ax.legend(loc="upper left")
+    ax.legend(loc="upper left", fontsize=7, handlelength=1.3,
+              borderpad=0.3, labelspacing=0.25)
     ax.set_title("memorization spectrum, 750 generated pieces")
     # narrative: the lambda = 0 band is style-level structure, not copying
-    ax.text(0.02, 0.60, "\u03bb = 0 band: style-level shared structure,\n"
+    ax.text(0.02, 0.66, "\u03bb = 0 band: style-level shared structure,\n"
             "attributed to the true source in only\n2\u20134% of cases "
             "(Table XI)", transform=ax.transAxes, fontsize=7.5,
-            color="#5c6569", va="center")
+            color="#5c6569", va="top")
     save(fig, "fig6_memorization")
 
 
@@ -1177,16 +1173,25 @@ def fig_e14_rho() -> None:
         curves[key] = (fp, rec)
         ax.plot(fp, rec, marker=marker, ms=3.5, lw=1, color=color,
                 label=label)
-        for rho, x, y in zip(("0.3", "0.4", "0.5", "0.6"), fp, rec):
+        for i, (rho, x, y) in enumerate(
+                zip(("0.3", "0.4", "0.5", "0.6"), fp, rec)):
+            if key == "mid" and rho == "0.5":
+                continue  # covered by the adopted-point annotation below
+            if i == 3:
+                off, ha = (4, 4), "left"      # leftmost-low point: above
+            elif i % 2 == 0:
+                off, ha = (4, -14), "left"    # below-right
+            else:
+                off, ha = (-6, -14), "right"  # below-left
             ax.annotate(rho, (x, y), textcoords="offset points",
-                        xytext=(4, 3), fontsize=7.5, color=color)
+                        xytext=off, fontsize=7.5, color=color, ha=ha)
     # narrative: ring the adopted operating point (mid tolerance, rho=0.5)
     fx, fy = curves["mid"]
     ax.scatter([fx[2]], [fy[2]], s=120, facecolors="none",
                edgecolors="#c0392b", lw=1.3, zorder=5)
     ax.annotate("adopted: mid anchors,\n\u03c1 = 0.5 (Table VII)",
-                (fx[2], fy[2]), textcoords="offset points",
-                xytext=(-6, -20), fontsize=7.5, color="#c0392b", ha="right",
+                (fx[2], fy[2]), xytext=(22, 58), textcoords="data",
+                fontsize=7.5, color="#c0392b",
                 arrowprops=dict(arrowstyle="->", color="#c0392b", lw=0.8))
     ax.set_xlabel("fragment-level FP (%)", fontsize=7.5)
     ax.set_ylabel("donor recall (%)", fontsize=7.5)
@@ -1280,6 +1285,16 @@ def fig_e20_lsh() -> None:
     with the LSH operating thresholds; (b) recall of the three band
     configurations versus the tolerant screen on the same 337 cells."""
     rows = load("e20/matrix.jsonl")
+
+    # display-size normalization: 9.6in canvas displayed at 16cm shrinks
+    # fonts x0.656 vs the 3.5in reference; scale all fonts x1.371 back.
+    _saved_rc = {k: plt.rcParams[k] for k in (
+        "font.size", "axes.titlesize", "axes.labelsize",
+        "legend.fontsize", "xtick.labelsize", "ytick.labelsize")}
+    plt.rcParams.update({
+        "font.size": 11.6, "axes.titlesize": 12.3,
+        "axes.labelsize": 11.6, "legend.fontsize": 10.3,
+        "xtick.labelsize": 10.3, "ytick.labelsize": 10.3})
     fig, axes = plt.subplots(1, 2, figsize=(9.6, 2.34))
 
     dj = [r["donor_jaccard"] for r in rows if r.get("rpb", 8) == 8]
@@ -1287,20 +1302,20 @@ def fig_e20_lsh() -> None:
     ax.hist(dj, bins=np.linspace(0, 1, 51), color="#1f5fb4", alpha=0.75,
             edgecolor="white", lw=0.3)
     ax.axvline(0.10, color="#c0392b", ls="--", lw=1.2)
-    ax.text(0.105, ax.get_ylim()[1] * 0.93, "tau = 0.10",
-            fontsize=7.5, color="#c0392b")
+    ax.text(0.108, ax.get_ylim()[1] * 0.97, "\u03c4 = 0.10",
+            fontsize=10.3, color="#c0392b")
     ax.axvline(0.05, color="#e67e22", ls=":", lw=1.2)
-    ax.text(0.055, ax.get_ylim()[1] * 0.80, "tau = 0.05",
-            fontsize=7.5, color="#e67e22")
+    ax.text(0.046, ax.get_ylim()[1] * 0.80, "\u03c4 = 0.05",
+            fontsize=10.3, color="#e67e22", ha="right")
     # narrative: where the donor mass actually sits
     pct_low = np.mean(np.array(dj) < 0.10) * 100
     ax.text(0.62, ax.get_ylim()[1] * 0.62,
             f"{pct_low:.0f}% of donors score\nbelow \u03c4 = 0.10:\n"
-            "LSH must starve or flood", fontsize=7.5, color="#26425a")
-    ax.set_xlabel("donor set-Jaccard (337 planted cells)", fontsize=8.5)
-    ax.set_ylabel("cells", fontsize=8.5)
+            "LSH must starve or flood", fontsize=10.3, color="#26425a")
+    ax.set_xlabel("donor set-Jaccard (337 planted cells)", fontsize=11.6)
+    ax.set_ylabel("cells", fontsize=11.6)
     ax.set_title("(a) a contained span scores Jaccard ~0.1 at best",
-                 fontsize=9)
+                 fontsize=12.3)
     ax.grid(True, lw=0.3, alpha=0.4)
 
     ax = axes[1]
@@ -1317,28 +1332,30 @@ def fig_e20_lsh() -> None:
                     / len(sub) * 100)
     x = np.arange(len(labels))
     ax.bar(x - 0.2, dics, width=0.38, color="#7f8c8d",
-           label="donor in candidate set")
+           label="in candidate set")
     ax.bar(x + 0.2, hits, width=0.38, color="#8e44ad",
-           label="donor confirmed (Jaccard >= tau)")
+           label="donor confirmed (Jaccard \u2265 \u03c4)")
     ax.axhline(99.1, color="#1f5fb4", ls="--", lw=1.2)
-    ax.text(2.45, 96, "tolerant screen:\n334/337 = 99.1%",
-            fontsize=7.5, color="#1f5fb4", ha="right", va="top")
+    ax.text(0.55, 71, "tolerant screen:\n334/337 = 99.1%",
+            fontsize=10.3, color="#1f5fb4", va="top")
     # narrative: the gray-purple gap is candidates without confirmation
     gap = float(np.mean(np.array(dics) - np.array(hits)))
     ax.text(0.02, 0.30, f"gray \u2212 purple gap:\nflooded candidates\n"
-            f"(mean {gap:.0f} pp)", transform=ax.transAxes, fontsize=7.5,
+            f"(mean {gap:.0f} pp)", transform=ax.transAxes, fontsize=10.3,
             color="#5c6569", va="center")
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=7.5)
-    ax.set_ylabel("% of 337 cells", fontsize=8.5)
+    ax.set_xticklabels(["16\u00d78 bands\n\u03c4 = 0.10",
+                        "2\u00d764 bands\n\u03c4 = 0.10",
+                        "1\u00d7128 bands\n\u03c4 = 0.05"], fontsize=10.3)
+    ax.set_ylabel("% of 337 cells", fontsize=11.6)
     ax.set_ylim(0, 112)
     ax.set_title("(b) band tuning trades starvation for flooding",
-                 fontsize=9)
-    ax.legend(fontsize=7.5, loc="upper left")
+                 fontsize=12.3)
+    ax.legend(fontsize=10.3, loc="upper left")
     ax.grid(True, lw=0.3, alpha=0.4)
-    ax.tick_params(labelsize=7.5)
+    ax.tick_params(labelsize=10.3)
+    plt.rcParams.update(_saved_rc)
     save(fig, "fig_e20_lsh")
-
 
 # ---------------------------------------------------------------- fig 14
 def fig_e21_memorization() -> None:
@@ -1349,7 +1366,18 @@ def fig_e21_memorization() -> None:
     cal = load("e21/calibration.jsonl")
     mem = load("e21/memorization.jsonl")
     e62 = load("e62/memorization.jsonl")
-    fig, axes = plt.subplots(1, 3, figsize=(9.6, 2.6))
+
+    # display-size normalization: 9.6in canvas displayed at 16cm shrinks
+    # fonts x0.656 vs the 3.5in reference; scale all fonts x1.371 back.
+    _saved_rc = {k: plt.rcParams[k] for k in (
+        "font.size", "axes.titlesize", "axes.labelsize",
+        "legend.fontsize", "xtick.labelsize", "ytick.labelsize")}
+    plt.rcParams.update({
+        "font.size": 11.6, "axes.titlesize": 12.3,
+        "axes.labelsize": 11.6, "legend.fontsize": 10.3,
+        "xtick.labelsize": 10.3, "ytick.labelsize": 10.3})
+    fig, axes = plt.subplots(1, 3, figsize=(9.6, 2.78),
+                             width_ratios=[1, 1, 1.08])
 
     ax = axes[0]
     ep = [r["epoch"] for r in log]
@@ -1357,11 +1385,11 @@ def fig_e21_memorization() -> None:
             color="#1f5fb4", label="train (250 pieces)")
     ax.plot(ep, [r["val_loss"] for r in log], "-", lw=1,
             color="#c0392b", label="held-out (50 pieces)")
-    ax.set_xlabel("epoch", fontsize=8.5)
-    ax.set_ylabel("4-field next-event loss (nats)", fontsize=8.5)
+    ax.set_xlabel("epoch", fontsize=11.6)
+    ax.set_ylabel("4-field next-event loss (nats)", fontsize=11.6)
     ax.set_title("(a) overfitting is real: the gap is memorization",
-                 fontsize=9)
-    ax.legend(fontsize=7.5)
+                 fontsize=12.3)
+    ax.legend(fontsize=10.3)
     ax.grid(True, lw=0.3, alpha=0.4)
 
     ax = axes[1]
@@ -1371,16 +1399,16 @@ def fig_e21_memorization() -> None:
         ax.plot([r["loss"] for r in sub],
                 [r["pos_pitch_acc"] * 100 for r in sub], mk, ms=4,
                 color=c, label=f"{split} source")
-    ax.set_xlabel("per-piece held likelihood (nats)", fontsize=8.5)
-    ax.set_ylabel("position-wise pitch agreement (%)", fontsize=8.5)
-    ax.set_title("(b) memorized is not regurgitated", fontsize=9)
-    ax.legend(fontsize=7.5)
+    ax.set_xlabel("per-piece held likelihood (nats)", fontsize=11.6)
+    ax.set_ylabel("position-wise pitch agreement (%)", fontsize=11.6)
+    ax.set_title("(b) memorized is not regurgitated", fontsize=12.3)
+    ax.legend(fontsize=10.3)
     ax.grid(True, lw=0.3, alpha=0.4)
 
     ax = axes[2]
     l0 = [r for r in e62 if r["cell"] == "m8_l0.0"]
     l1 = [r for r in e62 if r["cell"] == "m8_l1.0"]
-    labels = ["E6.2\nlambda=0", "E6.2\nlambda=1", "E6.4\nmemorized",
+    labels = ["E6.2\n\u03bb = 0", "E6.2\n\u03bb = 1", "E6.4\nmemorized",
               "E6.4\ncontrol", "E6.4\nrandom"]
     det = [np.mean([r["confirmed"] for r in l0]) * 100,
            np.mean([r["confirmed"] for r in l1]) * 100]
@@ -1395,14 +1423,18 @@ def fig_e21_memorization() -> None:
     ax.bar(x + 0.2, src, width=0.38, color="#8e44ad",
            label="source-attributed")
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=7.5)
-    ax.set_ylabel("% of samples", fontsize=8.5)
-    ax.set_title("(c) detector view: the lambda = 0 band", fontsize=9)
-    ax.legend(fontsize=7.5)
+    ax.set_xticklabels(labels, fontsize=10.3)
+    ax.set_ylabel("% of samples", fontsize=11.6)
+    ax.set_title("(c) detector view: the lambda = 0 band", fontsize=12.3)
+    ax.legend(fontsize=10.3)
     ax.grid(True, lw=0.3, alpha=0.4)
 
-    for ax in axes:
-        ax.tick_params(labelsize=7.5)
+    for ax in axes[:2]:
+        ax.tick_params(labelsize=10.3)
+    axes[2].tick_params(labelsize=10.0)
+    axes[2].set_xticklabels(labels, fontsize=9.0)
+    fig.tight_layout()
+    plt.rcParams.update(_saved_rc)
     save(fig, "fig_e21_memorization")
 
 
