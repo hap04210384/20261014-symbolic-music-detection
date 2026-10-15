@@ -895,33 +895,33 @@ def build() -> None:
         r.font.superscript = True
 
     # affiliations, funding and the corresponding-author note go to a
-    # first-page footnote, as the IEEE Transactions template requires;
-    # its reference mark opens the two-column section, exactly where the
-    # template puts it (anchoring the mark in the one-column section
-    # pushes the whole abstract to page 2 in rendering, so it must live
-    # here, as the first paragraph above the abstract)
+    # first-page footnote, as the IEEE Transactions template requires.
+    # The continuous section break lives in a single near-zero-height
+    # paragraph (1-pt mark, no spacing); the invisible footnote anchor
+    # (customMarkFollows + Symbol space, as in the template) opens the
+    # abstract paragraph itself.  Both the break and the anchor must be
+    # kept out of the one-column section -- either one anchored there
+    # pushes the whole abstract to page 2 in rendering
     fid = add_affiliation_footnote(doc)
 
-    # continuous section break: as in the IEEE authoring template,
-    # the abstract and index terms sit in the two-column section
-    # (top of the left column)
-    switch_to(doc, SECT_1COL[0], before=1, after=16)
-
-    # footnote anchor, exactly as the template does it: an invisible mark
-    # (customMarkFollows + Symbol space) in an empty 9-pt paragraph -- the
-    # visible "1" is auto-numbered at the footnote itself, page bottom
-    rp = parse_xml(
-        '<w:p %s><w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:pPr>'
-        '<w:r><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr>'
-        '<w:footnoteReference w:customMarkFollows="1" w:id="%d"/>'
-        '<w:sym w:font="Symbol" w:char="F020"/></w:r></w:p>'
-        % (nsdecls("w"), fid))
-    doc.paragraphs[-1]._p.addnext(rp)
+    pbrk = doc.add_paragraph()
+    pbrk.paragraph_format.space_before = Pt(0)
+    pbrk.paragraph_format.space_after = Pt(2)
+    pbrk_pr = pbrk._p.get_or_add_pPr()
+    pbrk_pr.append(parse_xml('<w:rPr %s><w:sz w:val="2"/><w:szCs w:val="2"/>'
+                             '</w:rPr>' % nsdecls("w")))
+    pbrk_pr.append(_copy.deepcopy(SECT_1COL[0]))
 
     # --- abstract / index terms (two-column) --------------------- ----------------------------------------
     p = doc.add_paragraph(style="Normal")
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p.paragraph_format.space_before = Pt(1)
+    # invisible footnote anchor at the very start of the abstract
+    p._p.get_or_add_pPr().addnext(parse_xml(
+        '<w:r %s><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>'
+        '<w:footnoteReference w:customMarkFollows="1" w:id="%d"/>'
+        '<w:sym w:font="Symbol" w:char="F020"/></w:r>'
+        % (nsdecls("w"), fid)))
     r = p.add_run("Abstract")
     r.bold = True
     r.italic = True
