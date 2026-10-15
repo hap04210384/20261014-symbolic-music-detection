@@ -76,17 +76,20 @@ def _fig1_draw() -> None:
     ax.set_xlim(0, 100)
     ax.set_ylim(1.4, 58)
 
-    # --- palette: deep slate-blue primary, soft ochre accent, cool gray
-    # vs warm sand card tints, ink-dark report card ----------------------
-    GREEN, GREEN_DK = "#33566e", "#23404f"   # primary slate blue
+    # --- palette: muted per-column identity hues -----------------------------
+    GREEN, GREEN_DK = "#33566e", "#26425a"   # col a: slate blue
+    CB, CB_DK = "#3f7268", "#2e564e"         # col b: muted teal
+    AMBER, AMBER_DK = "#bf8830", "#8f6a2c"   # col c: soft ochre
+    CD, CD_DK = "#6b5566", "#4f3d4e"         # col d: muted aubergine
     GOOD = "#57836a"                          # muted sage (positive)
-    AMBER, AMBER_DK = "#bf8830", "#96691c"   # soft ochre accent
+    GOOD_DK = "#3f6650"                       # darker sage for text
     BG, EC = "#ffffff", "#d9ddde"            # neutral white cards
     ABG, AEC = "#faf5ea", "#e6d7b8"          # warm sand cards (column c)
     DARK, DARK_TX = "#232b30", "#d3dee2"     # report card
     INK, GRAY = "#22292e", "#5c6569"
     MINT, MINT_E = "#eaf0ee", "#b4c6c0"      # audit-grid cells
     AXGR = "#a8b2b6"                          # mini-plot axes
+    BAND = "#26303a"                          # claims band (dark ink)
 
     def mix(c1, c2, t):
         a = [int(c1[i:i + 2], 16) for i in (1, 3, 5)]
@@ -94,10 +97,10 @@ def _fig1_draw() -> None:
         return "#" + "".join(f"{round(x + (y - x) * t):02x}"
                              for x, y in zip(a, b))
 
-    def badge(x, y, letter, title_lines):
+    def badge(x, y, letter, title_lines, color=GREEN):
         ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
             (x, y), 3.1, 3.1, boxstyle="round,pad=0,rounding_size=0.45",
-            fc=GREEN, ec="none", zorder=6))
+            fc=color, ec="none", zorder=6))
         ax.text(x + 1.55, y + 1.55, letter, ha="center", va="center",
                 fontsize=11, weight="bold", color="white", zorder=7)
         ax.text(x + 4.0, y + 1.55, title_lines, ha="left", va="center",
@@ -135,7 +138,7 @@ def _fig1_draw() -> None:
         ax.text(x, y, s, fontsize=fs, color=c, weight=w, style=st,
                 ha=ha, va="center", zorder=6, linespacing=1.35)
 
-    def piano_roll(x, y, w, h, seed, n=46):
+    def piano_roll(x, y, w, h, seed, dark, n=46):
         rng = np.random.default_rng(seed)
         for _ in range(n):
             t0 = rng.uniform(0, w - 1.6)
@@ -143,7 +146,7 @@ def _fig1_draw() -> None:
             p = rng.uniform(0.12 * h, 0.88 * h)
             ax.add_patch(plt.Rectangle(
                 (x + t0, y + p - 0.28), d, 0.56,
-                fc=mix("#d8e4ea", GREEN_DK, 0.1 + 0.8 * p / h),
+                fc=mix("#dde4ea", dark, 0.1 + 0.8 * p / h),
                 ec="none", alpha=0.9, zorder=4))
         ax.add_patch(plt.Rectangle((x, y), w, h, fc="none", ec=AXGR,
                                    lw=0.6, zorder=5))
@@ -151,9 +154,12 @@ def _fig1_draw() -> None:
     # ================= column headers =====================================
     HX = [2.0, 26.5, 51.0, 75.5]
     badge(HX[0], 54.2, "a", "Ingestion — publisher-scale\ncorpus")
-    badge(HX[1], 54.2, "b", "Screening — provable-recall\nitem sets")
-    badge(HX[2], 54.2, "c", "Confirmation — ordered\nnote chains")
-    badge(HX[3], 54.2, "d", "Verdict — evidence-grounded\nreport")
+    badge(HX[1], 54.2, "b", "Screening — provable-recall\nitem sets",
+          color=CB)
+    badge(HX[2], 54.2, "c", "Confirmation — ordered\nnote chains",
+          color=AMBER)
+    badge(HX[3], 54.2, "d", "Verdict — evidence-grounded\nreport",
+          color=CD)
 
     XA, XB, XC, XD = 2.0, 26.5, 51.0, 75.5
     WA, WB, WC, WD = 21.5, 21.5, 20.0, 22.5
@@ -162,7 +168,7 @@ def _fig1_draw() -> None:
 
     # ================= column a: ingestion ================================
     card(XA, YT, WA, HH, "LAKH MIDI CORPUS", title_c=GREEN_DK)
-    piano_roll(XA + 1.4, YT + 2.6, WA - 2.8, 5.4, seed=7)
+    piano_roll(XA + 1.4, YT + 2.6, WA - 2.8, 5.4, seed=7, dark=GREEN_DK)
     txt(XA + 1.4, YT + 1.3, "174,300 pieces", fs=6.4, w="bold",
         c=GREEN_DK)
     tag(XA + WA - 9.6, YT + 0.6, "symbolic · MIDI")
@@ -174,7 +180,7 @@ def _fig1_draw() -> None:
             if rng.random() < 0.42:
                 ax.add_patch(plt.Rectangle(
                     (XA + 1.4 + i * 0.95, YM + 5.2 + j * 0.8), 0.8, 0.66,
-                    fc=mix("#dbe6ec", GREEN_DK,
+                    fc=mix("#e2e8ee", GREEN_DK,
                            0.15 + 0.7 * rng.random()),
                     ec="none", zorder=4))
     ax.add_patch(plt.Rectangle((XA + 1.4, YM + 5.2), 13.3, 4.0,
@@ -198,17 +204,17 @@ def _fig1_draw() -> None:
     tag(XA + 1.4, YB_ + 0.5, "offline · once")
 
     # ================= column b: screening ================================
-    card(XB, YT, WB, HH, "QUERY — NEW MIDI PIECE", title_c=GREEN_DK,
+    card(XB, YT, WB, HH, "QUERY — NEW MIDI PIECE", title_c=CB_DK,
          dashed=True)
-    piano_roll(XB + 1.4, YT + 4.6, WB - 2.8, 3.6, seed=23)
+    piano_roll(XB + 1.4, YT + 4.6, WB - 2.8, 3.6, seed=23, dark=CB_DK)
     txt(XB + 1.4, YT + 3.2, "a submission, a generated sample,", fs=6.0)
     txt(XB + 1.4, YT + 1.9, "or a suspected infringement", fs=6.0)
     tag(XB + 1.4, YT + 0.4, "same shared encoding", fc=GRAY)
 
-    card(XB, YM, WB, HH, "L1 · TOLERANT SCREEN", title_c=GREEN_DK)
+    card(XB, YM, WB, HH, "L1 · TOLERANT SCREEN", title_c=CB_DK)
     xs = np.linspace(0, 10, 60)
     ys = 8.4 * (1 - np.exp(-xs / 3.1))
-    ax.plot(XB + 3.4 + xs * 1.55, YM + 2.4 + ys * 0.62, color=GREEN,
+    ax.plot(XB + 3.4 + xs * 1.55, YM + 2.4 + ys * 0.62, color=CB,
             lw=1.6, zorder=4)
     ax.plot([XB + 3.4, XB + 19.0], [YM + 2.4, YM + 2.4], color=AXGR,
             lw=0.6, zorder=4)
@@ -220,9 +226,9 @@ def _fig1_draw() -> None:
     txt(XB + 4.0, YM + 8.6, "cumulative evidence", fs=5.4, c=GRAY)
     txt(XB + 1.4, YM + 1.9, "rare-first anytime schedule —", fs=6.0)
     txt(XB + 1.4, YM + 0.6, "two-sided rare itemsets", fs=6.0)
-    tag(XB + WB - 5.7, YM + HH - 2.5, "anytime")
+    tag(XB + WB - 5.7, YM + HH - 2.5, "anytime", fc=CB)
 
-    card(XB, YB_, WB, HH, "RECALL LOWER BOUND — THM 1", title_c=GREEN_DK)
+    card(XB, YB_, WB, HH, "RECALL LOWER BOUND — THM 1", title_c=CB_DK)
     rng = np.random.default_rng(5)
     for i in range(8):
         for j in range(3):
@@ -230,7 +236,7 @@ def _fig1_draw() -> None:
                 (XB + 1.6 + i * 1.15, YB_ + 4.4 + j * 1.05), 0.95, 0.85,
                 fc=MINT, ec=MINT_E, lw=0.5, zorder=4))
             ax.text(XB + 2.075 + i * 1.15, YB_ + 4.825 + j * 1.05, "0",
-                    ha="center", va="center", fontsize=5.4, color=GREEN_DK,
+                    ha="center", va="center", fontsize=5.4, color=CB_DK,
                     zorder=5)
     txt(XB + 12.6, YB_ + 6.6, "337 adversarial cells", fs=6.2, w="bold")
     txt(XB + 12.6, YB_ + 5.2, "(8 transformations ×", fs=5.8, c=GRAY)
@@ -238,7 +244,7 @@ def _fig1_draw() -> None:
     txt(XB + 1.4, YB_ + 2.4, "donor evidence ≥ bound on every cell —",
         fs=6.0)
     txt(XB + 1.4, YB_ + 1.1, "L1 never drops a true copy", fs=6.0)
-    tag(XB + WB - 6.4, YB_ + 0.5, "provable")
+    tag(XB + WB - 6.4, YB_ + 0.5, "provable", fc=CB)
 
     # ================= column c: confirmation =============================
     card(XC, YT, WC, HH, "L2 · VERBATIM RE-RANK", fc=ABG, ec=AEC,
@@ -283,7 +289,7 @@ def _fig1_draw() -> None:
                                fc="#f2e3c8", ec="none", zorder=4))
     ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 5.6), 0.9, 0.75,
                                fc=AMBER, ec="none", zorder=5))
-    txt(XC + 9.2, YB_ + 4.3, "R  83.9 %", fs=6.6, w="bold", c=GREEN_DK)
+    txt(XC + 9.2, YB_ + 4.3, "R  83.9 %", fs=6.6, w="bold", c=GOOD_DK)
     ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 3.0), 8.6, 0.75,
                                fc="#deeee3", ec="none", zorder=4))
     ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 3.0), 7.2, 0.75,
@@ -292,9 +298,9 @@ def _fig1_draw() -> None:
         fs=5.4, c=GRAY)
     # yes: exits upward between the bars, toward the report (column d)
     elbow([(dc[0] + 2.75, dc[1] + 0.2), (58.9, dc[1] + 0.2),
-           (58.9, YB_ + 7.9), (XC + WC - 0.7, YB_ + 7.9)], color=GREEN_DK,
+           (58.9, YB_ + 7.9), (XC + WC - 0.7, YB_ + 7.9)], color=GOOD_DK,
           lw=1.2)
-    txt(60.4, YB_ + 8.7, "yes → report", fs=5.4, c=GREEN_DK, st="italic")
+    txt(60.4, YB_ + 8.7, "yes → report", fs=5.4, c=GOOD_DK, st="italic")
     arrow((dc[0], dc[1] - 2.7), (dc[0], YB_ + 0.6), color=GRAY, lw=1.0,
           ls="--")
     txt(dc[0] + 0.5, YB_ + 1.0, "no → rejected (FP-controlled)", fs=5.4,
@@ -317,12 +323,12 @@ def _fig1_draw() -> None:
     txt(XD + 1.4, YT + 1.2, "verdict + publisher-readable evidence",
         fs=5.6, c="#9cc4d8", st="italic")
 
-    card(XD, YM, WD, HH, "MEMORIZATION AUDIT", title_c=GREEN_DK)
+    card(XD, YM, WD, HH, "MEMORIZATION AUDIT", title_c=CD_DK)
     lx = np.array([0, 0.25, 0.5, 0.75, 1.0])
     det = np.array([30, 52, 71, 88, 100])
     px = XD + 3.0 + lx * 15.5
     py = YM + 2.2 + det / 100 * 6.6
-    ax.plot(px, py, color=GREEN, lw=1.6, marker="o", ms=2.6, zorder=4)
+    ax.plot(px, py, color=CD, lw=1.6, marker="o", ms=2.6, zorder=4)
     ax.plot([XD + 3.0, XD + 19.0], [YM + 2.2, YM + 2.2], color=AXGR,
             lw=0.6, zorder=4)
     ax.plot([XD + 3.0, XD + 3.0], [YM + 2.2, YM + 9.0], color=AXGR,
@@ -335,31 +341,34 @@ def _fig1_draw() -> None:
     ax.text(XD + 2.5, YM + 8.6, "detection %", fontsize=5.2, color=GRAY,
             ha="right", zorder=5)
     txt(XD + 1.4, YM + 9.9, "26–34 % at λ = 0 → 100 % at λ = 1", fs=6.2,
-        w="bold", c=GREEN_DK)
+        w="bold", c=CD_DK)
     txt(XD + 1.4, YM + 0.9, "attribution to source 96–100 %", fs=5.6,
         c=GRAY)
 
-    card(XD, YB_, WD, HH, "IN-THE-WILD CASES", title_c=GREEN_DK)
+    card(XD, YB_, WD, HH, "IN-THE-WILD CASES", title_c=CD_DK)
     txt(XD + 1.4, YB_ + 8.6, "1,658,993 duplicate pairs", fs=7.6,
-        w="bold", c=GREEN_DK)
+        w="bold", c=CD_DK)
     txt(XD + 1.4, YB_ + 6.6, "census over the full corpus (E6.3):", fs=6.0)
     txt(XD + 1.4, YB_ + 5.2, "spliced segments and transposed covers", fs=6.0)
     txt(XD + 1.4, YB_ + 3.9, "localized with offset maps", fs=6.0)
-    tag(XD + 1.4, YB_ + 0.5, "human-adjudicable")
+    tag(XD + 1.4, YB_ + 0.5, "human-adjudicable", fc=CD)
 
     # ================= flow arrows ========================================
     # vertical arrows inside columns
     for xc in (XA + WA / 2, XB + WB / 2, XC + WC / 2, XD + WD / 2):
         arrow((xc, YT - 0.2), (xc, YM + HH + 0.2), lw=1.2)
         arrow((xc, YM - 0.2), (xc, YB_ + HH + 0.2), lw=1.2)
-    # shared encoding / index into screening (labels run along the elbow)
-    elbow([(XA + WA, YM + 7.0), (24.9, YM + 7.0), (24.9, YT + 6.0),
-           (XB, YT + 6.0)])
-    ax.text(24.25, YM + 13.5, "shared encoding", fontsize=5.2, color=GRAY,
-            style="italic", ha="center", va="center", rotation=90, zorder=6)
-    elbow([(XA + WA, YB_ + 9.0), (25.7, YB_ + 9.0), (25.7, YM + 4.4),
-           (XB, YM + 4.4)])
-    ax.text(26.05, YB_ + 6.4, "index", fontsize=5.2, color=GRAY,
+    # shared encoding / index into screening -- the two elbows share one
+    # aligned vertical rail at x = 24.8 and identical arrow styling
+    EX = 24.8
+    elbow([(XA + WA, YM + 7.0), (EX, YM + 7.0), (EX, YT + 6.0),
+           (XB, YT + 6.0)], lw=1.3)
+    ax.text(EX - 0.65, YM + 14.0, "shared encoding", fontsize=5.2,
+            color=GRAY, style="italic", ha="center", va="center",
+            rotation=90, zorder=6)
+    elbow([(XA + WA, YB_ + 9.0), (EX, YB_ + 9.0), (EX, YM + 4.4),
+           (XB, YM + 4.4)], lw=1.3)
+    ax.text(EX + 0.65, YB_ + 6.6, "index", fontsize=5.2, color=GRAY,
             style="italic", ha="center", va="center", rotation=90, zorder=6)
     # screen -> re-rank
     arrow((XB + WB, YM + 5.4), (XC, YT + 6.0))
@@ -371,7 +380,7 @@ def _fig1_draw() -> None:
     # ================= claims band ========================================
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
         (2.0, 2.6), 96.0, 4.4, boxstyle="round,pad=0,rounding_size=0.5",
-        fc=GREEN, ec="none", zorder=3))
+        fc=BAND, ec="none", zorder=3))
     claims = [
         ("Provable recall", "Thm 1 · 337-cell audit, zero violations"),
         ("Anytime by construction", "budget B · rare-first schedule"),
@@ -382,9 +391,9 @@ def _fig1_draw() -> None:
         cx = 4.5 + i * 24.5
         ax.text(cx, 5.7, t, fontsize=7.4, weight="bold", color="white",
                 zorder=5)
-        ax.text(cx, 3.9, s, fontsize=5.8, color="#d3dee2", zorder=5)
+        ax.text(cx, 3.9, s, fontsize=5.8, color="#cfd8de", zorder=5)
         if i:
-            ax.plot([cx - 2.3, cx - 2.3], [3.3, 6.2], color="#5a7d92",
+            ax.plot([cx - 2.3, cx - 2.3], [3.3, 6.2], color="#4c5a68",
                     lw=0.8, zorder=4)
     # evidence arrows into the claims band
     arrow((XB + WB / 2, YB_ - 0.2), (XB + WB / 2, 7.2), color=AMBER,
