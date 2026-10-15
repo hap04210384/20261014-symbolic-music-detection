@@ -473,6 +473,9 @@ def _fig1_alt_draw() -> None:
 
     # ---------------- corpus card ----------------------------------------
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (3.35, 13.65), 13.5, 24, boxstyle="round,pad=0,rounding_size=0.55",
+        fc="#e3e6e8", ec="none", zorder=2))
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
         (3, 14), 13.5, 24, boxstyle="round,pad=0,rounding_size=0.55",
         fc="white", ec="#d9ddde", lw=1.0, zorder=3))
     txt(4.2, 36.2, "LAKH MIDI", fs=7.2, w="bold", c=CA_DK)
@@ -515,6 +518,26 @@ def _fig1_alt_draw() -> None:
             (x, y), 0.7, 0.55,
             fc=mix("#cfe0d9", CB_DK, 0.2 + 0.6 * rng.random()),
             ec="none", alpha=0.8, zorder=3))
+    # depth annotations inside the funnel
+    txt(20.2, 34.2, "all-pairs census · every offset", fs=5.2, c=GRAY)
+    txt(24.5, 15.9, "rare-first: frequent items pruned early", fs=5.2,
+        c=GRAY)
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (20.2, 12.7), 13.2, 2.0, boxstyle="round,pad=0,rounding_size=0.9",
+        fc="white", ec=CB, lw=0.7, zorder=4))
+    ax.text(26.8, 13.7, "tolerance k = (2, 1, 1)", ha="center", va="center",
+            fontsize=5.2, color=CB_DK, weight="bold", zorder=5)
+    # traced candidate journey: one survivor through gate into the lens
+    jx = np.array([27.0, 34.5, 42.0, 49.5, 53.3, 60.0, 66.5])
+    jy = np.array([30.5, 28.2, 25.9, 23.9, 22.8, 22.6, 22.9])
+    ax.plot(jx, jy, "-", lw=1.3, color=CC, zorder=5)
+    ax.add_patch(plt.Circle((27.0, 30.5), 0.75, fc=CC, ec="white", lw=0.8,
+                            zorder=6))
+    ax.text(27.0, 32.0, "query q", fontsize=5.0, color=CC_DK, ha="center",
+            zorder=6)
+    ax.annotate("", xy=(66.2, 22.95), xytext=(64.2, 22.85), zorder=6,
+                arrowprops=dict(arrowstyle="-|>", lw=1.3, color=CC,
+                                shrinkA=0, shrinkB=0))
     txt(18, 39.6, "L1 · TOLERANT ITEM-SET SCREEN — rare-first anytime",
         fs=7.0, w="bold", c=CB_DK)
     txt(18, 38.1, "evidence lower bound per prefix (Thm 1) · interruptible"
@@ -611,6 +634,11 @@ def _fig1_alt_draw() -> None:
     # ---------------- L3 lens --------------------------------------------
     LC = (74, 24)
     ax.add_patch(plt.Circle(LC, 8.0, fc="white", ec=CC, lw=2.0, zorder=4))
+    for dx_, dy_ in ((0, 1), (1, 0), (0, -1), (-1, 0)):
+        ax.plot([LC[0] + 7.1 * dx_, LC[0] + 7.7 * dx_],
+                [LC[1] + 7.1 * dy_, LC[1] + 7.7 * dy_],
+                color=CC, lw=0.8, zorder=4)
+    ax.add_patch(plt.Circle(LC, 0.35, fc=CC, ec="none", zorder=5))
     ax.plot([79.8, 82.6], [18.6, 15.6], color=CC, lw=2.6,
             solid_capstyle="round", zorder=4)
     txt(74, 34.6, "L3 · STRUCTURAL CONFIRM", fs=6.8, w="bold", c=CC_DK,
@@ -637,9 +665,13 @@ def _fig1_alt_draw() -> None:
 
     # ---------------- verdict report --------------------------------------
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (84.85, 21.65), 13.5, 16.5, boxstyle="round,pad=0,rounding_size=0.55",
+        fc="#d8dbdd", ec="none", zorder=2))
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
         (84.5, 22), 13.5, 16.5, boxstyle="round,pad=0,rounding_size=0.55",
         fc=DARK, ec=DARK, lw=1.0, zorder=3))
     txt(85.7, 37.2, "VERDICT", fs=7.2, w="bold", c="#d8c9a8")
+    ax.plot([85.7, 96.8], [36.1, 36.1], color="#c9a25e", lw=0.9, zorder=5)
     mono = [("donor", "piece_0421.mid"),
             ("query", "piece_9017.mid"),
             ("span", "bars 33–48"),
@@ -670,7 +702,6 @@ def _fig1_alt_draw() -> None:
 
     # ---------------- flow arrows between stages --------------------------
     arrow((16.6, 25), (17.8, 24), color=CA_DK, lw=1.4)
-    arrow((62.2, 22), (65.7, 23), color=CC_DK, lw=1.4)
     arrow((82.4, 24.5), (84.3, 25.5), color=CD_DK, lw=1.4)
 
     save(fig, "fig1_alt")
