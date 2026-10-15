@@ -154,6 +154,17 @@ REFERENCES = [
  "estimation using MinHash,\u201d Genome Biology, vol. 17, 2016.",
 ]
 
+# IEEE requires reference numbers to follow order of first citation.
+# _CITE_REMAP maps the original (topical) numbering used in the draft
+# strings to citation-order numbering; _REFS_IN_CITE_ORDER is the
+# REFERENCES index sequence (1-based old numbers) in new list order.
+_CITE_REMAP = {3: 1, 5: 2, 4: 3, 12: 4, 2: 5, 9: 6, 10: 7, 15: 8, 16: 9,
+               17: 10, 18: 11, 19: 12, 20: 13, 13: 14, 14: 15, 8: 16,
+               1: 17, 6: 18, 7: 19, 11: 20, 23: 21, 24: 22, 25: 23,
+               26: 24, 27: 25, 22: 26, 28: 27, 29: 28, 30: 29, 33: 30,
+               34: 31, 21: 32, 31: 33, 32: 34, 35: 35, 36: 36}
+_REFS_IN_CITE_ORDER = sorted(_CITE_REMAP, key=lambda o: _CITE_REMAP[o])
+
 # ---------------------------------------------------------------- numbers
 def load(name):
     p = ROOT / f"runs/{name}"
@@ -627,6 +638,27 @@ def _emit_run(p, text, italic=False, size=None, bold=False, name=None):
     return r
 
 
+_SUBSPLIT = re.compile(r"_([A-Za-z]{1,2})")
+
+
+def _emit_math_tok(p, tok, size=None, bold=False, name=None):
+    """Emit one matched math token, turning short _x subscripts into true
+    Word subscript runs (e_n -> e + sub n). Wordy subscripts such as
+    k_pitch or item_order (>=3 chars) stay literal."""
+    pos = 0
+    for m in _SUBSPLIT.finditer(tok):
+        if m.start() > pos:
+            _emit_run(p, tok[pos:m.start()], italic=True, size=size,
+                      bold=bold, name=name)
+        r = _emit_run(p, m.group(1), italic=True, size=size, bold=bold,
+                      name=name)
+        r.font.subscript = True
+        pos = m.end()
+    if pos < len(tok):
+        _emit_run(p, tok[pos:], italic=True, size=size, bold=bold,
+                  name=name)
+
+
 def rich_add(p, text, size=None, bold=False, name=None):
     """Add text to paragraph, italicizing mathematical variables per IEEE
     style. Spelled-out Greek names (tau, rho, lambda, delta) are first
@@ -634,6 +666,8 @@ def rich_add(p, text, size=None, bold=False, name=None):
     italic argument."""
     text = re.sub(r"\b(tau|rho|lambda|delta)\b",
                   lambda m: _GREEK_WORDS[m.group(1)], text)
+    text = re.sub(r"\[(\d{1,2})\]",
+                  lambda m: f"[{_CITE_REMAP[int(m.group(1))]}]", text)
     pos = 0
     for m in _MATH_TOKEN.finditer(text):
         if m.start() > pos:
@@ -644,8 +678,7 @@ def rich_add(p, text, size=None, bold=False, name=None):
             _emit_run(p, m.group(1), italic=True, size=size, name=name)
             _emit_run(p, ")", size=size, bold=bold, name=name)
         else:
-            _emit_run(p, m.group(0), italic=True, size=size, bold=bold,
-                      name=name)
+            _emit_math_tok(p, m.group(0), size=size, bold=bold, name=name)
         pos = m.end()
     if pos < len(text):
         _emit_run(p, text[pos:], size=size, bold=bold, name=name)
@@ -1080,11 +1113,12 @@ def build() -> None:
          "requires (we quantify this in Section V-A), and pattern sets "
          "are not ranked candidates.")
     para(doc,
-         "Nor can the gap be closed by re-tuning the engines that power "
-         "large-scale deduplication. The obstacle is geometric: a copied "
-         "span of about 40 items embedded in a piece of about 700 items "
-         "scores below 0.10 in set-Jaccard under a perfect oracle "
-         "(measured quartiles 0.045/0.099/0.201 over our 337-cell "
+         f"Nor can the gap be closed by re-tuning the engines that power "
+         f"large-scale deduplication. The obstacle is geometric: a copied "
+         f"span of about 40 items embedded in a piece of about 700 items "
+         f"scores below 0.10 in set-Jaccard under a perfect oracle "
+         f"(measured quartiles {N['e20_dj_p25']:.3f}/{N['e20_dj_p50']:.3f}/"
+         f"{N['e20_dj_p75']:.3f} over our 337-cell "
          "adversarial audit), and no band configuration of a "
          "MinHash-LSH index recovers such a donor at any operating "
          "point (Section V-G). Relative overlap has no threshold at "
@@ -1224,7 +1258,7 @@ def build() -> None:
          "[1], and geometric repeated-pattern discovery by Meredith et "
          "al. [2]. Surveying the field, Casey et al. [3] and Typke et "
          "al. [5] separate audio-descriptor approaches from symbolic "
-         "approaches; M\u00fcller [4], [6] systematize chroma and "
+         "approaches; M\u00fcller [4], [12] systematize chroma and "
          "alignment techniques. Our screen layer inherits the item-set "
          "view of "
          "FIM [9], [10] but replaces corpus-side enumeration with "
@@ -1324,7 +1358,8 @@ def build() -> None:
          "events e_i = (t_i, p_i, d_i, v_i): onset time, MIDI pitch, "
          "duration, and velocity. An encoding \u03c6 maps each event "
          "to an item, a tuple of quantized features (Section III-B); "
-         "the item set S(P) = \u222a_i {\u03c6(e_i)} discards order "
+         "the item set S(P), the union of {\u03c6(e_i)} over all "
+         "positions, discards order "
          "and repetition. For tolerance vector k = (k_pitch, k_bin, "
          "k_vel), the neighborhood N_k(x) of an item x is the set of "
          "items whose pitch differs by at most k_pitch semitones and "
@@ -1878,11 +1913,12 @@ def build() -> None:
               "discriminating configurations starve the donor.")
     full_width(doc, lambda: (add_emf(doc, "fig_e20_lsh", 16.0),
                              caption(doc,
-                                 "Fig. 11. The containment-versus-"
-                                 "Jaccard geometry behind Table X. "
-                                 "(a) donor Jaccard distribution over "
-                                 "the 337 planted cells (quartiles "
-                                 "0.045/0.099/0.201) with the two "
+                                 f"Fig. 11. The containment-versus-"
+                                 f"Jaccard geometry behind Table X. "
+                                 f"(a) donor Jaccard distribution over "
+                                 f"the 337 planted cells (quartiles "
+                                 f"{N['e20_dj_p25']:.3f}/{N['e20_dj_p50']:.3f}/"
+                                 f"{N['e20_dj_p75']:.3f}) with the two "
                                  "operating thresholds marked; "
                                  "(b) recall of the three LSH "
                                  "configurations versus the tolerant "
@@ -2256,7 +2292,8 @@ def build() -> None:
     # --- references (funding note lives in the first-page footnote) ---------------
     p = doc.add_paragraph(style="Reference Head")
     p.add_run("References")
-    for i, ref in enumerate(REFERENCES, 1):
+    for i, old_no in enumerate(_REFS_IN_CITE_ORDER, 1):
+        ref = REFERENCES[old_no - 1]
         p = doc.add_paragraph(style="References")
         pf = p.paragraph_format
         pf.left_indent = Cm(0.75)
