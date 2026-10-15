@@ -129,7 +129,8 @@ REFERENCES = [
  "Deep Generative Models, 2021.",
  "Y.-C. Liu, J. Yu, K. Cao, S. I. A. Meerza, et al., \u201cAuditing "
  "training data in generative music models via black-box membership "
- "inference,\u201d in Proc. IEEE Symp. Security and Privacy, 2026.",
+ "inference,\u201d in Proc. IEEE Symp. Security and Privacy Workshops "
+ "(SPW), 2026, pp. 230\u2013237.",
  "J. Barnett, H. F. Garcia, and B. Pardo, \u201cExploring musical "
  "roots: Applying audio embeddings to empower influence attribution "
  "for a generative music model,\u201d arXiv preprint arXiv:2401.14542, "
@@ -141,6 +142,16 @@ REFERENCES = [
  "collaboration,\u201d under review.",
  "Y. Zhang et al., \u201cTensorFIM: Exact maximal frequent itemset mining "
  "on tensor cores,\u201d under review.",
+ "R. Fagin, A. Lotem, and M. Naor, \u201cOptimal aggregation algorithms "
+ "for middleware,\u201d in Proc. ACM Symp. Principles of Database Systems "
+ "(PODS), 2001.",
+ "E. L. Lawler and D. E. Wood, \u201cBranch-and-bound methods: A "
+ "survey,\u201d Operations Research, vol. 14, no. 4, pp. 699\u2013719, "
+ "1966.",
+ "A. Z. Broder, \u201cOn the resemblance and containment of "
+ "documents,\u201d in Proc. Compression and Complexity of Sequences, 1997.",
+ "B. D. Ondov et al., \u201cMash: Fast genome and metagenome distance "
+ "estimation using MinHash,\u201d Genome Biology, vol. 17, 2016.",
 ]
 
 # ---------------------------------------------------------------- numbers
@@ -708,16 +719,20 @@ def three_line_table(doc, header, rows, size=8, title=None, full=False):
 
 def mono_block(doc, lines, size=7):
     """Monospace block (pseudocode): single-cell bordered table, lines
-    wrapped to fit a 3.5-inch column."""
+    wrapped to fit a 3.5-inch column; the row is pinned against
+    splitting so the block never breaks across a column or page."""
     import textwrap
     wrapped = []
     for ln in lines:
-        wrapped.extend(textwrap.wrap(ln, width=54,
+        wrapped.extend(textwrap.wrap(ln, width=50,
                                      subsequent_indent="    ",
                                      break_long_words=False)
                        or [""])
     t = doc.add_table(rows=1, cols=1)
     t.alignment = 1
+    from docx.oxml import OxmlElement
+    trPr = t.rows[0]._tr.get_or_add_trPr()
+    trPr.append(OxmlElement("w:cantSplit"))
     cell = t.cell(0, 0)
     cell.text = ""
     p = cell.paragraphs[0]
@@ -935,21 +950,22 @@ def build() -> None:
          "scale is hard because candidate systems must simultaneously "
          "guarantee recall over noisy transformations, stay interactive on "
          "hundreds of thousands of pieces, and produce evidence precise "
-         "enough to support human adjudication. We show that no single "
-         "item-level technique meets all three requirements, and we "
+         "enough to support human adjudication. We show that no "
+         "single-layer method\u2014permissive item-level or strict "
+         "structural\u2014meets all three requirements, and we "
          "present a two-layer system that does: a tolerant item-set "
          f"screening layer whose recall is provable (an evidence lower "
          "bound verified on every one of "
          f"{N['e2_n']} adversarial cells with zero violations) and whose "
-         "rare-first anytime schedule processes the corpus in query time "
-         "that grows only with evidence, not with corpus size; and a "
+         "rare-first anytime schedule answers queries in time driven "
+         "by the evidence rather than by a corpus scan; and a "
          "strict structural confirmation layer that aligns ordered note "
          "chains and reduces the fragment-level false-positive rate on "
          "style-similar hard negatives to 2.1% while retaining 83.9% "
          "recall under transcription noise. On a "
          f"{N['e4_max']:,}-piece corpus the index builds in "
-         f"{N['e4_build']} s and answers queries in "
-         f"{N['e4_p50']} ms (p50) at 100% planted recall. In controlled "
+         f"{N['e4_build']:.1f} s and answers queries in "
+         f"{N['e4_p50']:.1f} ms (p50) at 100% planted recall. In controlled "
          "memorization experiments, detection rises monotonically from "
          "26-34% at zero copying to "
          f"{N['e62_l1'] * 100:.0f}% at full verbatim regurgitation, with "
@@ -1120,7 +1136,7 @@ def build() -> None:
                                          "note chains\u2014invariant to "
                                          "pitch, tempo, and splicing\u2014"
                                          "and certifies the copied span "
-                                         "(\u03c1 = 0.62 \u2265 \u03b8) as "
+                                         "(\u03c1 = 0.62 \u2265 0.5) as "
                                          "a publisher-readable verdict.")))
 
     # --- II. related work ---------------------------------------------------
@@ -1187,6 +1203,19 @@ def build() -> None:
          "pieces that can still reach the threshold is exactly "
          "computable, which turns an engineering heuristic into a "
          "guarantee a publisher can schedule around.")
+    para(doc,
+         "The bound instantiates a classical pattern. Threshold "
+         "algorithms for top-k aggregation [33] maintain a partial-score "
+         "bound under which no unseen candidate can qualify, and "
+         "branch-and-bound search [34] carries an admissible estimate "
+         "of everything not yet explored. Theorem 1 transfers this "
+         "contract to tolerant item-set evidence: because every "
+         "unprocessed position can contribute at most one to any piece, "
+         "score_u(P) + (q \u2212 u) plays the role of the partial "
+         "bound, with tolerance turning it into a certified floor on "
+         "final evidence rather than an optimistic estimate. We are "
+         "not aware of an evidence bound of this form stated and "
+         "cell-by-cell audited for music retrieval.")
 
     # --- III. system --------------------------------------------------------
     h1(doc, "III. System")
@@ -1206,7 +1235,7 @@ def build() -> None:
                                          "(Thm 1, 337-cell audit). (c) L2 "
                                          "re-ranks and L3 confirms on "
                                          "ordered note chains, gating on "
-                                         "ρ ≥ θ. (d) Confirmed matches "
+                                         "ρ = 0.62 ≥ 0.5. (d) Confirmed matches "
                                          "ship as adjudicable reports; "
                                          "memorization and in-the-wild "
                                          "audits close the loop. Black "
@@ -1308,8 +1337,10 @@ def build() -> None:
     para(doc,
          "Complexity. Index construction is O(\u03a3_P |S(P)|). A "
          "query touches, per position, the posting lists of all "
-         "items in N_k, so query cost grows with evidence and "
-         "vocabulary rarity, not with corpus size beyond postings; "
+         "items in N_k, so query cost grows with the length of the "
+         "evidence and with the vocabulary mass inside the query's "
+         "tolerance neighborhood, and grows with corpus size only "
+         "through longer posting lists; "
          "the open set is maintained in a Fenwick structure over "
          "piece IDs, giving O(log N) updates and an exact |O_u| "
          "readout after every position. Measured end to end, the "
@@ -1407,7 +1438,10 @@ def build() -> None:
          "Baselines. Set-Jaccard corpus scan, SIATEC-family pattern "
          "discovery [2], and n-gram Jaccard (Section V-A); FIM engines "
          "from our prior work [31], [32] serve as enumeration "
-         "baselines.")
+         "baselines. Both engines are independent of the present "
+         "system\u2014they enumerate patterns corpus-side, whereas the "
+         "screen verifies containment query-side\u2014and serve here "
+         "solely as feasibility references.")
     para(doc,
          "Environment. All experiments run on a single commodity "
          "workstation (12th-generation Intel Core i9, 128 GB RAM) in "
@@ -1487,6 +1521,16 @@ def build() -> None:
               "Jaccard scan infeasible beyond 10,000 pieces; MinHash-LSH "
               "(128 permutations, 16 bands x 8 rows, tau = 0.10) returns "
               "empty candidate sets at every size.")
+    tnote = doc.add_paragraph()
+    tnote.paragraph_format.space_before = Pt(0)
+    tr = tnote.add_run(
+        "Rows are corpus-size subsamples drawn across different "
+        "experiment generations, so the piece counts are not a "
+        "uniform ladder and build times are not monotone in row "
+        "order; scaling conclusions rely on within-generation "
+        "interpolation rather than on adjacent-row differences.")
+    tr.font.size = Pt(8)
+    tr.font.name = "Times New Roman"
     h2(doc, "B. Recall matrix and the evidence bound")
     para(doc,
          f"Table III summarizes and Fig. 4 visualizes the 337-cell "
@@ -1601,6 +1645,23 @@ def build() -> None:
          f"(C=20) and {N['e7_ret50'] * 100:.1f}% (C=50) of donors; the "
          "union of tolerant and verbatim top-C feeds\u2014adopted in "
          "the final system\u2014lifts retention above 99%.")
+    para(doc,
+         "Both metrics share one denominator: the 236 fragment queries of "
+         "the confirmation suite, each a true transcription copy of one of "
+         "the 80 donors. The recall numerator counts fragments whose donor "
+         "is confirmed; the FP numerator counts fragments in which at "
+         "least one non-donor piece is confirmed at the same threshold, "
+         "so recall and FP are measured on exactly the same queries. The "
+         "two contiguity anchors answer two different workflows: "
+         "\u03c1 = 0.5 (2.1% FP, 83.9% recall) is the decision-grade "
+         "operating point, at which a confirmed flag can be acted on "
+         "directly; \u03c1 = 0.4 (7.2% FP, 98.3% recall) is the "
+         "high-recall triage point for pre-filtering large corpora "
+         "before human review. \u201cDecision-grade\u201d is used here in "
+         "an operational sense: the threshold is fixed before "
+         "measurement, applied uniformly across corpora, and the quoted "
+         "error rate is the measured fragment-level FP on style-similar "
+         "hard negatives rather than a per-corpus tuned value.")
     three_line_table(doc,
         ["Anchor tolerance", "\u03c1 = 0.3", "\u03c1 = 0.4",
          "\u03c1 = 0.5", "\u03c1 = 0.6"],
@@ -1643,8 +1704,13 @@ def build() -> None:
          "applies; false positives and latency trade off along the "
          "tolerance vector exactly as the bound predicts; and finer "
          "grids monotonically reduce false positives at sub-linear "
-         "vocabulary growth. Fig. 10 plots the three ablation families "
-         "and Table IX tabulates them.")
+         "vocabulary growth. The audit grid comprises 29 planted cells "
+         "(30 random draws, one dropped because its planted span "
+         "contained fewer than 8 notes), spanning the 4 s/16 s span "
+         "lengths and four transformation families; the grid is fixed "
+         "across all ablation settings, so every configuration is "
+         "compared on identical evidence. Fig. 10 plots the three "
+         "ablation families and Table IX tabulates them.")
     full_width(doc, lambda: (add_emf(doc, "fig_e5_ablation", 18.2),
                              caption(doc, "Fig. 10. Component ablations "
                                          "over the confirmation and "
@@ -1669,8 +1735,8 @@ def build() -> None:
          f"matrix embeds a 40-item span in 300 noise items and probes a "
          f"corpus of pieces of ~700 items each, so even a perfect "
          f"set-Jaccard oracle scores the donor at only "
-         f"{N['e20_dj_p25']:.2f} / {N['e20_dj_p50']:.2f} / "
-         f"{N['e20_dj_p75']:.2f} (quartiles over the 337 cells; "
+         f"{N['e20_dj_p25']:.3f} / {N['e20_dj_p50']:.3f} / "
+         f"{N['e20_dj_p75']:.3f} (quartiles over the 337 cells; "
          f"Fig. 11(a)); just {N['e20_dj_ge10']} of 337 donors reach "
          f"Jaccard 0.10. Jaccard measures relative overlap, so a "
          f"contained copy is structurally invisible to it no matter how "
@@ -1696,6 +1762,24 @@ def build() -> None:
          f"{N['e20_screen_recall']:.1f}% recall on the same 337 cells "
          f"is unreachable: set-similarity semantics, accelerated or "
          f"not, do not express containment.")
+    para(doc,
+         "Could containment-aware LSH close this gap? Containment "
+         "estimators [35], [36] replace resemblance with the ratio "
+         "|A \u2229 B| / min(|A|, |B|), which in principle sees a "
+         "contained copy; two obstacles remain. First, they still "
+         "operate on unordered sets: containment is blind to note "
+         "order exactly where our task is sequential, so a "
+         "contained piece and a permuted collage of the same items "
+         "are indistinguishable to it. Second, the estimator's "
+         "variance explodes for small containing sets: a planted "
+         "span of ~40 items yields MinHash sketches whose "
+         "containment estimate is too noisy to threshold at the "
+         "operating point our chain criterion certifies. A full "
+         "containment-LSH baseline is therefore left as a baseline "
+         "extension; the point of Table X is that no re-tuning of "
+         "Jaccard-band geometry reaches the screen's recall, and "
+         "containment estimators trade that impasse for variance "
+         "rather than resolving it.")
     three_line_table(doc,
         ["LSH configuration", "tau",
          "Donor in candidates (%)", "Donor confirmed (%)",
@@ -1762,7 +1846,7 @@ def build() -> None:
               "source-attribution % per cell (50 generated pieces per "
               "cell; order-m pitch n-gram mixed with per-note copy at "
               "probability \u03bb).")
-    h2(doc, "B. Case studies in the wild")
+    h2(doc, "B. Case studies")
     para(doc,
          f"Screening all 3,000 corpus pieces against each other "
          f"(exact and interval-sketch dual index) surfaces "
@@ -1853,8 +1937,9 @@ def build() -> None:
          f"the sketch channel\u2014each a case a publisher would "
          f"have to adjudicate, and each receiving note-level "
          f"alignment evidence from the confirmation layer.  These "
-         f"estimates inherit the adjudicator's precision and "
-         f"recall (Section V-C); they are survey estimates from a "
+         f"estimates inherit the precision and recall of the chain "
+         f"criterion measured in this section itself; they are survey "
+         f"estimates from a "
          f"1/8 sample, not enumerations.")
     full_width(doc, lambda: (add_emf(doc, "fig8_census", 13.2),
                              caption(doc, "Fig. 14. Full-corpus census "
@@ -2056,7 +2141,14 @@ def build() -> None:
          "a legal determination: a confirmed chain localizes shared "
          "material and estimates transposition, while questions of "
          "access, originality, and substantial similarity remain "
-         "with adjudicators [20], [30]. All code and experiment "
+         "with adjudicators [20], [30]. The expected utility of the "
+         "system is bounded accordingly: it catches extractive "
+         "regurgitation\u2014copied spans a generator emits intact\u2014"
+         "but not distributed memorization, where influence is spread "
+         "across a model without any recoverable span; that "
+         "per-sample question is the complement of membership "
+         "inference [23], and the two instruments are most credible "
+         "when used together. All code and experiment "
          "scripts are released to make every number in this paper "
          "independently reproducible.")
 

@@ -311,7 +311,7 @@ def _fig1_draw() -> None:
         [(dc[0], dc[1] + 2.6), (dc[0] + 2.7, dc[1]),
          (dc[0], dc[1] - 2.6), (dc[0] - 2.7, dc[1])],
         closed=True, fc="white", ec=AMBER_DK, lw=1.1, zorder=5))
-    ax.text(dc[0], dc[1], "ρ ≥ θ ?", ha="center", va="center",
+    ax.text(dc[0], dc[1], "0.62 ≥ 0.5 ?", ha="center", va="center",
             fontsize=6.0, color=INK, zorder=6)
     txt(XC + 9.2, YB_ + 6.9, "FP  2.1 %", fs=6.6, w="bold", c=AMBER_DK)
     ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 5.6), 8.6, 0.75,
@@ -340,7 +340,7 @@ def _fig1_draw() -> None:
         ("donor", "piece_0421.mid"),
         ("span",  "bars 33–48 · spliced"),
         ("offset", "+2 semitones · ×1.05"),
-        ("score", "ρ = 0.62 ≥ θ  ✓"),
+        ("score", "ρ = 0.62 ≥ 0.5 ✓"),
     ]
     for i, (k, v) in enumerate(mono):
         yy = YT + 8.6 - i * 2.1
@@ -726,7 +726,7 @@ def _fig1_alt_draw() -> None:
             ("query", "piece_9017.mid"),
             ("span", "bars 33–48"),
             ("offset", "+2 st · ×1.05"),
-            ("score", "ρ = 0.62 ≥ θ ✓")]
+            ("score", "ρ = 0.62 ≥ 0.5 ✓")]
     for i, (k, v) in enumerate(mono):
         yy = 34.6 - i * 2.15
         ax.text(85.4, yy, k, fontsize=5.8, color="#7f9dab",
