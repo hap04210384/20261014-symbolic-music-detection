@@ -23,12 +23,12 @@ INKSCAPE = r"C:\Program Files\Inkscape\bin\inkscape.exe"
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman", "DejaVu Serif"],
-    "font.size": 9,
-    "axes.titlesize": 9,
-    "axes.labelsize": 9,
-    "legend.fontsize": 7.5,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8,
+    "font.size": 8,            # unified in-figure text (charts)
+    "axes.titlesize": 8.5,     # panel titles
+    "axes.labelsize": 8,       # axis labels
+    "legend.fontsize": 7,      # legends
+    "xtick.labelsize": 7,      # tick labels
+    "ytick.labelsize": 7,
     "svg.fonttype": "path",   # text -> curves: zero font risk in Word
     "figure.dpi": 150,
 })
@@ -804,7 +804,7 @@ def fig2_scaling() -> None:
 # ---------------------------------------------------------------- fig 3
 def fig3_anytime() -> None:
     rows = [r for r in load("e3/anytime.jsonl") if r["length_s"] == 16]
-    fig, ax = plt.subplots(figsize=(3.5, 2.6))
+    fig, ax = plt.subplots(figsize=(3.5, 2.3))
     style = {"rare": ("o-", "#1f5fb4"), "random": ("s--", "#27ae60"),
              "hot": ("^:", "#c0392b")}
     for order, (st, c) in style.items():
@@ -898,7 +898,7 @@ def fig5_cascade() -> None:
     ret = [np.mean([r["retention"][str(c)] for r in rows]) for c in cs]
     ax2.bar([str(c) for c in cs], ret, color="#1f5fb4", width=0.55)
     ax2.axhline(0.99, ls="--", lw=0.8, c="#c0392b")
-    ax2.text(1.6, 0.9835, "union feed target 99%", fontsize=6.5,
+    ax2.text(1.6, 0.9835, "union feed target 99%", fontsize=7,
              color="#c0392b")
     ax2.set_ylim(0.75, 1.01)
     ax2.set_xlabel("candidate set size C")
@@ -922,7 +922,7 @@ def fig6_memorization() -> None:
             src[m].append(np.mean([r["is_source"] for r in cell]))
     x = np.arange(len(lambdas))
     w = 0.26
-    fig, ax = plt.subplots(figsize=(3.5, 2.6))
+    fig, ax = plt.subplots(figsize=(3.5, 2.3))
     for i, m in enumerate(orders):
         ax.bar(x + (i - 1) * w, det[m], w, label=f"m={m}",
                color=["#9db8d9", "#4a7ebb", "#1f3f73"][i])
@@ -947,7 +947,7 @@ def fig7_case() -> None:
     ia = np.arange(len(na[0]))
     ib = np.arange(len(nb[0]))
     pairs = case["pairs"]
-    fig, ax = plt.subplots(figsize=(3.5, 2.6))
+    fig, ax = plt.subplots(figsize=(3.5, 2.3))
     ax.plot(ia, ia * 0 + 1, "|", ms=3, color="#bdc3c7")
     ax.plot(ib * 0 + 1, ib, "|", ms=3, color="#bdc3c7")
     if pairs:
@@ -987,7 +987,7 @@ def fig8_census() -> None:
     ax.set_yscale("log")
     ax.set_xticks(x)
     ax.set_xticklabels([f"[{lo:.2f},{hi:.2f})" for lo, hi in bands],
-                       fontsize=6.5)
+                       fontsize=7)
     ax.set_xlabel("relative containment score")
     ax.set_ylabel("candidate pairs (log)")
     ax.set_title("(a) all-pairs census, 174,300 pieces", fontsize=8)
@@ -1009,9 +1009,9 @@ def fig8_census() -> None:
             capsize=3, error_kw=dict(lw=0.9))
     for i, (k, _) in enumerate(strata):
         n = summ["per_stratum"][k]["n"]
-        ax2.text(i, hi[i] + 2, f"n={n}", ha="center", fontsize=6.5)
+        ax2.text(i, hi[i] + 2, f"n={n}", ha="center", fontsize=7)
     ax2.set_xticks(range(3))
-    ax2.set_xticklabels([s[1] for s in strata], fontsize=6.5, rotation=12)
+    ax2.set_xticklabels([s[1] for s in strata], fontsize=7, rotation=12)
     ax2.set_ylabel("precision of channel (%)")
     ax2.set_ylim(0, 108)
     ax2.set_title("(b) confirmed-copy precision, stratified audit",
@@ -1071,12 +1071,12 @@ def fig_e1_heatmap() -> None:
                                      [sl for _, _, slist in _e1_groups()
                                       for sl, _ in slist])])
     ax.xaxis.set_ticks_position("top")
-    ax.tick_params(length=0, labelsize=6.5)
+    ax.tick_params(length=0, labelsize=7)
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
             miss = M[i, j] < 100
             ax.text(j, i, f"{M[i, j]:.0f}", ha="center", va="center",
-                    fontsize=6, weight="bold" if miss else "normal",
+                    fontsize=7, weight="bold" if miss else "normal",
                     color="#7f0000" if miss else "white")
             if M[i, j] < 95:  # box the materially-degraded cells
                 ax.add_patch(plt.Rectangle(
@@ -1086,7 +1086,7 @@ def fig_e1_heatmap() -> None:
         ax.spines[e].set_visible(False)
     cb = fig.colorbar(im, ax=ax, shrink=0.5, pad=0.02)
     cb.ax.tick_params(labelsize=6)
-    cb.set_label("recall (%)", fontsize=6.5)
+    cb.set_label("recall (%)", fontsize=7)
     save(fig, "fig_e1_heatmap")
 
 
@@ -1098,7 +1098,7 @@ def fig_e13_margins() -> None:
     verb_margins = [r["verbatim"]["margin"] for r in rows]
     tol_flag = [len(r["tolerant"]["fp_pool"]) > 0 for r in rows]
     verb_flag = [len(r["verbatim"]["fp_pool"]) > 0 for r in rows]
-    fig, axes = plt.subplots(1, 2, figsize=(6.8, 2.4))
+    fig, axes = plt.subplots(1, 2, figsize=(6.8, 2.1))
     for ax, margins, flag, title in [
             (axes[0], tol_margins, tol_flag,
              "(a) L1 tolerant screen: donor margin"),
@@ -1110,9 +1110,9 @@ def fig_e13_margins() -> None:
         ax.text(0.97, 0.96, f"{np.mean(flag) * 100:.0f}% of fragments\n"
                 "flagged", transform=ax.transAxes, ha="right", va="top",
                 fontsize=7)
-        ax.set_xlabel("donor score minus best non-donor", fontsize=7.5)
-        ax.set_ylabel("fragments", fontsize=7.5)
-        ax.set_title(title, fontsize=8)
+        ax.set_xlabel("donor score minus best non-donor", fontsize=7)
+        ax.set_ylabel("fragments", fontsize=7)
+        ax.set_title(title, fontsize=8.5)
         ax.tick_params(labelsize=7)
         ax.set_xlim(-2, 41)
     save(fig, "fig_e13_margins")
@@ -1125,7 +1125,7 @@ def fig_e14_rho() -> None:
     regimes = [("strict", "#1f5fb4", "s", "strict"),
                ("mid", "#c0392b", "o", "mid"),
                ("loose", "#27ae60", "^", "loose")]
-    fig, ax = plt.subplots(figsize=(3.4, 2.5))
+    fig, ax = plt.subplots(figsize=(3.4, 2.2))
     for key, color, marker, label in regimes:
         rec, fp = [], []
         for rho in ("0.3", "0.4", "0.5", "0.6"):
@@ -1137,11 +1137,11 @@ def fig_e14_rho() -> None:
         for rho, x, y in zip(("0.3", "0.4", "0.5", "0.6"), fp, rec):
             ax.annotate(rho, (x, y), textcoords="offset points",
                         xytext=(4, 3), fontsize=5.5, color=color)
-    ax.set_xlabel("fragment-level FP (%)", fontsize=7.5)
-    ax.set_ylabel("donor recall (%)", fontsize=7.5)
+    ax.set_xlabel("fragment-level FP (%)", fontsize=7)
+    ax.set_ylabel("donor recall (%)", fontsize=7)
     ax.set_title("contiguity threshold \u03c1 by anchor tolerance",
                  fontsize=8)
-    ax.legend(fontsize=6.5, frameon=False)
+    ax.legend(fontsize=7, frameon=False)
     ax.grid(True, lw=0.3, alpha=0.4)
     ax.tick_params(labelsize=7)
     save(fig, "fig_e14_rho")
@@ -1160,8 +1160,8 @@ def fig_e5_ablation() -> None:
     x = [r["factor"] for r in L]
     y = [r["false_candidates"] for r in L]
     ax.plot(x, y, "o-", ms=3.5, lw=1, color="#1f5fb4")
-    ax.set_xlabel("span length factor L", fontsize=7.5)
-    ax.set_ylabel("false candidates", fontsize=7.5)
+    ax.set_xlabel("span length factor L", fontsize=7)
+    ax.set_ylabel("false candidates", fontsize=7)
     ax.set_title("(a) evidence span E5.4", fontsize=8)
 
     ax = axes[1]
@@ -1172,14 +1172,14 @@ def fig_e5_ablation() -> None:
     ax.bar(range(len(K)), y, color="#7f9ec9", ec="#4a6fa5", lw=0.5)
     ax.set_yscale("log")
     ax.set_xticks(range(len(K)))
-    ax.set_xticklabels(labels, fontsize=6, rotation=45)
+    ax.set_xticklabels(labels, fontsize=7, rotation=45)
     ax2 = ax.twinx()
     ax2.plot(range(len(K)), [v * 100 for v in recall], "s--", ms=3,
              lw=1, color="#c0392b")
     ax2.set_ylim(60, 110)
     ax2.set_ylabel("recall (%)", fontsize=7, color="#c0392b")
-    ax2.tick_params(labelsize=6.5, colors="#c0392b")
-    ax.set_ylabel("false candidates (log)", fontsize=7.5)
+    ax2.tick_params(labelsize=7, colors="#c0392b")
+    ax.set_ylabel("false candidates (log)", fontsize=7)
     ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=8)
 
     ax = axes[2]
@@ -1188,9 +1188,9 @@ def fig_e5_ablation() -> None:
     ax.plot(range(len(G)), y, "o-", ms=3.5, lw=1, color="#1f5fb4",
             label="false candidates")
     ax.set_xticks(range(len(G)))
-    ax.set_xticklabels(labels, fontsize=6.5)
-    ax.set_xlabel("quantization grid", fontsize=7.5)
-    ax.set_ylabel("false candidates", fontsize=7.5)
+    ax.set_xticklabels(labels, fontsize=7)
+    ax.set_xlabel("quantization grid", fontsize=7)
+    ax.set_ylabel("false candidates", fontsize=7)
     ax.set_title("(c) grid granularity E5.7", fontsize=8)
 
     for ax in axes:
@@ -1205,7 +1205,7 @@ def fig_e20_lsh() -> None:
     with the LSH operating thresholds; (b) recall of the three band
     configurations versus the tolerant screen on the same 337 cells."""
     rows = load("e20/matrix.jsonl")
-    fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.1))
+    fig, axes = plt.subplots(1, 2, figsize=(9.6, 2.6))
 
     dj = [r["donor_jaccard"] for r in rows if r.get("rpb", 8) == 8]
     ax = axes[0]
@@ -1213,10 +1213,10 @@ def fig_e20_lsh() -> None:
             edgecolor="white", lw=0.3)
     ax.axvline(0.10, color="#c0392b", ls="--", lw=1.2)
     ax.text(0.105, ax.get_ylim()[1] * 0.93, "tau = 0.10",
-            fontsize=7.5, color="#c0392b")
+            fontsize=7, color="#c0392b")
     ax.axvline(0.05, color="#e67e22", ls=":", lw=1.2)
     ax.text(0.055, ax.get_ylim()[1] * 0.80, "tau = 0.05",
-            fontsize=7.5, color="#e67e22")
+            fontsize=7, color="#e67e22")
     ax.set_xlabel("donor set-Jaccard (337 planted cells)", fontsize=8)
     ax.set_ylabel("cells", fontsize=8)
     ax.set_title("(a) a contained span scores Jaccard ~0.1 at best",
@@ -1264,7 +1264,7 @@ def fig_e21_memorization() -> None:
     cal = load("e21/calibration.jsonl")
     mem = load("e21/memorization.jsonl")
     e62 = load("e62/memorization.jsonl")
-    fig, axes = plt.subplots(1, 3, figsize=(9.6, 3.1))
+    fig, axes = plt.subplots(1, 3, figsize=(9.6, 2.6))
 
     ax = axes[0]
     ep = [r["epoch"] for r in log]
@@ -1310,7 +1310,7 @@ def fig_e21_memorization() -> None:
     ax.bar(x + 0.2, src, width=0.38, color="#8e44ad",
            label="source-attributed")
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=6.5)
+    ax.set_xticklabels(labels, fontsize=7)
     ax.set_ylabel("% of samples", fontsize=8)
     ax.set_title("(c) detector view: the lambda = 0 band", fontsize=8.5)
     ax.legend(fontsize=7)

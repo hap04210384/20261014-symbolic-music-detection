@@ -590,9 +590,10 @@ def para(doc, text, indent=0.36, size=10, align="justify"):
     return p
 
 
-def caption(doc, text, size=9):
+def caption(doc, text, size=9.5):
     p = doc.add_paragraph(style="Figure Caption")
-    p.add_run(text)
+    r = p.add_run(text)
+    r.font.size = Pt(size)
     # keep the caption glued to the figure above it (no orphaned
     # captions across page/column breaks)
     prev = p._p.getprevious()
