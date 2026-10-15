@@ -454,18 +454,22 @@ def _fig1_alt_draw() -> None:
                                     ls=ls, shrinkA=1, shrinkB=1))
 
     # ---------------- process spine --------------------------------------
-    SY = 44.0
+    SY = 45.5
     ax.plot([7, 93], [SY, SY], color=AXGR, lw=1.0, zorder=2)
-    miles = [(10, "1", "CORPUS", CA), (32, "2", "L1 SCREEN", CB),
-             (52, "3", "L2 RE-RANK", CB), (72, "4", "L3 CONFIRM", CC),
-             (91, "5", "VERDICT", CD)]
-    for x, num, lab, col in miles:
+    miles = [(10, "1", "CORPUS", CA, "174,300 pcs"),
+             (32, "2", "L1 SCREEN", CB, "1.66 M pairs"),
+             (52, "3", "L2 RE-RANK", CB, "C=50 · 96.6 %"),
+             (72, "4", "L3 CONFIRM", CC, "ρ ≥ 0.5"),
+             (91, "5", "VERDICT", CD, "audit-ready")]
+    for x, num, lab, col, stat in miles:
         ax.add_patch(plt.Circle((x, SY), 1.5, fc=col, ec="white", lw=1.2,
                                 zorder=4))
         ax.text(x, SY, num, ha="center", va="center", fontsize=7.5,
                 weight="bold", color="white", zorder=5)
         ax.text(x, SY - 2.7, lab, ha="center", va="center", fontsize=5.8,
                 weight="bold", color=col, zorder=4)
+        ax.text(x, SY - 4.4, stat, ha="center", va="center", fontsize=5.0,
+                color=GRAY, zorder=4)
 
     # ---------------- corpus card ----------------------------------------
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
@@ -485,6 +489,7 @@ def _fig1_alt_draw() -> None:
                                ec=AXGR, lw=0.6, zorder=5))
     txt(4.2, 24.6, "174,300", fs=11.5, w="bold", c=CA_DK)
     txt(4.2, 22.3, "pieces", fs=6.0, c=GRAY)
+    txt(4.2, 20.6, "peak mem 1.05 GB", fs=5.4, c=GRAY)
     txt(4.2, 18.9, "index build 24.7 s", fs=5.8)
     txt(4.2, 17.5, "query p50 41.9 ms", fs=5.8)
     tag_y = 15.0
@@ -512,6 +517,8 @@ def _fig1_alt_draw() -> None:
             ec="none", alpha=0.8, zorder=3))
     txt(18, 39.6, "L1 · TOLERANT ITEM-SET SCREEN — rare-first anytime",
         fs=7.0, w="bold", c=CB_DK)
+    txt(18, 38.1, "evidence lower bound per prefix (Thm 1) · interruptible"
+        " at any budget B", fs=5.4, c=GRAY)
     txt(31, 23.2, "1.66 M", fs=9.0, w="bold", c=CB_DK)
     txt(31, 21.3, "candidate pairs", fs=5.4, c=GRAY)
     ax.plot([44, 44], [13, 33.2], color=CC, lw=1.0, ls=":", zorder=4)
@@ -525,6 +532,22 @@ def _fig1_alt_draw() -> None:
         ha="center")
     ax.plot([53.3, 53.3], [28.9, 27.9], color=CB_DK, lw=0.8, zorder=4)
 
+    # ---- mini retention bars (top-C, 233 hard negatives) ---------------
+    txt(45.5, 12.6, "top-C donor retention (233 hard negatives)", fs=5.2,
+        w="bold", c=CB_DK)
+    ret_c = [("5", 84.1), ("10", 87.1), ("20", 93.1), ("50", 96.6)]
+    base_y = 8.6
+    for i, (clab, val) in enumerate(ret_c):
+        bx = 46.8 + i * 3.6
+        bh = (val - 80.0) / 20.0 * 2.6
+        ax.add_patch(plt.Rectangle((bx, base_y), 2.1, bh, fc=CB,
+                                   ec="none", zorder=4))
+        ax.text(bx + 1.05, base_y + bh + 0.35, f"{val:.0f}", ha="center",
+                fontsize=5.0, color=CB_DK, zorder=5)
+        ax.text(bx + 1.05, base_y - 0.7, f"C={clab}", ha="center",
+                fontsize=4.8, color=GRAY, zorder=5)
+    ax.plot([46.4, 60.6], [base_y, base_y], color=AXGR, lw=0.6, zorder=4)
+
     # ---------------- recall floor ---------------------------------------
     ax.add_patch(plt.Rectangle((18, 4.5), 62, 3.0, fc=GOOD, ec="none",
                                zorder=3))
@@ -532,10 +555,58 @@ def _fig1_alt_draw() -> None:
            " · 337 adversarial cells · 0 violations",
            ha="center", va="center", fontsize=6.2, weight="bold",
            color="white", zorder=4)
-    for ux in (26, 40, 58):
+    for ux in (24, 34, 42):
         arrow((ux, 7.6), (ux, 9.6), color=GOOD_DK, lw=1.1)
     txt(49, 1.9, "candidates narrow — the guarantee does not",
         fs=6.0, c=GRAY, st="italic", ha="center")
+
+    # ---- mini anytime inset (e3, 16 s spans) ---------------------------
+    txt(2.8, 12.4, "anytime: open candidates vs budget", fs=5.2, w="bold",
+        c=INK)
+    ax3 = [3.6, 15.6]
+    ay3 = [3.6, 11.2]
+    ax.plot([ax3[0], ax3[1], ax3[1], ax3[0], ax3[0]],
+            [ay3[0], ay3[0], ay3[1], ay3[1], ay3[0]],
+            color=AXGR, lw=0.6, zorder=3)
+    rows3 = [r for r in load("e3/anytime.jsonl") if r["length_s"] == 16]
+    fr_all = sorted({r["fraction"] for r in rows3})
+    lo3, hi3 = None, None
+    series = {}
+    for order, (c3, ls3) in {"rare": (CB_DK, "-"), "random": (GRAY, "--"),
+                             "hot": (CC_DK, ":")}.items():
+        xs, ys = [], []
+        for f_ in fr_all:
+            cell = [r for r in rows3 if r["order"] == order
+                    and r["fraction"] == f_]
+            if not cell:
+                continue
+            xs.append(f_)
+            ys.append(float(np.mean([r["n_hits"] + r["remaining_bound"]
+                                     for r in cell])))
+        series[order] = (xs, ys, c3, ls3)
+        if ys:
+            lo3 = min(lo3, min(ys)) if lo3 else min(ys)
+            hi3 = max(hi3, max(ys)) if hi3 else max(ys)
+    lo3, hi3 = np.log10(lo3 * 0.8), np.log10(hi3 * 1.2)
+    for order, (xs, ys, c3, ls3) in series.items():
+        if not xs:
+            continue
+        px = [ax3[0] + (f_ - fr_all[0]) / (fr_all[-1] - fr_all[0])
+              * (ax3[1] - ax3[0]) for f_ in xs]
+        py = [ay3[0] + (np.log10(y) - lo3) / (hi3 - lo3)
+              * (ay3[1] - ay3[0]) for y in ys]
+        ax.plot(px, py, ls3, lw=1.1, color=c3, zorder=4)
+    for i, (order, (c3, ls3)) in enumerate(
+            {"rare": (CB_DK, "-"), "random": (GRAY, "--"),
+             "hot": (CC_DK, ":")}.items()):
+        lx0 = 4.2 + i * 3.1
+        ax.plot([lx0, lx0 + 0.9], [10.75, 10.75], ls3, lw=1.1, color=c3,
+                zorder=4)
+        ax.text(lx0 + 1.2, 10.75, order, fontsize=4.6, color=c3, va="center",
+                zorder=5)
+    txt(9.6, 2.9, "budget →", fs=4.6, c=GRAY, ha="center")
+    ax.text(3.05, 7.4, "bound (log)", fontsize=4.6, color=GRAY, ha="center",
+            va="center", rotation=90, zorder=5)
 
     # ---------------- L3 lens --------------------------------------------
     LC = (74, 24)
@@ -544,6 +615,8 @@ def _fig1_alt_draw() -> None:
             solid_capstyle="round", zorder=4)
     txt(74, 34.6, "L3 · STRUCTURAL CONFIRM", fs=6.8, w="bold", c=CC_DK,
         ha="center")
+    txt(74, 33.0, "invariant to pitch ±Δ · tempo ×τ · splice", fs=5.0,
+        c=GRAY, ha="center")
     anchors = [3, 4, 6, 7, 9]
     for row, yy in enumerate((26.6, 22.0)):
         for i in range(11):
@@ -568,16 +641,17 @@ def _fig1_alt_draw() -> None:
         fc=DARK, ec=DARK, lw=1.0, zorder=3))
     txt(85.7, 37.2, "VERDICT", fs=7.2, w="bold", c="#d8c9a8")
     mono = [("donor", "piece_0421.mid"),
+            ("query", "piece_9017.mid"),
             ("span", "bars 33–48"),
             ("offset", "+2 st · ×1.05"),
             ("score", "ρ = 0.62 ≥ θ  ✓")]
     for i, (k, v) in enumerate(mono):
-        yy = 34.4 - i * 2.3
+        yy = 34.6 - i * 2.15
         ax.text(85.7, yy, k, fontsize=5.8, color="#7f9dab",
                 family="monospace", zorder=5)
         ax.text(89.3, yy, v, fontsize=5.8, color=DARK_TX,
                 family="monospace", zorder=5)
-    txt(85.7, 23.6, "publisher-readable evidence", fs=5.2,
+    txt(85.7, 23.0, "publisher-readable evidence", fs=5.2,
         c="#8a9aa4", st="italic")
 
     # audit chips under the report
