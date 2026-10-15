@@ -822,7 +822,8 @@ def add_affiliation_footnote(doc):
             ("Manuscript received [month] [day], 2026; revised [month] "
              "[day], 2026; accepted [month] [day], 2026. ", False),
             (ACK + " ", False),
-            ("(Corresponding author: Yalong Zhang.)", True),
+            ("(Corresponding author: Yalong Zhang, "
+             "ylzhang@qzc.edu.cn.)", True),
         ]),
         _fn_para([
             ("Xuemei Li and Jianping Deng are with the Faculty of Teacher "
@@ -840,19 +841,6 @@ def add_affiliation_footnote(doc):
     part._blob = etree.tostring(root, xml_declaration=True,
                                 encoding="UTF-8", standalone=True)
     return fid
-
-
-def footnote_ref_para(doc, fid):
-    """9-pt empty paragraph carrying the footnote reference, inserted at the
-    top of the two-column section (mirrors the template)."""
-    from docx.oxml.ns import nsdecls
-    p = parse_xml(
-        '<w:p %s><w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:pPr>'
-        '<w:r><w:rPr><w:sz w:val="18"/></w:rPr>'
-        '<w:footnoteReference w:id="%d"/></w:r></w:p>'
-        % (nsdecls("w"), fid))
-    body = doc.element.body
-    body.find(qn("w:sectPr")).addprevious(p)
 
 
 def tabletitle(doc, label, title):
@@ -907,17 +895,26 @@ def build() -> None:
         p.add_run(name)
         r = p.add_run(mark)
         r.font.superscript = True
-    spacer(doc, after=16)
 
     # affiliations, funding and the corresponding-author note go to a
-    # first-page footnote, as the IEEE Transactions template requires
+    # first-page footnote, as the IEEE Transactions template requires;
+    # its reference mark opens the two-column section, exactly where the
+    # template puts it (anchoring the mark in the one-column section
+    # pushes the whole abstract to page 2 in rendering, so it must live
+    # here, as the first paragraph above the abstract)
     fid = add_affiliation_footnote(doc)
 
     # continuous section break: as in the IEEE authoring template,
     # the abstract and index terms sit in the two-column section
     # (top of the left column)
     switch_to(doc, SECT_1COL[0], before=1, after=16)
-    footnote_ref_para(doc, fid)
+
+    rp = parse_xml(
+        '<w:p %s><w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:pPr>'
+        '<w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr>'
+        '<w:footnoteReference w:id="%d"/></w:r></w:p>'
+        % (nsdecls("w"), fid))
+    doc.paragraphs[-1]._p.addnext(rp)
 
     # --- abstract / index terms (two-column) --------------------- ----------------------------------------
     p = doc.add_paragraph(style="Normal")
@@ -1986,6 +1983,9 @@ def build() -> None:
         pf.first_line_indent = Cm(-0.75)
         # References style auto-numbers the list; do NOT add a literal "[n]" prefix
         p.add_run(ref)
+
+    # full-width closing line after the reference list
+    full_width(doc, lambda: spacer(doc))
 
     # --- core properties ------------------------------------------------------------
     cp = doc.core_properties
