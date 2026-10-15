@@ -960,6 +960,7 @@ def build() -> None:
     r2.font.size = Pt(9)
     p = doc.add_paragraph(style="Normal")
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p.paragraph_format.space_before = Pt(5)
     r = p.add_run("Index Terms")
     r.bold = True
     r.italic = True
