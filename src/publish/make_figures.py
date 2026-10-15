@@ -169,9 +169,11 @@ def _fig1_draw() -> None:
     # ================= column a: ingestion ================================
     card(XA, YT, WA, HH, "LAKH MIDI CORPUS", title_c=GREEN_DK)
     piano_roll(XA + 1.4, YT + 2.6, WA - 2.8, 5.4, seed=7, dark=GREEN_DK)
-    txt(XA + 1.4, YT + 1.3, "174,300 pieces", fs=6.4, w="bold",
+    txt(XA + 1.4, YT + 1.9, "174,300 pieces", fs=6.4, w="bold",
         c=GREEN_DK)
-    tag(XA + WA - 9.6, YT + 0.6, "symbolic · MIDI")
+    txt(XA + 1.4, YT + 0.7, "built once · reused by every query",
+        fs=5.2, c=GRAY, st="italic")
+    tag(XA + WA - 7.6, YT + HH - 2.6, "symbolic · MIDI")
 
     card(XA, YM, WA, HH, "EVENT ENCODING", title_c=GREEN_DK)
     rng = np.random.default_rng(11)
@@ -193,8 +195,24 @@ def _fig1_draw() -> None:
     txt(XA + 1.4, YM + 2.1, "dense gapless IDs (§III-B)", fs=6.0)
     txt(XA + 1.4, YM + 0.8, "order discarded at this layer", fs=5.6,
         c=GRAY, st="italic")
+    # narrative: three sample events map to one item tuple
+    for i, c_ in enumerate((GREEN, "#7d97ac", GREEN_DK)):
+        ax.add_patch(plt.Rectangle((XA + 14.8 + i * 0.95, YM + 3.35),
+                                   0.65, 0.65, fc=c_, ec="none",
+                                   zorder=4))
+    arrow((XA + 17.8, YM + 3.7), (XA + 18.5, YM + 3.7), color=GRAY,
+          lw=0.9)
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (XA + 18.7, YM + 2.95), 2.9, 1.6,
+        boxstyle="round,pad=0,rounding_size=0.4", fc="#eef2f5",
+        ec=AXGR, lw=0.6, zorder=4))
+    ax.text(XA + 20.15, YM + 3.75, "⟨9,3,1⟩", ha="center", va="center",
+            fontsize=5.0, color=GREEN_DK, family="monospace", zorder=5)
+    txt(XA + 14.8, YM + 2.3, "e_i \u2192 item", fs=4.8, c=GRAY, st="italic")
 
     card(XA, YB_, WA, HH, "L1 ITEM-SET INDEX", title_c=GREEN_DK)
+    txt(XA + 1.4, YB_ + 7.4, "serves: rare items shared with q",
+        fs=5.4, c=GRAY, st="italic")
     txt(XA + 1.4, YB_ + 8.6, "FP-growth · rare-first order", fs=6.2)
     txt(XA + 1.4, YB_ + 6.2, "build 24.7 s", fs=9.2, w="bold", c=GREEN_DK)
     txt(XA + 1.4, YB_ + 4.2, "query p50 41.9 ms", fs=9.2, w="bold",
@@ -207,9 +225,13 @@ def _fig1_draw() -> None:
     card(XB, YT, WB, HH, "QUERY — NEW MIDI PIECE", title_c=CB_DK,
          dashed=True)
     piano_roll(XB + 1.4, YT + 4.6, WB - 2.8, 3.6, seed=23, dark=CB_DK)
+    ax.add_patch(plt.Circle((XB + 8.0, YT + 6.2), 0.62, fc=AMBER,
+                            ec="white", lw=0.8, zorder=6))
+    ax.text(XB + 8.0, YT + 5.0, "query q", fontsize=5.2, color=AMBER_DK,
+            ha="center", zorder=6)
     txt(XB + 1.4, YT + 3.2, "a submission, a generated sample,", fs=6.0)
     txt(XB + 1.4, YT + 1.9, "or a suspected infringement", fs=6.0)
-    tag(XB + 1.4, YT + 0.4, "same shared encoding", fc=GRAY)
+    tag(XB + 14.2, YT + 0.4, "same encoding", fc=GRAY)
 
     card(XB, YM, WB, HH, "L1 · TOLERANT SCREEN", title_c=CB_DK)
     xs = np.linspace(0, 10, 60)
@@ -224,6 +246,11 @@ def _fig1_draw() -> None:
             lw=1.0, ls=":", zorder=4)
     txt(XB + 17.6, YM + 8.4, "budget B", fs=5.4, c=AMBER_DK, w="bold")
     txt(XB + 4.0, YM + 8.6, "cumulative evidence", fs=5.4, c=GRAY)
+    # narrative: the traced query's evidence accrues on the curve
+    ax.add_patch(plt.Circle((XB + 14.2, YM + 7.06), 0.62, fc=AMBER,
+                            ec="white", lw=0.8, zorder=6))
+    ax.text(XB + 14.9, YM + 7.5, "evidence(q, d)", fontsize=5.0,
+            color=AMBER_DK, zorder=6)
     txt(XB + 1.4, YM + 1.9, "rare-first anytime schedule —", fs=6.0)
     txt(XB + 1.4, YM + 0.6, "two-sided rare itemsets", fs=6.0)
     tag(XB + WB - 5.7, YM + HH - 2.5, "anytime", fc=CB)
@@ -245,6 +272,11 @@ def _fig1_draw() -> None:
         fs=6.0)
     txt(XB + 1.4, YB_ + 1.1, "L1 never drops a true copy", fs=6.0)
     tag(XB + WB - 6.4, YB_ + 0.5, "provable", fc=CB)
+    # narrative: ring the worst adversarial cell — it still passes
+    ax.add_patch(plt.Circle((XB + 2.075 + 5 * 1.15, YB_ + 4.825), 0.78,
+                            fc="none", ec=AMBER_DK, lw=1.1, zorder=6))
+    txt(XB + 1.4, YB_ + 3.7, "ring: worst cell, still ≥ bound", fs=4.8,
+        c=GRAY, st="italic")
 
     # ================= column c: confirmation =============================
     card(XC, YT, WC, HH, "L2 · VERBATIM RE-RANK", fc=ABG, ec=AEC,
@@ -275,6 +307,14 @@ def _fig1_draw() -> None:
         fs=6.0)
     txt(XC + 1.4, YM + 0.9, "ordered chains, tolerance ρ", fs=5.6,
         c=GRAY, st="italic")
+    # narrative: ring one anchor pair of the traced query's match
+    for ry in (YM + 6.75, YM + 4.75):
+        ax.add_patch(plt.Circle((XC + 10.4, ry), 0.68, fc="none",
+                                ec=AMBER_DK, lw=1.0, zorder=6))
+    ax.plot([XC + 11.15, XC + 13.6], [YM + 5.75, YM + 5.75], color=AMBER_DK,
+            lw=0.6, zorder=6)
+    txt(XC + 13.8, YM + 5.75, "anchor pair (q, d)", fs=4.8, c=AMBER_DK,
+        st="italic")
 
     card(XC, YB_, WC, HH, "VERDICT", fc=ABG, ec=AEC, title_c=AMBER_DK)
     dc = (XC + 4.6, YB_ + 5.2)
@@ -320,7 +360,12 @@ def _fig1_draw() -> None:
                 family="monospace", zorder=5)
         ax.text(XD + 5.6, yy, v, fontsize=6.0, color=DARK_TX,
                 family="monospace", zorder=5)
-    txt(XD + 1.4, YT + 1.2, "verdict + publisher-readable evidence",
+    # narrative: the decision row carries the traced query's verdict
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (XD + 1.2, YT + 1.55), 20.2, 1.7,
+        boxstyle="round,pad=0,rounding_size=0.4", fc="none",
+        ec="#d8b36a", lw=0.9, zorder=6))
+    txt(XD + 1.4, YT + 0.7, "verdict + publisher-readable evidence",
         fs=5.6, c="#9cc4d8", st="italic")
 
     card(XD, YM, WD, HH, "MEMORIZATION AUDIT", title_c=CD_DK)
@@ -358,6 +403,18 @@ def _fig1_draw() -> None:
     for xc in (XA + WA / 2, XB + WB / 2, XC + WC / 2, XD + WD / 2):
         arrow((xc, YT - 0.2), (xc, YM + HH + 0.2), lw=1.2)
         arrow((xc, YM - 0.2), (xc, YB_ + HH + 0.2), lw=1.2)
+    # narrative: name each vertical transition
+    vlab = [(XA + WA / 2, "quantize", "index"),
+            (XB + WB / 2, "screen", "certify"),
+            (XC + WC / 2, "re-rank", "confirm"),
+            (XD + WD / 2, "audit", "field-test")]
+    for xc, l1, l2 in vlab:
+        ax.text(xc + 1.25, (YT + YM + HH) / 2, l1, fontsize=4.6,
+                color=GRAY, style="italic", ha="left", va="center",
+                zorder=6)
+        ax.text(xc + 1.25, (YM + YB_ + HH) / 2, l2, fontsize=4.6,
+                color=GRAY, style="italic", ha="left", va="center",
+                zorder=6)
     # shared encoding / index into screening -- the two elbows share one
     # aligned vertical rail at x = 24.8 and identical arrow styling
     EX = 24.8
