@@ -1621,7 +1621,7 @@ def build() -> None:
          "grids monotonically reduce false positives at sub-linear "
          "vocabulary growth. Fig. 10 plots the three ablation families "
          "and Table IX tabulates them.")
-    full_width(doc, lambda: (add_emf(doc, "fig_e5_ablation", 16.0),
+    full_width(doc, lambda: (add_emf(doc, "fig_e5_ablation", 18.2),
                              caption(doc, "Fig. 10. Component ablations "
                                          "over the confirmation and "
                                          "screening stages. (a) evidence "
