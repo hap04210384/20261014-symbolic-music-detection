@@ -1464,6 +1464,8 @@ def build() -> None:
         "Input:  q = (e1..eq); inverted index I; k_screen = (2,1,1);",
         "        k_confirm = (1,0,0); threshold tau; contiguity rho;",
         "        top-C; budget B",
+        "Output: confirmed copies (P, chain, delta) with",
+        "        |chain| >= rho * q",
         " 1: order <- positions of q sorted by |N_k(item_i)| ascending",
         " 2: score <- {P: 0}; u <- 0",
         " 3: while u < q and budget(B) do",
