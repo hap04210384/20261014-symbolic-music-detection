@@ -76,17 +76,17 @@ def _fig1_draw() -> None:
     ax.set_xlim(0, 100)
     ax.set_ylim(1.4, 58)
 
-    # --- palette: deep emerald-teal primary, ochre accent, cool mint vs
-    # warm cream card tints, ink-dark report card ------------------------
-    GREEN, GREEN_DK = "#175e54", "#0f463d"   # primary emerald-teal
-    GOOD = "#2f7d5b"                          # data green (positive)
-    AMBER, AMBER_DK = "#c9822a", "#9e6116"   # ochre accent
-    BG, EC = "#ffffff", "#d9dfda"            # neutral white cards
-    ABG, AEC = "#fbf4e4", "#e9d4a8"          # warm cream cards (column c)
-    DARK, DARK_TX = "#1c2b25", "#cfe3d6"     # report card
-    INK, GRAY = "#202723", "#5f6a64"
-    MINT, MINT_E = "#e3efe8", "#a9c8b8"      # audit-grid cells
-    AXGR = "#a7b3ab"                          # mini-plot axes
+    # --- palette: deep slate-blue primary, soft ochre accent, cool gray
+    # vs warm sand card tints, ink-dark report card ----------------------
+    GREEN, GREEN_DK = "#33566e", "#23404f"   # primary slate blue
+    GOOD = "#57836a"                          # muted sage (positive)
+    AMBER, AMBER_DK = "#bf8830", "#96691c"   # soft ochre accent
+    BG, EC = "#ffffff", "#d9ddde"            # neutral white cards
+    ABG, AEC = "#faf5ea", "#e6d7b8"          # warm sand cards (column c)
+    DARK, DARK_TX = "#232b30", "#d3dee2"     # report card
+    INK, GRAY = "#22292e", "#5c6569"
+    MINT, MINT_E = "#eaf0ee", "#b4c6c0"      # audit-grid cells
+    AXGR = "#a8b2b6"                          # mini-plot axes
 
     def mix(c1, c2, t):
         a = [int(c1[i:i + 2], 16) for i in (1, 3, 5)]
@@ -143,7 +143,7 @@ def _fig1_draw() -> None:
             p = rng.uniform(0.12 * h, 0.88 * h)
             ax.add_patch(plt.Rectangle(
                 (x + t0, y + p - 0.28), d, 0.56,
-                fc=mix("#c8e0d4", GREEN_DK, 0.1 + 0.8 * p / h),
+                fc=mix("#d8e4ea", GREEN_DK, 0.1 + 0.8 * p / h),
                 ec="none", alpha=0.9, zorder=4))
         ax.add_patch(plt.Rectangle((x, y), w, h, fc="none", ec=AXGR,
                                    lw=0.6, zorder=5))
@@ -174,7 +174,7 @@ def _fig1_draw() -> None:
             if rng.random() < 0.42:
                 ax.add_patch(plt.Rectangle(
                     (XA + 1.4 + i * 0.95, YM + 5.2 + j * 0.8), 0.8, 0.66,
-                    fc=mix("#d5e9de", GREEN_DK,
+                    fc=mix("#dbe6ec", GREEN_DK,
                            0.15 + 0.7 * rng.random()),
                     ec="none", zorder=4))
     ax.add_patch(plt.Rectangle((XA + 1.4, YM + 5.2), 13.3, 4.0,
@@ -301,7 +301,7 @@ def _fig1_draw() -> None:
         c=GRAY, st="italic")
 
     # ================= column d: verdict ==================================
-    card(XD, YT, WD, HH, "REPORT", fc=DARK, ec=DARK, title_c="#8fc9a8")
+    card(XD, YT, WD, HH, "REPORT", fc=DARK, ec=DARK, title_c="#9cc4d8")
     mono = [
         ("donor", "piece_0421.mid"),
         ("span",  "bars 33–48 · spliced"),
@@ -310,12 +310,12 @@ def _fig1_draw() -> None:
     ]
     for i, (k, v) in enumerate(mono):
         yy = YT + 8.6 - i * 2.1
-        ax.text(XD + 1.5, yy, k, fontsize=6.0, color="#7fa88a",
+        ax.text(XD + 1.5, yy, k, fontsize=6.0, color="#7f9dab",
                 family="monospace", zorder=5)
         ax.text(XD + 5.6, yy, v, fontsize=6.0, color=DARK_TX,
                 family="monospace", zorder=5)
     txt(XD + 1.4, YT + 1.2, "verdict + publisher-readable evidence",
-        fs=5.6, c="#8fc9a8", st="italic")
+        fs=5.6, c="#9cc4d8", st="italic")
 
     card(XD, YM, WD, HH, "MEMORIZATION AUDIT", title_c=GREEN_DK)
     lx = np.array([0, 0.25, 0.5, 0.75, 1.0])
@@ -382,9 +382,9 @@ def _fig1_draw() -> None:
         cx = 4.5 + i * 24.5
         ax.text(cx, 5.7, t, fontsize=7.4, weight="bold", color="white",
                 zorder=5)
-        ax.text(cx, 3.9, s, fontsize=5.8, color="#cfe3d2", zorder=5)
+        ax.text(cx, 3.9, s, fontsize=5.8, color="#d3dee2", zorder=5)
         if i:
-            ax.plot([cx - 2.3, cx - 2.3], [3.3, 6.2], color="#417c6d",
+            ax.plot([cx - 2.3, cx - 2.3], [3.3, 6.2], color="#5a7d92",
                     lw=0.8, zorder=4)
     # evidence arrows into the claims band
     arrow((XB + WB / 2, YB_ - 0.2), (XB + WB / 2, 7.2), color=AMBER,
