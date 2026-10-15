@@ -547,6 +547,8 @@ def _fig1_alt_draw() -> None:
             ec="none", alpha=0.9, zorder=4))
     ax.add_patch(plt.Rectangle((4.4, 27.8), 10.1, 5.9, fc="none",
                                ec=AXGR, lw=0.6, zorder=5))
+    txt(4.7, 33.15, "every query searches here", fs=5.0, w="bold",
+        c=CA_DK)
     txt(4.2, 24.6, "174,300", fs=11.5, w="bold", c=CA_DK)
     txt(4.2, 22.3, "pieces", fs=6.0, c=GRAY)
     txt(4.2, 20.6, "peak mem 1.05 GB", fs=5.4, c=GRAY)
@@ -685,6 +687,8 @@ def _fig1_alt_draw() -> None:
         ax.text(lx0 + 1.2, 10.75, order, fontsize=4.6, color=c3, va="center",
                 zorder=5)
     txt(9.6, 2.9, "budget →", fs=4.6, c=GRAY, ha="center")
+    txt(9.6, 1.8, "rare-first stays lowest at every budget", fs=5.0,
+        w="bold", c=CB_DK, ha="center")
     ax.text(3.05, 7.4, "bound (log)", fontsize=4.6, color=GRAY, ha="center",
             va="center", rotation=90, zorder=5)
 
