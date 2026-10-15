@@ -1805,7 +1805,7 @@ def build() -> None:
          f"estimates inherit the adjudicator's precision and "
          f"recall (Section V-C); they are survey estimates from a "
          f"1/8 sample, not enumerations.")
-    full_width(doc, lambda: (add_emf(doc, "fig8_census", 16.5),
+    full_width(doc, lambda: (add_emf(doc, "fig8_census", 13.2),
                              caption(doc, "Fig. 14. Full-corpus census "
                                          "(174,300 pieces, stride-8 "
                                          "survey extrapolated \u00d78).  "

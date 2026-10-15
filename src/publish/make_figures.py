@@ -797,7 +797,7 @@ def fig2_scaling() -> None:
 # ---------------------------------------------------------------- fig 3
 def fig3_anytime() -> None:
     rows = [r for r in load("e3/anytime.jsonl") if r["length_s"] == 16]
-    fig, ax = plt.subplots(figsize=(3.5, 2.3))
+    fig, ax = plt.subplots(figsize=(3.5, 1.84))
     style = {"rare": ("o-", "#1f5fb4"), "random": ("s--", "#27ae60"),
              "hot": ("^:", "#c0392b")}
     for order, (st, c) in style.items():
@@ -834,7 +834,7 @@ def fig4_bounds() -> None:
     b = np.array([r["bound"] for r in rows])
     s = np.array([r["donor_score"] for r in rows])
     g = np.array([r["guaranteed"] for r in rows])
-    fig, ax = plt.subplots(figsize=(3.5, 2.6))
+    fig, ax = plt.subplots(figsize=(3.5, 2.08))
     ax.scatter(b[~g], s[~g], s=8, c="#bdc3c7", label="not guaranteed")
     ax.scatter(b[g], s[g], s=8, c="#1f5fb4", label="guaranteed cells")
     lim = max(b.max(), s.max()) * 1.05
@@ -884,7 +884,7 @@ def fig5_cascade() -> None:
             fp = float(np.mean([len(r[f"cascade_C{c}"]["rho_grid"][str(rho)][
                 "fp"]) > 0 for r in rows]))
             pts.append((fp, rec, f"cascade C={c} r={rho}"))
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.8, 2.6))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.8, 2.08))
     seen = set()
     for fp, rec, lab in pts:
         fam = lab.split()[0]
@@ -974,7 +974,7 @@ def fig7_case() -> None:
     ia = np.arange(len(na[0]))
     ib = np.arange(len(nb[0]))
     pairs = case["pairs"]
-    fig, ax = plt.subplots(figsize=(3.5, 2.3))
+    fig, ax = plt.subplots(figsize=(3.5, 1.84))
     ax.plot(ia, ia * 0 + 1, "|", ms=3, color="#bdc3c7")
     ax.plot(ib * 0 + 1, ib, "|", ms=3, color="#bdc3c7")
     if pairs:
@@ -1003,7 +1003,7 @@ def fig8_census() -> None:
         ms[r["kind"]].append(r["ms"])
     p50 = {k: float(np.percentile(v, 50)) for k, v in ms.items()}
 
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.8, 2.7))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(5.44, 2.16))
     x = np.arange(4)
     w = 0.38
     for i, (kind, c, lab) in enumerate(
@@ -1125,7 +1125,7 @@ def fig_e13_margins() -> None:
     verb_margins = [r["verbatim"]["margin"] for r in rows]
     tol_flag = [len(r["tolerant"]["fp_pool"]) > 0 for r in rows]
     verb_flag = [len(r["verbatim"]["fp_pool"]) > 0 for r in rows]
-    fig, axes = plt.subplots(1, 2, figsize=(6.8, 2.1))
+    fig, axes = plt.subplots(1, 2, figsize=(6.8, 1.68))
     for pi, (ax, margins, flag, title) in enumerate([
             (axes[0], tol_margins, tol_flag,
              "(a) L1 tolerant screen: donor margin"),
@@ -1166,7 +1166,7 @@ def fig_e14_rho() -> None:
     regimes = [("strict", "#1f5fb4", "s", "strict"),
                ("mid", "#c0392b", "o", "mid"),
                ("loose", "#27ae60", "^", "loose")]
-    fig, ax = plt.subplots(figsize=(3.4, 2.2))
+    fig, ax = plt.subplots(figsize=(3.4, 1.76))
     curves = {}
     for key, color, marker, label in regimes:
         rec, fp = [], []
@@ -1205,7 +1205,7 @@ def fig_e5_ablation() -> None:
     L = [r for r in rows if r["ablation"] == "E5.4_L"]
     K = [r for r in rows if r["ablation"] == "E5.5_k"]
     G = [r for r in rows if r["ablation"] == "E5.7_grid"]
-    fig, axes = plt.subplots(1, 3, figsize=(6.9, 2.2))
+    fig, axes = plt.subplots(1, 3, figsize=(6.9, 1.76))
 
     ax = axes[0]
     x = [r["factor"] for r in L]
@@ -1280,7 +1280,7 @@ def fig_e20_lsh() -> None:
     with the LSH operating thresholds; (b) recall of the three band
     configurations versus the tolerant screen on the same 337 cells."""
     rows = load("e20/matrix.jsonl")
-    fig, axes = plt.subplots(1, 2, figsize=(9.6, 2.6))
+    fig, axes = plt.subplots(1, 2, figsize=(9.6, 2.34))
 
     dj = [r["donor_jaccard"] for r in rows if r.get("rpb", 8) == 8]
     ax = axes[0]
