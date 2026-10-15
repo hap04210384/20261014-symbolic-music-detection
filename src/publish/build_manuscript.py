@@ -1158,12 +1158,23 @@ def build() -> None:
          "tolerances by design.")
     full_width(doc, lambda: (add_emf(doc, "fig1_architecture", 16.0),
                              caption(doc, "Fig. 1. Two-layer copy "
-                                         "detection pipeline. L1 "
-                                         "guarantees recall (sound "
-                                         "evidence bound, anytime); L3 "
-                                         "provides decision-grade "
-                                         "precision and outputs "
-                                         "alignment evidence.")))
+                                         "detection pipeline. (a) A "
+                                         "publisher-scale corpus is "
+                                         "encoded once into a rare-first "
+                                         "item-set index. (b) The L1 "
+                                         "screen queries that index under "
+                                         "an anytime budget with a "
+                                         "provable recall lower bound "
+                                         "(Thm 1, 337-cell audit). (c) L2 "
+                                         "re-ranks and L3 confirms on "
+                                         "ordered note chains, gating on "
+                                         "ρ ≥ θ. (d) Confirmed matches "
+                                         "ship as adjudicable reports; "
+                                         "memorization and in-the-wild "
+                                         "audits close the loop. Black "
+                                         "arrows mark data flow; amber "
+                                         "arrows mark guarantee and "
+                                         "evidence flow.")))
     h2(doc, "A. Problem statement and notation")
     para(doc,
          "A piece P = (e\u2081, \u2026, e_n) is a sequence of note "

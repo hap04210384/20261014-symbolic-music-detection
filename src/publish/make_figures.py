@@ -53,147 +53,334 @@ def save(fig, name: str) -> None:
 
 # ---------------------------------------------------------------- fig 1
 def fig1_architecture() -> None:
-    """Full system framework: offline indexing band, online screening band,
-    guarantees band.  Information-dense first figure."""
-    fig, ax = plt.subplots(figsize=(9.6, 5.9))
+    """Full system framework, four-panel card layout in the style of the
+    companion anytime-mining figure: lettered column badges, cards with
+    inline mini-visualizations, evidence arrows, bottom claims band.
+    Numbers are the paper's authoritative values (174,300-piece corpus)."""
+    # sans-serif, as in the reference figure (fonts are exported as paths)
+    old = {k: plt.rcParams[k] for k in ("font.family", "font.serif",
+                                        "font.sans-serif")}
+    plt.rcParams.update({"font.family": "sans-serif",
+                         "font.sans-serif": ["Arial", "Helvetica",
+                                             "DejaVu Sans"]})
+    try:
+        _fig1_draw()
+    finally:
+        plt.rcParams.update(old)
+
+
+def _fig1_draw() -> None:
+    fig, ax = plt.subplots(figsize=(10.2, 5.9))
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     ax.axis("off")
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 62)
+    ax.set_ylim(0, 58)
 
-    C_PROC, E_PROC = "#e8eef7", "#4a6fa5"   # processing boxes
-    C_LAY, E_LAY = "#fdeedd", "#c96f2a"     # L1/L2/L3 layer boxes
-    C_OUT, E_OUT = "#e5f3e5", "#3d8b3d"     # output / accept
-    C_GAR, E_GAR = "#f2ecf9", "#7a5aa8"     # guarantee boxes
-    C_BAND, E_BAND = "#f7f7f7", "#cccccc"
-    INK = "#333333"
+    GREEN, GREEN_DK = "#0e5c45", "#093f30"
+    AMBER, AMBER_DK = "#c1761a", "#9a5c12"
+    BG, EC = "#f7f9f7", "#c9d2c9"
+    ABG, AEC = "#fdf5ea", "#dda85c"
+    DARK, DARK_TX = "#232a24", "#cfe3d2"
+    INK, GRAY = "#1f2420", "#667066"
 
-    def band(x, y, w, h, label):
+    def badge(x, y, letter, title_lines):
         ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
-            (x, y), w, h, boxstyle="round,pad=0,rounding_size=0.8",
-            fc=C_BAND, ec=E_BAND, lw=0.8, zorder=1))
-        ax.text(x + 2.0, y + h / 2, label, rotation=90, ha="center",
-                va="center", fontsize=7, color="#666666", weight="bold",
-                zorder=2)
+            (x, y), 3.1, 3.1, boxstyle="round,pad=0,rounding_size=0.45",
+            fc=GREEN, ec="none", zorder=6))
+        ax.text(x + 1.55, y + 1.55, letter, ha="center", va="center",
+                fontsize=11, weight="bold", color="white", zorder=7)
+        ax.text(x + 4.0, y + 1.55, title_lines, ha="left", va="center",
+                fontsize=8.6, weight="bold", color=INK, zorder=7,
+                linespacing=1.15)
 
-    def stage(x, y, w, h, header, body, fc, ec, dashed=False, hfs=7):
+    def card(x, y, w, h, title, fc=BG, ec=EC, title_c=None, dashed=False):
         ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
-            (x, y), w, h, boxstyle="round,pad=0,rounding_size=0.5",
+            (x, y), w, h, boxstyle="round,pad=0,rounding_size=0.55",
             fc=fc, ec=ec, lw=1.0, ls="--" if dashed else "-", zorder=3))
-        ax.text(x + w / 2, y + h - 1.8, header, ha="center", va="center",
-                fontsize=hfs, weight="bold", color=INK, zorder=4)
-        ax.text(x + w / 2, y + (h - 3.2) / 2 - 0.3, body, ha="center",
-                va="center", fontsize=6.3, color=INK, zorder=4,
-                linespacing=1.4)
+        ax.text(x + 1.2, y + h - 1.5, title, ha="left", va="center",
+                fontsize=7.2, weight="bold",
+                color=title_c or INK, zorder=5)
 
-    def arrow(p0, p1, dashed=False, lw=1.1):
-        ax.annotate("", xy=p1, xytext=p0, zorder=5,
-                    arrowprops=dict(arrowstyle="-|>", lw=lw, color=INK,
-                                    ls="--" if dashed else "-"))
+    def tag(x, y, text, fc=GREEN):
+        w = 1.35 + 0.62 * len(text) * 0.72
+        ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+            (x, y), w, 2.0, boxstyle="round,pad=0,rounding_size=0.9",
+            fc=fc, ec="none", zorder=6))
+        ax.text(x + w / 2, y + 1.0, text, ha="center", va="center",
+                fontsize=5.6, weight="bold", color="white", zorder=7)
 
-    def elbow(pts, dashed=False):
+    def arrow(p0, p1, color=INK, lw=1.4, ls="-"):
+        ax.annotate("", xy=p1, xytext=p0, zorder=8,
+                    arrowprops=dict(arrowstyle="-|>", lw=lw, color=color,
+                                    ls=ls, shrinkA=1, shrinkB=1))
+
+    def elbow(pts, color=INK, lw=1.3, ls="-"):
         for a, b in zip(pts[:-2], pts[1:-1]):
-            ax.plot([a[0], b[0]], [a[1], b[1]], color=INK, lw=1.0,
-                    ls="--" if dashed else "-", zorder=5,
-                    solid_capstyle="round")
-        arrow(pts[-2], pts[-1], dashed=dashed)
+            ax.plot([a[0], b[0]], [a[1], b[1]], color=color, lw=lw,
+                    ls=ls, zorder=7, solid_capstyle="round")
+        arrow(pts[-2], pts[-1], color=color, lw=lw, ls=ls)
 
-    # ---- band A: offline index construction --------------------------
-    band(2, 44, 96, 17, "OFFLINE · INDEX CONSTRUCTION")
-    ya, ha = 47.5, 9.0
-    stage(8.0, ya, 13.5, ha, "CORPUS",
-          "symbolic music\n69,723 MIDI pieces", C_PROC, E_PROC)
-    stage(24.5, ya, 16.5, ha, "EVENT ENCODING",
-          "pitch class · IOI bin\n125 ms grid · velocity", C_PROC, E_PROC)
-    stage(44.5, ya, 14.0, ha, "DENSE ID REMAP",
-          "gapless item IDs\ncompression (§III-B)", C_PROC, E_PROC)
-    stage(61.5, ya, 21.0, ha, "L1 ITEM-SET INDEX",
-          "FP-growth · rare-first order\nbuild 9.7 s · query p50 15.2 ms",
-          C_PROC, E_PROC)
-    for x0, x1 in [(21.5, 24.5), (41.0, 44.5), (58.5, 61.5)]:
-        arrow((x0, ya + ha / 2), (x1, ya + ha / 2))
+    def txt(x, y, s, fs=6.0, c=INK, w="normal", st="normal", ha="left"):
+        ax.text(x, y, s, fontsize=fs, color=c, weight=w, style=st,
+                ha=ha, va="center", zorder=6, linespacing=1.35)
 
-    # ---- band B: online screening ------------------------------------
-    band(2, 12, 96, 28, "ONLINE · COPY SCREENING")
-    yb, hb = 17.5, 13.0
-    stage(7.5, yb, 10.0, hb, "QUERY",
-          "new MIDI\npiece", C_PROC, E_PROC)
-    stage(19.5, yb, 11.5, hb, "ENCODER",
-          "shared event\nencoding", C_PROC, E_PROC, dashed=True)
-    stage(33.5, yb, 16.0, hb, "L1 · TOLERANT SCREEN",
-          "rare-first anytime\ntwo-sided rare itemset\nrecall lower bound",
-          C_LAY, E_LAY)
-    stage(51.5, yb, 13.0, hb, "L2 · VERBATIM RE-RANK",
-          "tolerant + verbatim\ntop-C union feed", C_LAY, E_LAY, hfs=6.3)
-    stage(66.5, 15.5, 15.0, 15.0, "L3 · STRUCTURAL CONFIRM",
-          "strict-anchor offset vote\ntransposition estimate\n"
-          "anchored LCS · tolerance ρ", C_LAY, E_LAY, hfs=6.3)
-    stage(87.5, yb, 10.0, hb, "REPORT",
-          "verdict + evidence:\nnote alignment\n· offset map", C_OUT, E_OUT)
+    def piano_roll(x, y, w, h, seed, ec=GREEN, n=46):
+        rng = np.random.default_rng(seed)
+        for _ in range(n):
+            t0 = rng.uniform(0, w - 1.6)
+            d = rng.uniform(0.5, 1.7)
+            p = rng.uniform(0.12 * h, 0.88 * h)
+            ax.add_patch(plt.Rectangle((x + t0, y + p - 0.28), d, 0.56,
+                                       fc=ec, ec="none", alpha=0.85,
+                                       zorder=4))
+        ax.add_patch(plt.Rectangle((x, y), w, h, fc="none", ec="#9aa89e",
+                                   lw=0.6, zorder=5))
 
-    ym = 24.0  # mid arrow line
-    for x0, x1 in [(17.5, 19.5), (31.0, 33.5), (49.5, 51.5),
-                   (64.5, 66.5), (81.5, 82.6), (86.9, 87.5)]:
-        arrow((x0, ym), (x1, ym))
-    # candidate-pair count on L1 -> L2 arrow
-    ax.text(50.5, 26.2, "1.66 M pairs", ha="center", fontsize=6,
-            style="italic", color=INK, zorder=6,
-            bbox=dict(fc="white", ec="none", pad=0.15))
-    ax.text(58.0, 15.3, "top-C retention 96.6 % (C50)", ha="center",
-            fontsize=6, style="italic", color=INK, zorder=6)
+    # ================= column headers =====================================
+    HX = [2.0, 26.5, 51.0, 75.5]
+    badge(HX[0], 54.2, "a", "Ingestion — publisher-scale\ncorpus")
+    badge(HX[1], 54.2, "b", "Screening — provable-recall\nitem sets")
+    badge(HX[2], 54.2, "c", "Confirmation — ordered\nnote chains")
+    badge(HX[3], 54.2, "d", "Verdict — evidence-grounded\nreport")
 
-    # decision diamond
-    dc = (84.75, ym)
-    ax.add_patch(plt.Polygon([(dc[0], dc[1] + 2.2), (dc[0] + 2.25, dc[1]),
-                              (dc[0], dc[1] - 2.2), (dc[0] - 2.25, dc[1])],
-                             closed=True, fc="#fff2cc", ec="#b58900",
-                             lw=1.0, zorder=4))
+    XA, XB, XC, XD = 2.0, 26.5, 51.0, 75.5
+    WA, WB, WC, WD = 21.5, 21.5, 20.0, 22.5
+    YT, YM, YB_ = 40.0, 24.5, 9.0   # card bottoms
+    HH = 12.2                        # card height
+
+    # ================= column a: ingestion ================================
+    card(XA, YT, WA, HH, "LAKH MIDI CORPUS")
+    piano_roll(XA + 1.4, YT + 2.6, WA - 2.8, 5.4, seed=7)
+    txt(XA + 1.4, YT + 1.3, "174,300 pieces", fs=6.4, w="bold")
+    tag(XA + WA - 9.6, YT + 0.6, "symbolic · MIDI")
+
+    card(XA, YM, WA, HH, "EVENT ENCODING")
+    rng = np.random.default_rng(11)
+    for i in range(14):
+        for j in range(5):
+            if rng.random() < 0.42:
+                ax.add_patch(plt.Rectangle(
+                    (XA + 1.4 + i * 0.95, YM + 5.2 + j * 0.8), 0.8, 0.66,
+                    fc=plt.matplotlib.colors.to_hex(
+                        plt.cm.Greens(0.35 + 0.6 * rng.random())),
+                    ec="none", zorder=4))
+    ax.add_patch(plt.Rectangle((XA + 1.4, YM + 5.2), 13.3, 4.0,
+                               fc="none", ec="#9aa89e", lw=0.6, zorder=5))
+    txt(XA + 15.4, YM + 9.0, "pitch class", fs=5.6)
+    txt(XA + 15.4, YM + 7.6, "IOI bin", fs=5.6)
+    txt(XA + 15.4, YM + 6.2, "125 ms grid", fs=5.6)
+    txt(XA + 15.4, YM + 4.6, "velocity", fs=5.6)
+    txt(XA + 1.4, YM + 3.4, "items = quantized event tuples,", fs=6.0)
+    txt(XA + 1.4, YM + 2.1, "dense gapless IDs (§III-B)", fs=6.0)
+    txt(XA + 1.4, YM + 0.8, "order discarded at this layer", fs=5.6,
+        c=GRAY, st="italic")
+
+    card(XA, YB_, WA, HH, "L1 ITEM-SET INDEX")
+    txt(XA + 1.4, YB_ + 8.6, "FP-growth · rare-first order", fs=6.2)
+    txt(XA + 1.4, YB_ + 6.2, "build 24.7 s", fs=9.2, w="bold", c=GREEN_DK)
+    txt(XA + 1.4, YB_ + 4.2, "query p50 41.9 ms", fs=9.2, w="bold",
+        c=GREEN_DK)
+    txt(XA + 1.4, YB_ + 2.4, "peak mem 1.05 GB · recall 47/47 planted",
+        fs=5.6, c=GRAY)
+    tag(XA + 1.4, YB_ + 0.5, "offline · once")
+
+    # ================= column b: screening ================================
+    card(XB, YT, WB, HH, "QUERY — NEW MIDI PIECE", dashed=True)
+    piano_roll(XB + 1.4, YT + 4.6, WB - 2.8, 3.6, seed=23)
+    txt(XB + 1.4, YT + 3.2, "a submission, a generated sample,", fs=6.0)
+    txt(XB + 1.4, YT + 1.9, "or a suspected infringement", fs=6.0)
+    tag(XB + 1.4, YT + 0.4, "same shared encoding", fc=GRAY)
+
+    card(XB, YM, WB, HH, "L1 · TOLERANT SCREEN")
+    xs = np.linspace(0, 10, 60)
+    ys = 8.4 * (1 - np.exp(-xs / 3.1))
+    ax.plot(XB + 3.4 + xs * 1.55, YM + 2.4 + ys * 0.62, color=GREEN,
+            lw=1.6, zorder=4)
+    ax.plot([XB + 3.4, XB + 19.0], [YM + 2.4, YM + 2.4], color="#9aa89e",
+            lw=0.6, zorder=4)
+    ax.plot([XB + 3.4, XB + 3.4], [YM + 2.4, YM + 7.9], color="#9aa89e",
+            lw=0.6, zorder=4)
+    ax.plot([XB + 16.8, XB + 16.8], [YM + 2.4, YM + 8.9], color=AMBER,
+            lw=1.0, ls=":", zorder=4)
+    txt(XB + 17.6, YM + 8.4, "budget B", fs=5.4, c=AMBER_DK, w="bold")
+    txt(XB + 4.0, YM + 8.6, "cumulative evidence", fs=5.4, c=GRAY)
+    txt(XB + 1.4, YM + 1.9, "rare-first anytime schedule —", fs=6.0)
+    txt(XB + 1.4, YM + 0.6, "two-sided rare itemsets", fs=6.0)
+    tag(XB + WB - 5.7, YM + HH - 2.5, "anytime")
+
+    card(XB, YB_, WB, HH, "RECALL LOWER BOUND — THM 1")
+    rng = np.random.default_rng(5)
+    for i in range(8):
+        for j in range(3):
+            ax.add_patch(plt.Rectangle(
+                (XB + 1.6 + i * 1.15, YB_ + 4.4 + j * 1.05), 0.95, 0.85,
+                fc="#dcefe2", ec="#9cc4ab", lw=0.5, zorder=4))
+            ax.text(XB + 2.075 + i * 1.15, YB_ + 4.825 + j * 1.05, "0",
+                    ha="center", va="center", fontsize=5.4, color=GREEN_DK,
+                    zorder=5)
+    txt(XB + 12.6, YB_ + 6.6, "337 adversarial cells", fs=6.2, w="bold")
+    txt(XB + 12.6, YB_ + 5.2, "(8 transformations ×", fs=5.8, c=GRAY)
+    txt(XB + 12.6, YB_ + 4.0, " noise levels)", fs=5.8, c=GRAY)
+    txt(XB + 1.4, YB_ + 2.4, "donor evidence ≥ bound on every cell —",
+        fs=6.0)
+    txt(XB + 1.4, YB_ + 1.1, "L1 never drops a true copy", fs=6.0)
+    tag(XB + WB - 6.4, YB_ + 0.5, "provable")
+
+    # ================= column c: confirmation =============================
+    card(XC, YT, WC, HH, "L2 · VERBATIM RE-RANK", fc=ABG, ec=AEC)
+    txt(XC + 1.4, YT + 8.8, "tolerant + verbatim signatures,", fs=6.2)
+    txt(XC + 1.4, YT + 7.5, "top-C union feed", fs=6.2)
+    txt(XC + 1.4, YT + 5.4, "1.66 M pairs screened", fs=7.6, w="bold",
+        c=AMBER_DK)
+    txt(XC + 1.4, YT + 3.2, "top-C retention 96.6 % (C50)", fs=6.4)
+    txt(XC + 1.4, YT + 1.6, "candidates only — no verdicts", fs=5.6,
+        c=GRAY, st="italic")
+
+    card(XC, YM, WC, HH, "L3 · STRUCTURAL CONFIRM", fc=ABG, ec=AEC)
+    for row in range(2):
+        yy = YM + 6.3 - row * 2.0
+        for i in range(16):
+            hit = (4 <= i <= 11) if row == 0 else (5 <= i <= 12)
+            ax.add_patch(plt.Rectangle(
+                (XC + 1.6 + i * 1.05, yy), 0.8, 0.9,
+                fc=AMBER if hit else "#cbbfae", ec="none", zorder=4))
+    ax.plot([XC + 5.8, XC + 14.0], [YM + 8.3, YM + 8.3], color=AMBER_DK,
+            lw=0.9, zorder=4)
+    ax.text(XC + 9.9, YM + 8.9, "matched span", ha="center", fontsize=5.4,
+            color=AMBER_DK, zorder=5)
+    txt(XC + 1.4, YM + 3.6, "strict-anchor offset vote", fs=6.2)
+    txt(XC + 1.4, YM + 2.3, "transposition estimate · anchored LCS",
+        fs=6.0)
+    txt(XC + 1.4, YM + 0.9, "ordered chains, tolerance ρ", fs=5.6,
+        c=GRAY, st="italic")
+
+    card(XC, YB_, WC, HH, "VERDICT", fc=ABG, ec=AEC)
+    dc = (XC + 4.6, YB_ + 5.2)
+    ax.add_patch(plt.Polygon(
+        [(dc[0], dc[1] + 2.6), (dc[0] + 2.7, dc[1]),
+         (dc[0], dc[1] - 2.6), (dc[0] - 2.7, dc[1])],
+        closed=True, fc="white", ec=AMBER_DK, lw=1.1, zorder=5))
     ax.text(dc[0], dc[1], "ρ ≥ θ ?", ha="center", va="center",
-            fontsize=5.2, color=INK, zorder=5)
-    ax.text(86.6, 25.6, "yes", ha="center", fontsize=5.8, color=INK,
-            style="italic", zorder=6)
-    ax.text(dc[0] + 0.2, dc[1] - 3.1, "no", ha="center", fontsize=5.8,
-            color=INK, style="italic", zorder=6)
-    arrow((dc[0], dc[1] - 2.3), (dc[0], 14.0), dashed=True)
-    ax.text(dc[0], 13.3, "rejected\n(FP-controlled)", ha="center",
-            va="top", fontsize=5.8, color="#777777", zorder=6,
-            linespacing=1.2)
+            fontsize=6.0, color=INK, zorder=6)
+    txt(XC + 9.2, YB_ + 6.9, "FP  2.1 %", fs=6.6, w="bold", c=AMBER_DK)
+    ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 5.6), 8.6, 0.75,
+                               fc="#e8ddcb", ec="none", zorder=4))
+    ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 5.6), 0.9, 0.75,
+                               fc=AMBER, ec="none", zorder=5))
+    txt(XC + 9.2, YB_ + 4.3, "R  83.9 %", fs=6.6, w="bold", c=GREEN_DK)
+    ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 3.0), 8.6, 0.75,
+                               fc="#dcefe2", ec="none", zorder=4))
+    ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 3.0), 7.2, 0.75,
+                               fc=GREEN, ec="none", zorder=5))
+    txt(XC + 9.2, YB_ + 1.6, "@ ρ = 0.5, transcription noise (E1.4)",
+        fs=5.4, c=GRAY)
+    # yes: exits upward between the bars, toward the report (column d)
+    elbow([(dc[0] + 2.75, dc[1] + 0.2), (58.9, dc[1] + 0.2),
+           (58.9, YB_ + 7.9), (XC + WC - 0.7, YB_ + 7.9)], color=GREEN_DK,
+          lw=1.2)
+    txt(60.4, YB_ + 8.7, "yes → report", fs=5.4, c=GREEN_DK, st="italic")
+    arrow((dc[0], dc[1] - 2.7), (dc[0], YB_ + 0.6), color=GRAY, lw=1.0,
+          ls="--")
+    txt(dc[0] + 0.5, YB_ + 1.0, "no → rejected (FP-controlled)", fs=5.4,
+        c=GRAY, st="italic")
 
-    # anytime budget knob
-    knob = (41.0, 35.5)
-    ax.add_patch(plt.Circle(knob, 2.6, fc="white", ec=INK, lw=1.0,
-                            zorder=4))
-    ax.text(knob[0], knob[1], "B", ha="center", va="center", fontsize=8,
-            weight="bold", color=INK, zorder=5)
-    ax.text(knob[0] + 3.6, knob[1] + 0.2, "anytime budget", ha="left",
-            va="center", fontsize=6, style="italic", color=INK, zorder=5)
-    arrow((knob[0] + 1.2, knob[1] - 2.4), (knob[0] + 0.4, 30.9))
+    # ================= column d: verdict ==================================
+    card(XD, YT, WD, HH, "REPORT", fc=DARK, ec=DARK, title_c="#8fd0a8")
+    mono = [
+        ("donor", "piece_0421.mid"),
+        ("span",  "bars 33–48 · spliced"),
+        ("offset", "+2 semitones · ×1.05"),
+        ("score", "ρ = 0.62 ≥ θ  ✓"),
+    ]
+    for i, (k, v) in enumerate(mono):
+        yy = YT + 8.6 - i * 2.1
+        ax.text(XD + 1.5, yy, k, fontsize=6.0, color="#7fa88a",
+                family="monospace", zorder=5)
+        ax.text(XD + 5.6, yy, v, fontsize=6.0, color=DARK_TX,
+                family="monospace", zorder=5)
+    txt(XD + 1.4, YT + 1.2, "verdict + publisher-readable evidence",
+        fs=5.6, c="#8fd0a8", st="italic")
 
-    # cross-band links
-    elbow([(72.0, 47.5), (72.0, 41.0), (41.0, 41.0), (41.0, 30.9)])
-    elbow([(32.75, 47.5), (32.75, 42.0), (25.25, 42.0), (25.25, 30.9)],
-          dashed=True)
-    ax.text(29.2, 43.0, "shared encoding", ha="center", fontsize=6,
-            style="italic", color="#555555", zorder=6)
+    card(XD, YM, WD, HH, "MEMORIZATION AUDIT")
+    lx = np.array([0, 0.25, 0.5, 0.75, 1.0])
+    det = np.array([30, 52, 71, 88, 100])
+    px = XD + 3.0 + lx * 15.5
+    py = YM + 2.2 + det / 100 * 6.6
+    ax.plot(px, py, color=GREEN, lw=1.6, marker="o", ms=2.6, zorder=4)
+    ax.plot([XD + 3.0, XD + 19.0], [YM + 2.2, YM + 2.2], color="#9aa89e",
+            lw=0.6, zorder=4)
+    ax.plot([XD + 3.0, XD + 3.0], [YM + 2.2, YM + 9.0], color="#9aa89e",
+            lw=0.6, zorder=4)
+    for xx, lab in ((XD + 3.0, "0"), (XD + 18.75, "1")):
+        ax.text(xx, YM + 1.2, lab, ha="center", fontsize=5.2, color=GRAY,
+                zorder=5)
+    ax.text(XD + 11.0, YM + 0.2, "copying level λ", ha="center",
+            fontsize=5.2, color=GRAY, zorder=5)
+    ax.text(XD + 2.5, YM + 8.6, "detection %", fontsize=5.2, color=GRAY,
+            ha="right", zorder=5)
+    txt(XD + 1.4, YM + 9.9, "26–34 % at λ = 0 → 100 % at λ = 1", fs=6.2,
+        w="bold", c=GREEN_DK)
+    txt(XD + 1.4, YM + 0.9, "attribution to source 96–100 %", fs=5.6,
+        c=GRAY)
 
-    # ---- band C: guarantees -------------------------------------------
-    band(2, 1.5, 96, 9.0, "GUARANTEES")
-    yg, hg = 3.0, 6.0
-    stage(7.5, yg, 28.0, hg, "THM 1 · RECALL LOWER BOUND",
-          "L1 never drops a true copy —\n337-cell audit: 0 violations",
-          C_GAR, E_GAR)
-    stage(38.5, yg, 28.0, hg, "ANYTIME EFFICIENCY",
-          "rare-first converges fastest —\n16× cleaner candidates (E3)",
-          C_GAR, E_GAR)
-    stage(69.5, yg, 28.0, hg, "DECISION-GRADE PRECISION",
-          "L3 structural confirm —\nFP 2.1 %, R 83.9 % @ ρ = 0.5 (E1.4)",
-          C_GAR, E_GAR)
-    elbow([(37.0, 17.5), (37.0, 13.0), (21.5, 13.0), (21.5, 9.4)],
-          dashed=True)
-    elbow([(46.0, 17.5), (46.0, 11.0), (52.5, 11.0), (52.5, 9.4)],
-          dashed=True)
-    elbow([(74.0, 15.5), (74.0, 11.0), (83.5, 11.0), (83.5, 9.4)],
-          dashed=True)
+    card(XD, YB_, WD, HH, "IN-THE-WILD CASES")
+    txt(XD + 1.4, YB_ + 8.6, "1,658,993 duplicate pairs", fs=7.6,
+        w="bold", c=GREEN_DK)
+    txt(XD + 1.4, YB_ + 6.6, "census over the full corpus (E6.3):", fs=6.0)
+    txt(XD + 1.4, YB_ + 5.2, "spliced segments and transposed covers", fs=6.0)
+    txt(XD + 1.4, YB_ + 3.9, "localized with offset maps", fs=6.0)
+    tag(XD + 1.4, YB_ + 0.5, "human-adjudicable")
+
+    # ================= flow arrows ========================================
+    # vertical arrows inside columns
+    for xc in (XA + WA / 2, XB + WB / 2, XC + WC / 2, XD + WD / 2):
+        arrow((xc, YT - 0.2), (xc, YM + HH + 0.2), lw=1.2)
+        arrow((xc, YM - 0.2), (xc, YB_ + HH + 0.2), lw=1.2)
+    # shared encoding / index into screening (labels run along the elbow)
+    elbow([(XA + WA, YM + 7.0), (24.9, YM + 7.0), (24.9, YT + 6.0),
+           (XB, YT + 6.0)])
+    ax.text(24.25, YM + 13.5, "shared encoding", fontsize=5.2, color=GRAY,
+            style="italic", ha="center", va="center", rotation=90, zorder=6)
+    elbow([(XA + WA, YB_ + 9.0), (25.7, YB_ + 9.0), (25.7, YM + 4.4),
+           (XB, YM + 4.4)])
+    ax.text(26.05, YB_ + 6.4, "index", fontsize=5.2, color=GRAY,
+            style="italic", ha="center", va="center", rotation=90, zorder=6)
+    # screen -> re-rank
+    arrow((XB + WB, YM + 5.4), (XC, YT + 6.0))
+    # confirm -> report
+    arrow((XC + WC, YM + 5.6), (XD, YT + 5.6))
+    ax.text(73.6, YM + 7.6, "evidence", fontsize=5.2, c=GRAY,
+            style="italic", ha="center", va="center", zorder=6)
+
+    # ================= claims band ========================================
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (2.0, 2.6), 96.0, 4.4, boxstyle="round,pad=0,rounding_size=0.5",
+        fc=GREEN, ec="none", zorder=3))
+    claims = [
+        ("Provable recall", "Thm 1 · 337-cell audit, zero violations"),
+        ("Anytime by construction", "budget B · rare-first schedule"),
+        ("Decision-grade precision", "FP 2.1 % at R 83.9 % (ρ = 0.5)"),
+        ("Publisher scale", "174,300 pieces · query p50 41.9 ms"),
+    ]
+    for i, (t, s) in enumerate(claims):
+        cx = 4.5 + i * 24.5
+        ax.text(cx, 5.7, t, fontsize=7.4, weight="bold", color="white",
+                zorder=5)
+        ax.text(cx, 3.9, s, fontsize=5.8, color="#cfe3d2", zorder=5)
+        if i:
+            ax.plot([cx - 2.3, cx - 2.3], [3.3, 6.2], color="#3d7a63",
+                    lw=0.8, zorder=4)
+    # evidence arrows into the claims band
+    arrow((XB + WB / 2, YB_ - 0.2), (XB + WB / 2, 7.2), color=AMBER,
+          lw=1.5)
+    arrow((XC + WC / 2, YB_ - 0.2), (XC + WC / 2, 7.2), color=AMBER,
+          lw=1.5)
+
+    # ================= legend =============================================
+    arrow((31.5, 1.1), (35.5, 1.1), lw=1.4)
+    txt(36.3, 1.1, "data flow", fs=6.0, c=INK)
+    arrow((52.5, 1.1), (56.5, 1.1), color=AMBER, lw=1.5)
+    txt(57.3, 1.1, "guarantee · evidence", fs=6.0, c=INK)
 
     save(fig, "fig1_architecture")
 
