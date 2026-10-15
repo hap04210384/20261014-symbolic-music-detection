@@ -913,11 +913,31 @@ def fig5_cascade() -> None:
     ax.set_title("(a) operating points, hard negatives", fontsize=8.7)
     cs = [5, 10, 20, 50]
     ret = [np.mean([r["retention"][str(c)] for r in rows]) for c in cs]
-    ax2.bar([str(c) for c in cs], ret, color="#1f5fb4", width=0.55)
+    bars = ax2.bar([str(c) for c in cs], ret, color="#1f5fb4", width=0.55)
+    for b, v in zip(bars, ret):
+        last = b is bars[-1]
+        if last:
+            ax2.text(b.get_x() + b.get_width() / 2, v - 0.021,
+                     f"{v * 100:.1f}%", ha="center", fontsize=8,
+                     color="white", fontweight="bold")
+        else:
+            ax2.text(b.get_x() + b.get_width() / 2, v + 0.004,
+                     f"{v * 100:.1f}%", ha="center", fontsize=8,
+                     color="#26425a")
+    bars[-1].set_edgecolor("#e67e22")
+    bars[-1].set_linewidth(1.6)
     ax2.axhline(0.99, ls="--", lw=0.8, c="#c0392b")
-    ax2.text(3.3, 0.9835, "union feed target 99%", fontsize=7.5,
-             color="#c0392b", ha="right")
-    ax2.set_ylim(0.75, 1.01)
+    ax2.text(3.20, 0.9935, "union feed target 99%", fontsize=7.5,
+             color="#c0392b", va="bottom", ha="right")
+    ax2.annotate("", xy=(3.31, 0.9895), xytext=(3.31, 0.978),
+                 arrowprops=dict(arrowstyle="<->", color="#c0392b",
+                                 lw=0.9))
+    ax2.text(-0.42, 1.062,
+             "a dropped donor is a detection lost\n"
+             "forever; the union feed closes this\n"
+             "gap (Section V-E)",
+             fontsize=6.5, color="#4d4d4d", va="top")
+    ax2.set_ylim(0.75, 1.07)
     ax2.set_xlabel("candidate set size C")
     ax2.set_ylabel("donor retention (top-C)")
     ax2.set_title("(b) candidate retention", fontsize=8.7)
