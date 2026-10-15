@@ -76,6 +76,14 @@ def _fig1_draw() -> None:
     ax.set_xlim(0, 100)
     ax.set_ylim(1.4, 58)
 
+    # all figure text +2 pt
+    _text0 = ax.text
+    def _text_up(*a, **k):
+        if k.get("fontsize"):
+            k["fontsize"] += 2
+        return _text0(*a, **k)
+    ax.text = _text_up
+
     # --- palette: muted per-column identity hues -----------------------------
     GREEN, GREEN_DK = "#33566e", "#26425a"   # col a: slate blue
     CB, CB_DK = "#3f7268", "#2e564e"         # col b: muted teal
@@ -116,7 +124,7 @@ def _fig1_draw() -> None:
                 color=title_c or INK, zorder=5)
 
     def tag(x, y, text, fc=GREEN):
-        w = 1.35 + 0.62 * len(text) * 0.72
+        w = 1.35 + 0.845 * len(text) * 0.72
         ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
             (x, y), w, 2.0, boxstyle="round,pad=0,rounding_size=0.9",
             fc=fc, ec="none", zorder=6))
@@ -153,12 +161,12 @@ def _fig1_draw() -> None:
 
     # ================= column headers =====================================
     HX = [2.0, 26.5, 51.0, 75.5]
-    badge(HX[0], 54.2, "a", "Ingestion — publisher-scale\ncorpus")
-    badge(HX[1], 54.2, "b", "Screening — provable-recall\nitem sets",
+    badge(HX[0], 54.2, "a", "Ingestion —\npublisher-scale corpus")
+    badge(HX[1], 54.2, "b", "Screening —\nprovable-recall sets",
           color=CB)
-    badge(HX[2], 54.2, "c", "Confirmation — ordered\nnote chains",
+    badge(HX[2], 54.2, "c", "Confirmation —\nordered note chains",
           color=AMBER)
-    badge(HX[3], 54.2, "d", "Verdict — evidence-grounded\nreport",
+    badge(HX[3], 54.2, "d", "Verdict —\ngrounded in evidence",
           color=CD)
 
     XA, XB, XC, XD = 2.0, 26.5, 51.0, 75.5
@@ -173,7 +181,7 @@ def _fig1_draw() -> None:
         c=GREEN_DK)
     txt(XA + 1.4, YT + 0.7, "built once · reused by every query",
         fs=5.2, c=GRAY, st="italic")
-    tag(XA + WA - 7.6, YT + HH - 2.6, "symbolic · MIDI")
+    tag(XA + WA - 6.5, YT + HH - 2.6, "symbolic")
 
     card(XA, YM, WA, HH, "EVENT ENCODING", title_c=GREEN_DK)
     rng = np.random.default_rng(11)
@@ -191,24 +199,11 @@ def _fig1_draw() -> None:
     txt(XA + 15.4, YM + 7.6, "IOI bin", fs=5.6)
     txt(XA + 15.4, YM + 6.2, "125 ms grid", fs=5.6)
     txt(XA + 15.4, YM + 4.6, "velocity", fs=5.6)
-    txt(XA + 1.4, YM + 3.4, "items = quantized event tuples,", fs=6.0)
+    txt(XA + 1.4, YM + 3.4, r"items = quantized tuples $\langle$9,3,1"
+        r"$\rangle$,", fs=6.0)
     txt(XA + 1.4, YM + 2.1, "dense gapless IDs (§III-B)", fs=6.0)
     txt(XA + 1.4, YM + 0.8, "order discarded at this layer", fs=5.6,
         c=GRAY, st="italic")
-    # narrative: three sample events map to one item tuple
-    for i, c_ in enumerate((GREEN, "#7d97ac", GREEN_DK)):
-        ax.add_patch(plt.Rectangle((XA + 14.8 + i * 0.95, YM + 3.35),
-                                   0.65, 0.65, fc=c_, ec="none",
-                                   zorder=4))
-    arrow((XA + 17.8, YM + 3.7), (XA + 18.5, YM + 3.7), color=GRAY,
-          lw=0.9)
-    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
-        (XA + 18.7, YM + 2.95), 2.9, 1.6,
-        boxstyle="round,pad=0,rounding_size=0.4", fc="#eef2f5",
-        ec=AXGR, lw=0.6, zorder=4))
-    ax.text(XA + 20.15, YM + 3.75, "⟨9,3,1⟩", ha="center", va="center",
-            fontsize=5.0, color=GREEN_DK, family="monospace", zorder=5)
-    txt(XA + 14.8, YM + 2.3, "e_i \u2192 item", fs=4.8, c=GRAY, st="italic")
 
     card(XA, YB_, WA, HH, "L1 ITEM-SET INDEX", title_c=GREEN_DK)
     txt(XA + 1.4, YB_ + 7.4, "serves: rare items shared with q",
@@ -217,8 +212,8 @@ def _fig1_draw() -> None:
     txt(XA + 1.4, YB_ + 6.2, "build 24.7 s", fs=9.2, w="bold", c=GREEN_DK)
     txt(XA + 1.4, YB_ + 4.2, "query p50 41.9 ms", fs=9.2, w="bold",
         c=GREEN_DK)
-    txt(XA + 1.4, YB_ + 2.4, "peak mem 1.05 GB · recall 47/47 planted",
-        fs=5.6, c=GRAY)
+    txt(XA + 1.4, YB_ + 2.4, "peak mem 1.05 GB", fs=5.6, c=GRAY)
+    txt(XA + 13.2, YB_ + 1.5, "47/47 recall", fs=5.6, c=GRAY)
     tag(XA + 1.4, YB_ + 0.5, "offline · once")
 
     # ================= column b: screening ================================
@@ -231,7 +226,7 @@ def _fig1_draw() -> None:
             ha="center", zorder=6)
     txt(XB + 1.4, YT + 3.2, "a submission, a generated sample,", fs=6.0)
     txt(XB + 1.4, YT + 1.9, "or a suspected infringement", fs=6.0)
-    tag(XB + 14.2, YT + 0.4, "same encoding", fc=GRAY)
+    tag(XB + 10.4, YT + 5.6, "same encoding", fc=GRAY)
 
     card(XB, YM, WB, HH, "L1 · TOLERANT SCREEN", title_c=CB_DK)
     xs = np.linspace(0, 10, 60)
@@ -242,46 +237,43 @@ def _fig1_draw() -> None:
             lw=0.6, zorder=4)
     ax.plot([XB + 3.4, XB + 3.4], [YM + 2.4, YM + 7.9], color=AXGR,
             lw=0.6, zorder=4)
-    ax.plot([XB + 16.8, XB + 16.8], [YM + 2.4, YM + 8.9], color=AMBER,
+    ax.plot([XB + 15.8, XB + 15.8], [YM + 2.4, YM + 8.9], color=AMBER,
             lw=1.0, ls=":", zorder=4)
-    txt(XB + 17.6, YM + 8.4, "budget B", fs=5.4, c=AMBER_DK, w="bold")
-    txt(XB + 4.0, YM + 8.6, "cumulative evidence", fs=5.4, c=GRAY)
+    txt(XB + 16.1, YM + 8.4, "budget B", fs=5.4, c=AMBER_DK, w="bold")
+    txt(XB + 3.0, YM + 9.7, "cumulative evidence", fs=5.4, c=GRAY)
     # narrative: the traced query's evidence accrues on the curve
     ax.add_patch(plt.Circle((XB + 14.2, YM + 7.06), 0.62, fc=AMBER,
                             ec="white", lw=0.8, zorder=6))
-    ax.text(XB + 14.9, YM + 7.5, "evidence(q, d)", fontsize=5.0,
-            color=AMBER_DK, zorder=6)
-    txt(XB + 1.4, YM + 1.9, "rare-first anytime schedule —", fs=6.0)
+    ax.text(XB + 13.9, YM + 7.9, "evidence(q, d)", fontsize=5.0,
+            color=AMBER_DK, zorder=6, ha="right")
+    txt(XB + 1.4, YM + 1.75, "rare-first anytime schedule —", fs=6.0)
     txt(XB + 1.4, YM + 0.6, "two-sided rare itemsets", fs=6.0)
-    tag(XB + WB - 5.7, YM + HH - 2.5, "anytime", fc=CB)
 
     card(XB, YB_, WB, HH, "RECALL LOWER BOUND — THM 1", title_c=CB_DK)
     rng = np.random.default_rng(5)
     for i in range(8):
         for j in range(3):
             ax.add_patch(plt.Rectangle(
-                (XB + 1.6 + i * 1.15, YB_ + 4.4 + j * 1.05), 0.95, 0.85,
+                (XB + 1.6 + i * 0.95, YB_ + 4.4 + j * 1.05), 0.8, 0.85,
                 fc=MINT, ec=MINT_E, lw=0.5, zorder=4))
-            ax.text(XB + 2.075 + i * 1.15, YB_ + 4.825 + j * 1.05, "0",
+            ax.text(XB + 2.0 + i * 0.95, YB_ + 4.825 + j * 1.05, "0",
                     ha="center", va="center", fontsize=5.4, color=CB_DK,
                     zorder=5)
-    txt(XB + 12.6, YB_ + 6.6, "337 adversarial cells", fs=6.2, w="bold")
-    txt(XB + 12.6, YB_ + 5.2, "(8 transformations ×", fs=5.8, c=GRAY)
-    txt(XB + 12.6, YB_ + 4.0, " noise levels)", fs=5.8, c=GRAY)
-    txt(XB + 1.4, YB_ + 2.4, "donor evidence ≥ bound on every cell —",
-        fs=6.0)
-    txt(XB + 1.4, YB_ + 1.1, "L1 never drops a true copy", fs=6.0)
-    tag(XB + WB - 6.4, YB_ + 0.5, "provable", fc=CB)
+    txt(XB + 10.3, YB_ + 6.7, "337 adversarial", fs=6.2, w="bold")
+    txt(XB + 10.3, YB_ + 5.3, "cells · 8 ×", fs=5.8, c=GRAY)
+    txt(XB + 10.3, YB_ + 4.0, "noise levels", fs=5.8, c=GRAY)
+    txt(XB + 1.4, YB_ + 2.4, "donor evidence ≥ bound on", fs=6.0)
+    txt(XB + 1.4, YB_ + 1.1, "every cell — none dropped", fs=6.0)
     # narrative: ring the worst adversarial cell — it still passes
-    ax.add_patch(plt.Circle((XB + 2.075 + 5 * 1.15, YB_ + 4.825), 0.78,
+    ax.add_patch(plt.Circle((XB + 2.0 + 5 * 0.95, YB_ + 4.825), 0.78,
                             fc="none", ec=AMBER_DK, lw=1.1, zorder=6))
-    txt(XB + 1.4, YB_ + 3.7, "ring: worst cell, still ≥ bound", fs=4.8,
+    txt(XB + 1.4, YB_ + 3.7, "still ≥ bound", fs=4.8,
         c=GRAY, st="italic")
 
     # ================= column c: confirmation =============================
     card(XC, YT, WC, HH, "L2 · VERBATIM RE-RANK", fc=ABG, ec=AEC,
          title_c=AMBER_DK)
-    txt(XC + 1.4, YT + 8.8, "tolerant + verbatim signatures,", fs=6.2)
+    txt(XC + 1.4, YT + 8.8, "tolerant + verbatim signatures", fs=6.2)
     txt(XC + 1.4, YT + 7.5, "top-C union feed", fs=6.2)
     txt(XC + 1.4, YT + 5.4, "1.66 M pairs screened", fs=7.6, w="bold",
         c=AMBER_DK)
@@ -303,17 +295,14 @@ def _fig1_draw() -> None:
     ax.text(XC + 9.9, YM + 8.9, "matched span", ha="center", fontsize=5.4,
             color=AMBER_DK, zorder=5)
     txt(XC + 1.4, YM + 3.6, "strict-anchor offset vote", fs=6.2)
-    txt(XC + 1.4, YM + 2.3, "transposition estimate · anchored LCS",
-        fs=6.0)
+    txt(XC + 1.4, YM + 2.3, "transposition · anchored LCS", fs=6.0)
     txt(XC + 1.4, YM + 0.9, "ordered chains, tolerance ρ", fs=5.6,
         c=GRAY, st="italic")
     # narrative: ring one anchor pair of the traced query's match
     for ry in (YM + 6.75, YM + 4.75):
         ax.add_patch(plt.Circle((XC + 10.4, ry), 0.68, fc="none",
                                 ec=AMBER_DK, lw=1.0, zorder=6))
-    ax.plot([XC + 11.15, XC + 13.6], [YM + 5.75, YM + 5.75], color=AMBER_DK,
-            lw=0.6, zorder=6)
-    txt(XC + 13.8, YM + 5.75, "anchor pair (q, d)", fs=4.8, c=AMBER_DK,
+    txt(XC + 13.2, YM + 5.75, "anchor pair", fs=4.8, c=AMBER_DK,
         st="italic")
 
     card(XC, YB_, WC, HH, "VERDICT", fc=ABG, ec=AEC, title_c=AMBER_DK)
@@ -334,8 +323,7 @@ def _fig1_draw() -> None:
                                fc="#deeee3", ec="none", zorder=4))
     ax.add_patch(plt.Rectangle((XC + 9.2, YB_ + 3.0), 7.2, 0.75,
                                fc=GOOD, ec="none", zorder=5))
-    txt(XC + 9.2, YB_ + 1.6, "@ ρ = 0.5, transcription noise (E1.4)",
-        fs=5.4, c=GRAY)
+    txt(XC + 9.2, YB_ + 2.0, "at ρ = 0.5 (E1.4)", fs=5.4, c=GRAY)
     # yes: exits upward between the bars, toward the report (column d)
     elbow([(dc[0] + 2.75, dc[1] + 0.2), (58.9, dc[1] + 0.2),
            (58.9, YB_ + 7.9), (XC + WC - 0.7, YB_ + 7.9)], color=GOOD_DK,
@@ -343,7 +331,7 @@ def _fig1_draw() -> None:
     txt(60.4, YB_ + 8.7, "yes → report", fs=5.4, c=GOOD_DK, st="italic")
     arrow((dc[0], dc[1] - 2.7), (dc[0], YB_ + 0.6), color=GRAY, lw=1.0,
           ls="--")
-    txt(dc[0] + 0.5, YB_ + 1.0, "no → rejected (FP-controlled)", fs=5.4,
+    txt(dc[0] - 0.6, YB_ + 0.7, "no → rejected (FP-safe)", fs=5.4,
         c=GRAY, st="italic")
 
     # ================= column d: verdict ==================================
@@ -358,7 +346,7 @@ def _fig1_draw() -> None:
         yy = YT + 8.6 - i * 2.1
         ax.text(XD + 1.5, yy, k, fontsize=6.0, color="#7f9dab",
                 family="monospace", zorder=5)
-        ax.text(XD + 5.6, yy, v, fontsize=6.0, color=DARK_TX,
+        ax.text(XD + 5.8, yy, v, fontsize=6.0, color=DARK_TX,
                 family="monospace", zorder=5)
     # narrative: the decision row carries the traced query's verdict
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
@@ -378,23 +366,18 @@ def _fig1_draw() -> None:
             lw=0.6, zorder=4)
     ax.plot([XD + 3.0, XD + 3.0], [YM + 2.2, YM + 9.0], color=AXGR,
             lw=0.6, zorder=4)
-    for xx, lab in ((XD + 3.0, "0"), (XD + 18.75, "1")):
-        ax.text(xx, YM + 1.2, lab, ha="center", fontsize=5.2, color=GRAY,
-                zorder=5)
-    ax.text(XD + 11.0, YM + 0.2, "copying level λ", ha="center",
-            fontsize=5.2, color=GRAY, zorder=5)
-    ax.text(XD + 2.5, YM + 8.6, "detection %", fontsize=5.2, color=GRAY,
+    ax.text(XD + 2.5, YM + 8.2, "detection %", fontsize=5.2, color=GRAY,
             ha="right", zorder=5)
-    txt(XD + 1.4, YM + 9.9, "26–34 % at λ = 0 → 100 % at λ = 1", fs=6.2,
+    txt(XD + 1.4, YM + 9.5, "26–34 % at λ=0 → 100 % at λ=1", fs=6.2,
         w="bold", c=CD_DK)
-    txt(XD + 1.4, YM + 0.9, "attribution to source 96–100 %", fs=5.6,
+    txt(XD + 1.4, YM + 0.6, "attribution to source 96–100 %", fs=5.6,
         c=GRAY)
 
     card(XD, YB_, WD, HH, "IN-THE-WILD CASES", title_c=CD_DK)
     txt(XD + 1.4, YB_ + 8.6, "1,658,993 duplicate pairs", fs=7.6,
         w="bold", c=CD_DK)
     txt(XD + 1.4, YB_ + 6.6, "census over the full corpus (E6.3):", fs=6.0)
-    txt(XD + 1.4, YB_ + 5.2, "spliced segments and transposed covers", fs=6.0)
+    txt(XD + 1.4, YB_ + 5.2, "spliced + transposed covers", fs=6.0)
     txt(XD + 1.4, YB_ + 3.9, "localized with offset maps", fs=6.0)
     tag(XD + 1.4, YB_ + 0.5, "human-adjudicable", fc=CD)
 
@@ -431,7 +414,7 @@ def _fig1_draw() -> None:
     arrow((XB + WB, YM + 5.4), (XC, YT + 6.0))
     # confirm -> report
     arrow((XC + WC, YM + 5.6), (XD, YT + 5.6))
-    ax.text(73.6, YM + 7.6, "evidence", fontsize=5.2, c=GRAY,
+    ax.text(73.2, YT + 3.4, "evidence", fontsize=5.2, c=GRAY,
             style="italic", ha="center", va="center", zorder=6)
 
     # ================= claims band ========================================
@@ -485,6 +468,14 @@ def _fig1_alt_draw() -> None:
     ax.axis("off")
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 48)
+
+    # all figure text +2 pt
+    _text0 = ax.text
+    def _text_up(*a, **k):
+        if k.get("fontsize"):
+            k["fontsize"] += 2
+        return _text0(*a, **k)
+    ax.text = _text_up
 
     CA, CA_DK = "#33566e", "#26425a"
     CB, CB_DK = "#3f7268", "#2e564e"
@@ -547,8 +538,7 @@ def _fig1_alt_draw() -> None:
             ec="none", alpha=0.9, zorder=4))
     ax.add_patch(plt.Rectangle((4.4, 27.8), 10.1, 5.9, fc="none",
                                ec=AXGR, lw=0.6, zorder=5))
-    txt(4.7, 33.15, "every query searches here", fs=5.0, w="bold",
-        c=CA_DK)
+    txt(4.7, 33.15, "every query's target", fs=5.0, w="bold", c=CA_DK)
     txt(4.2, 24.6, "174,300", fs=11.5, w="bold", c=CA_DK)
     txt(4.2, 22.3, "pieces", fs=6.0, c=GRAY)
     txt(4.2, 20.6, "peak mem 1.05 GB", fs=5.4, c=GRAY)
@@ -579,8 +569,9 @@ def _fig1_alt_draw() -> None:
             ec="none", alpha=0.8, zorder=3))
     # depth annotations inside the funnel
     txt(20.2, 34.2, "all-pairs census · every offset", fs=5.2, c=GRAY)
-    txt(24.5, 15.9, "rare-first: frequent items pruned early", fs=5.2,
-        c=GRAY)
+    ax.text(24.5, 18.2, "rare-first: frequent items pruned early",
+            fontsize=5.2, color=GRAY, ha="left", va="center", zorder=6,
+            bbox=dict(fc="#edf3f0", ec="none", pad=0.18))
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
         (20.2, 12.7), 13.2, 2.0, boxstyle="round,pad=0,rounding_size=0.9",
         fc="white", ec=CB, lw=0.7, zorder=4))
@@ -615,18 +606,18 @@ def _fig1_alt_draw() -> None:
     ax.plot([53.3, 53.3], [28.9, 27.9], color=CB_DK, lw=0.8, zorder=4)
 
     # ---- mini retention bars (top-C, 233 hard negatives) ---------------
-    txt(45.5, 12.6, "top-C donor retention (233 hard negatives)", fs=5.2,
+    txt(45.5, 13.1, "top-C donor retention (233 hard negatives)", fs=5.2,
         w="bold", c=CB_DK)
     ret_c = [("5", 84.1), ("10", 87.1), ("20", 93.1), ("50", 96.6)]
-    base_y = 8.6
+    base_y = 9.2
     for i, (clab, val) in enumerate(ret_c):
         bx = 46.8 + i * 3.6
-        bh = (val - 80.0) / 20.0 * 2.6
+        bh = (val - 80.0) / 20.0 * 2.0
         ax.add_patch(plt.Rectangle((bx, base_y), 2.1, bh, fc=CB,
                                    ec="none", zorder=4))
         ax.text(bx + 1.05, base_y + bh + 0.35, f"{val:.0f}", ha="center",
                 fontsize=5.0, color=CB_DK, zorder=5)
-        ax.text(bx + 1.05, base_y - 0.7, f"C={clab}", ha="center",
+        ax.text(bx + 1.05, base_y - 0.75, f"C={clab}", ha="center",
                 fontsize=4.8, color=GRAY, zorder=5)
     ax.plot([46.4, 60.6], [base_y, base_y], color=AXGR, lw=0.6, zorder=4)
 
@@ -643,8 +634,7 @@ def _fig1_alt_draw() -> None:
         fs=6.0, c=GRAY, st="italic", ha="center")
 
     # ---- mini anytime inset (e3, 16 s spans) ---------------------------
-    txt(2.8, 12.4, "anytime: open candidates vs budget", fs=5.2, w="bold",
-        c=INK)
+    txt(2.8, 12.4, "anytime: open candidates", fs=5.2, w="bold", c=INK)
     ax3 = [3.6, 15.6]
     ay3 = [3.6, 11.2]
     ax.plot([ax3[0], ax3[1], ax3[1], ax3[0], ax3[0]],
@@ -678,16 +668,15 @@ def _fig1_alt_draw() -> None:
         py = [ay3[0] + (np.log10(y) - lo3) / (hi3 - lo3)
               * (ay3[1] - ay3[0]) for y in ys]
         ax.plot(px, py, ls3, lw=1.1, color=c3, zorder=4)
-    for i, (order, (c3, ls3)) in enumerate(
+    for (order, (c3, ls3)), lx0 in zip(
             {"rare": (CB_DK, "-"), "random": (GRAY, "--"),
-             "hot": (CC_DK, ":")}.items()):
-        lx0 = 4.2 + i * 3.1
-        ax.plot([lx0, lx0 + 0.9], [10.75, 10.75], ls3, lw=1.1, color=c3,
+             "hot": (CC_DK, ":")}.items(), (3.9, 7.6, 12.15)):
+        ax.plot([lx0, lx0 + 1.2], [10.75, 10.75], ls3, lw=1.1, color=c3,
                 zorder=4)
-        ax.text(lx0 + 1.2, 10.75, order, fontsize=4.6, color=c3, va="center",
+        ax.text(lx0 + 1.5, 10.75, order, fontsize=4.6, color=c3, va="center",
                 zorder=5)
     txt(9.6, 2.9, "budget →", fs=4.6, c=GRAY, ha="center")
-    txt(9.6, 1.8, "rare-first stays lowest at every budget", fs=5.0,
+    txt(9.6, 1.8, "rare-first lowest at every budget", fs=5.0,
         w="bold", c=CB_DK, ha="center")
     ax.text(3.05, 7.4, "bound (log)", fontsize=4.6, color=GRAY, ha="center",
             va="center", rotation=90, zorder=5)
@@ -722,44 +711,44 @@ def _fig1_alt_draw() -> None:
     txt(71.3, 18.6, "FP 2.1 %", fs=6.4, w="bold", c=CC_DK, ha="center")
     txt(77.2, 18.6, "R 83.9 %", fs=6.4, w="bold", c=GOOD_DK, ha="center")
     arrow((74, 15.6), (74, 12.6), color=GRAY, lw=1.0, ls="--")
-    txt(74.7, 11.5, "rejected · FP-controlled", fs=5.2, c=GRAY, st="italic")
+    txt(73.8, 11.5, "rejected · FP-safe", fs=5.2, c=GRAY, st="italic")
 
     # ---------------- verdict report --------------------------------------
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
-        (84.85, 21.65), 13.5, 16.5, boxstyle="round,pad=0,rounding_size=0.55",
+        (84.85, 21.65), 14.4, 16.5, boxstyle="round,pad=0,rounding_size=0.55",
         fc="#d8dbdd", ec="none", zorder=2))
     ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
-        (84.5, 22), 13.5, 16.5, boxstyle="round,pad=0,rounding_size=0.55",
+        (84.5, 22), 14.4, 16.5, boxstyle="round,pad=0,rounding_size=0.55",
         fc=DARK, ec=DARK, lw=1.0, zorder=3))
     txt(85.7, 37.2, "VERDICT", fs=7.2, w="bold", c="#d8c9a8")
-    ax.plot([85.7, 96.8], [36.1, 36.1], color="#c9a25e", lw=0.9, zorder=5)
+    ax.plot([85.7, 97.9], [36.1, 36.1], color="#c9a25e", lw=0.9, zorder=5)
     mono = [("donor", "piece_0421.mid"),
             ("query", "piece_9017.mid"),
             ("span", "bars 33–48"),
             ("offset", "+2 st · ×1.05"),
-            ("score", "ρ = 0.62 ≥ θ  ✓")]
+            ("score", "ρ = 0.62 ≥ θ ✓")]
     for i, (k, v) in enumerate(mono):
         yy = 34.6 - i * 2.15
-        ax.text(85.7, yy, k, fontsize=5.8, color="#7f9dab",
+        ax.text(85.4, yy, k, fontsize=5.8, color="#7f9dab",
                 family="monospace", zorder=5)
-        ax.text(89.3, yy, v, fontsize=5.8, color=DARK_TX,
+        ax.text(89.5, yy, v, fontsize=5.8, color=DARK_TX,
                 family="monospace", zorder=5)
-    txt(85.7, 23.0, "publisher-readable evidence", fs=5.2,
+    txt(85.4, 23.0, "publisher-readable evidence", fs=5.2,
         c="#8a9aa4", st="italic")
 
     # audit chips under the report
     lx = np.array([0, 0.5, 1.0])
     det = np.array([32, 66, 100])
-    px = 85.8 + lx * 5.6
+    px = 83.6 + lx * 4.0
     py = 10.8 + det / 100 * 4.6
     ax.plot(px, py, color=CD, lw=1.5, marker="o", ms=2.2, zorder=4)
-    ax.plot([85.8, 92.0], [10.8, 10.8], color=AXGR, lw=0.6, zorder=4)
-    ax.plot([85.8, 85.8], [10.8, 15.6], color=AXGR, lw=0.6, zorder=4)
-    txt(92.6, 14.8, "26–34→100 %", fs=5.4, w="bold", c=CD_DK)
-    txt(92.6, 13.3, "attribution 96–100 %", fs=4.8, c=GRAY)
-    txt(85.8, 8.6, "1,658,993 in-the-wild pairs", fs=6.2, w="bold",
+    ax.plot([83.6, 87.6], [10.8, 10.8], color=AXGR, lw=0.6, zorder=4)
+    ax.plot([83.6, 83.6], [10.8, 15.6], color=AXGR, lw=0.6, zorder=4)
+    txt(88.2, 14.8, "26–34→100 %", fs=5.4, w="bold", c=CD_DK)
+    txt(88.2, 13.3, "attribution 96–100 %", fs=4.8, c=GRAY)
+    txt(82.9, 8.6, "1,658,993 in-the-wild pairs", fs=6.2, w="bold",
         c=CD_DK)
-    txt(85.8, 7.2, "spliced + transposed covers localized", fs=4.8, c=GRAY)
+    txt(82.9, 7.2, "spliced + transposed covers", fs=4.8, c=GRAY)
 
     # ---------------- flow arrows between stages --------------------------
     arrow((16.6, 25), (17.8, 24), color=CA_DK, lw=1.4)
