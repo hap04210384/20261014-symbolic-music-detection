@@ -910,7 +910,7 @@ def fig5_cascade() -> None:
     ax.set_ylim(0.3, 1.03)
     ax.grid(True, lw=0.3, alpha=0.4)
     ax.legend(loc="lower left")
-    ax.set_title("(a) operating points, hard negatives")
+    ax.set_title("(a) operating points, hard negatives", fontsize=8.7)
     cs = [5, 10, 20, 50]
     ret = [np.mean([r["retention"][str(c)] for r in rows]) for c in cs]
     ax2.bar([str(c) for c in cs], ret, color="#1f5fb4", width=0.55)
@@ -920,7 +920,7 @@ def fig5_cascade() -> None:
     ax2.set_ylim(0.75, 1.01)
     ax2.set_xlabel("candidate set size C")
     ax2.set_ylabel("donor retention (top-C)")
-    ax2.set_title("(b) candidate retention")
+    ax2.set_title("(b) candidate retention", fontsize=8.7)
     fig.tight_layout()
     save(fig, "fig5_cascade")
 
@@ -1013,7 +1013,7 @@ def fig8_census() -> None:
                        fontsize=7.5)
     ax.set_xlabel("relative containment score")
     ax.set_ylabel("candidate pairs (log)")
-    ax.set_title("(a) all-pairs census, 174,300 pieces", fontsize=8.5)
+    ax.set_title("(a) all-pairs census, 174,300 pieces", fontsize=8.45)
     ax.legend(fontsize=7.5)
     ax.grid(True, axis="y", lw=0.3, alpha=0.4)
 
@@ -1038,7 +1038,7 @@ def fig8_census() -> None:
     ax2.set_ylabel("precision of channel (%)")
     ax2.set_ylim(0, 108)
     ax2.set_title("(b) confirmed-copy precision, stratified audit",
-                  fontsize=8.5)
+                  fontsize=8.45)
     ax2.grid(True, axis="y", lw=0.3, alpha=0.4)
     for ax_ in (ax, ax2):
         ax_.tick_params(labelsize=7.5)
@@ -1149,7 +1149,7 @@ def fig_e13_margins() -> None:
                 fontsize=7.5)
         ax.set_xlabel("donor score minus best non-donor", fontsize=7.5)
         ax.set_ylabel("fragments", fontsize=7.5)
-        ax.set_title(title, fontsize=9)
+        ax.set_title(title, fontsize=8.7)
         ax.tick_params(labelsize=7.5)
         ax.set_xlim(-2, 41)
     save(fig, "fig_e13_margins")
@@ -1196,7 +1196,7 @@ def fig_e14_rho() -> None:
     ax.set_xlabel("fragment-level FP (%)", fontsize=7.5)
     ax.set_ylabel("donor recall (%)", fontsize=7.5)
     ax.set_title("contiguity threshold \u03c1 by anchor tolerance",
-                 fontsize=8.5)
+                 fontsize=8.7)
     ax.legend(fontsize=7.5, frameon=False)
     ax.grid(True, lw=0.3, alpha=0.4)
     ax.tick_params(labelsize=7.5)
@@ -1218,7 +1218,7 @@ def fig_e5_ablation() -> None:
     ax.plot(x, y, "o-", ms=3.5, lw=1, color="#1f5fb4")
     ax.set_xlabel("span length factor L", fontsize=7.5)
     ax.set_ylabel("false candidates", fontsize=7.5)
-    ax.set_title("(a) evidence span E5.4", fontsize=9)
+    ax.set_title("(a) evidence span E5.4", fontsize=8.85)
     if len(y) > 1 and y[-1] != y[0]:
         trend = "longer spans \u2192 more false candidates" \
             if y[-1] > y[0] else "shorter spans \u2192 more false candidates"
@@ -1252,7 +1252,7 @@ def fig_e5_ablation() -> None:
     ax2.set_ylabel("recall (%)", fontsize=7.5, color="#c0392b")
     ax2.tick_params(labelsize=7.5, colors="#c0392b")
     ax.set_ylabel("false candidates (log)", fontsize=7.5)
-    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=9)
+    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=8.85)
 
     ax = axes[2]
     labels = [f"{r['grid_ms']} ms" for r in G]
@@ -1271,7 +1271,7 @@ def fig_e5_ablation() -> None:
     ax.set_xticklabels(labels, fontsize=7.5)
     ax.set_xlabel("quantization grid", fontsize=7.5)
     ax.set_ylabel("false candidates", fontsize=7.5)
-    ax.set_title("(c) grid granularity E5.7", fontsize=9)
+    ax.set_title("(c) grid granularity E5.7", fontsize=8.85)
 
     for ax in axes:
         ax.tick_params(labelsize=7.5)
