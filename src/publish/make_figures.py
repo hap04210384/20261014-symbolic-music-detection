@@ -884,7 +884,7 @@ def fig5_cascade() -> None:
             fp = float(np.mean([len(r[f"cascade_C{c}"]["rho_grid"][str(rho)][
                 "fp"]) > 0 for r in rows]))
             pts.append((fp, rec, f"cascade C={c} r={rho}"))
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.8, 2.08))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(5.44, 2.08))
     seen = set()
     for fp, rec, lab in pts:
         fam = lab.split()[0]
@@ -915,8 +915,8 @@ def fig5_cascade() -> None:
     ret = [np.mean([r["retention"][str(c)] for r in rows]) for c in cs]
     ax2.bar([str(c) for c in cs], ret, color="#1f5fb4", width=0.55)
     ax2.axhline(0.99, ls="--", lw=0.8, c="#c0392b")
-    ax2.text(1.6, 0.9835, "union feed target 99%", fontsize=7.5,
-             color="#c0392b")
+    ax2.text(3.3, 0.9835, "union feed target 99%", fontsize=7.5,
+             color="#c0392b", ha="right")
     ax2.set_ylim(0.75, 1.01)
     ax2.set_xlabel("candidate set size C")
     ax2.set_ylabel("donor retention (top-C)")
@@ -1210,19 +1210,27 @@ def fig_e5_ablation() -> None:
     L = [r for r in rows if r["ablation"] == "E5.4_L"]
     K = [r for r in rows if r["ablation"] == "E5.5_k"]
     G = [r for r in rows if r["ablation"] == "E5.7_grid"]
-    fig, axes = plt.subplots(1, 3, figsize=(6.9, 1.76))
+    # canvas widened to 8.2in but embedded at the same 16 cm: display scale
+    # drops to 0.7683 vs the 3.5in reference 0.8999, so scale all fonts,
+    # line widths and markers x1.188 to keep identical displayed sizes.
+    _saved_rc = {k: plt.rcParams[k] for k in (
+        "axes.linewidth", "xtick.major.width", "ytick.major.width")}
+    plt.rcParams.update({"axes.linewidth": 0.95,
+                         "xtick.major.width": 0.95,
+                         "ytick.major.width": 0.95})
+    fig, axes = plt.subplots(1, 3, figsize=(8.2, 1.98))
 
     ax = axes[0]
     x = [r["factor"] for r in L]
     y = [r["false_candidates"] for r in L]
-    ax.plot(x, y, "o-", ms=3.5, lw=1, color="#1f5fb4")
-    ax.set_xlabel("span length factor L", fontsize=7.5)
-    ax.set_ylabel("false candidates", fontsize=7.5)
-    ax.set_title("(a) evidence span E5.4", fontsize=8.85)
+    ax.plot(x, y, "o-", ms=4.1, lw=1.2, color="#1f5fb4")
+    ax.set_xlabel("span length factor L", fontsize=8.8)
+    ax.set_ylabel("false candidates", fontsize=8.8)
+    ax.set_title("(a) evidence span E5.4", fontsize=10.5)
     if len(y) > 1 and y[-1] != y[0]:
         trend = "longer spans \u2192 more false candidates" \
             if y[-1] > y[0] else "shorter spans \u2192 more false candidates"
-        ax.text(0.04, 0.92, trend, transform=ax.transAxes, fontsize=7.5,
+        ax.text(0.04, 0.92, trend, transform=ax.transAxes, fontsize=8.8,
                 color="#5c6569", va="top")
 
     ax = axes[1]
@@ -1230,52 +1238,53 @@ def fig_e5_ablation() -> None:
     y = [r["false_candidates"] for r in K]
     recall = [int(r["recall"].split("/")[0]) / int(r["recall"].split("/")[1])
               for r in K]
-    ax.bar(range(len(K)), y, color="#7f9ec9", ec="#4a6fa5", lw=0.5)
+    ax.bar(range(len(K)), y, color="#7f9ec9", ec="#4a6fa5", lw=0.6)
     # narrative: ring the adopted tolerance vector k = (2, 1, 1)
     for i, r in enumerate(K):
         if (r["k_pitch"], r["k_bin"], r["k_vel"]) == (2, 1, 1):
-            ax.scatter([i], [y[i]], s=170, facecolors="none",
-                       edgecolors="#c0392b", lw=1.3, zorder=5)
+            ax.scatter([i], [y[i]], s=235, facecolors="none",
+                       edgecolors="#c0392b", lw=1.5, zorder=5)
             ax.annotate("adopted\nk = (2,1,1)", (i, y[i]),
                         textcoords="offset points", xytext=(-12, -4),
-                        fontsize=7.5, color="#c0392b", ha="right",
+                        fontsize=8.8, color="#c0392b", ha="right",
                         va="center",
                         arrowprops=dict(arrowstyle="->", color="#c0392b",
-                                        lw=0.8))
+                                        lw=0.95))
     ax.set_yscale("log")
     ax.set_xticks(range(len(K)))
-    ax.set_xticklabels(labels, fontsize=7.5, rotation=45)
+    ax.set_xticklabels(labels, fontsize=8.8, rotation=45)
     ax2 = ax.twinx()
-    ax2.plot(range(len(K)), [v * 100 for v in recall], "s--", ms=3,
-             lw=1, color="#c0392b")
+    ax2.plot(range(len(K)), [v * 100 for v in recall], "s--", ms=3.5,
+             lw=1.2, color="#c0392b")
     ax2.set_ylim(60, 110)
-    ax2.set_ylabel("recall (%)", fontsize=7.5, color="#c0392b")
-    ax2.tick_params(labelsize=7.5, colors="#c0392b")
-    ax.set_ylabel("false candidates (log)", fontsize=7.5)
-    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=8.85)
+    ax2.tick_params(labelsize=8.8, colors="#c0392b")
+    ax.set_ylabel("false candidates (log)", fontsize=8.8)
+    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=10.5)
 
     ax = axes[2]
     labels = [f"{r['grid_ms']} ms" for r in G]
     y = [r["false_candidates"] for r in G]
-    ax.plot(range(len(G)), y, "o-", ms=3.5, lw=1, color="#1f5fb4",
+    ax.plot(range(len(G)), y, "o-", ms=4.1, lw=1.2, color="#1f5fb4",
             label="false candidates")
     # narrative: ring the adopted 125 ms quantization grid
     for i, r in enumerate(G):
         if r["grid_ms"] == 125:
-            ax.scatter([i], [y[i]], s=130, facecolors="none",
-                       edgecolors="#c0392b", lw=1.3, zorder=5)
+            ax.scatter([i], [y[i]], s=180, facecolors="none",
+                       edgecolors="#c0392b", lw=1.5, zorder=5)
             ax.annotate("adopted (§III-B)", (i, y[i]),
                         textcoords="offset points", xytext=(0, 10),
-                        fontsize=7.5, color="#c0392b", ha="center")
+                        fontsize=8.8, color="#c0392b", ha="center")
     ax.set_xticks(range(len(G)))
-    ax.set_xticklabels(labels, fontsize=7.5)
-    ax.set_xlabel("quantization grid", fontsize=7.5)
-    ax.set_ylabel("false candidates", fontsize=7.5)
-    ax.set_title("(c) grid granularity E5.7", fontsize=8.85)
+    ax.set_xticklabels(labels, fontsize=8.8)
+    ax.set_xlabel("quantization grid", fontsize=8.8)
+    ax.set_ylabel("false candidates", fontsize=8.8)
+    ax.set_title("(c) grid granularity E5.7", fontsize=10.5)
 
     for ax in axes:
-        ax.tick_params(labelsize=7.5)
-        ax.grid(True, lw=0.3, alpha=0.4)
+        ax.tick_params(labelsize=8.8)
+        ax.grid(True, lw=0.35, alpha=0.4)
+    fig.subplots_adjust(wspace=0.62, bottom=0.30)
+    plt.rcParams.update(_saved_rc)
     save(fig, "fig_e5_ablation")
 
 

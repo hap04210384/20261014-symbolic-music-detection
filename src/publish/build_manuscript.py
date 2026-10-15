@@ -1573,7 +1573,7 @@ def build() -> None:
     caption(doc, "Fig. 8. Confirmation operating curves: donor recall "
                  "versus fragment-level FP over \u03c1, labelled by "
                  "threshold, for three anchor-tolerance regimes.")
-    full_width(doc, lambda: (add_emf(doc, "fig5_cascade", 16.0),
+    full_width(doc, lambda: (add_emf(doc, "fig5_cascade", 12.8),
                              caption(doc, "Fig. 9. (a) Operating points "
                                          "of the three systems on hard "
                                          "negatives; (b) donor retention "
