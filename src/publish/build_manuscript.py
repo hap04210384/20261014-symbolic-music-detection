@@ -1158,8 +1158,8 @@ def build() -> None:
          "event encoding; the screen and the confirmation use different "
          "tolerances by design.")
     full_width(doc, lambda: (add_emf(doc, "fig1_architecture", 16.0),
-                             caption(doc, "Fig. 1. Two-layer copy "
-                                         "detection pipeline. (a) A "
+                             caption(doc, "Fig. 1 (design A). Two-layer "
+                                         "copy detection pipeline. (a) A "
                                          "publisher-scale corpus is "
                                          "encoded once into a rare-first "
                                          "item-set index. (b) The L1 "
@@ -1176,6 +1176,19 @@ def build() -> None:
                                          "arrows mark data flow; amber "
                                          "arrows mark guarantee and "
                                          "evidence flow.")))
+    full_width(doc, lambda: (add_emf(doc, "fig1_alt", 16.0),
+                             caption(doc, "Fig. 1 (design B, candidate). "
+                                         "The same pipeline drawn as an "
+                                         "evidence funnel: candidate sets "
+                                         "narrow through the L1 screen and "
+                                         "the L2 top-C gate while the "
+                                         "recall floor (Thm 1) stays "
+                                         "unbroken; L3 inspects survivors "
+                                         "under a structural lens, and "
+                                         "confirmed matches ship as "
+                                         "adjudicable reports. One of "
+                                         "designs A and B will be kept "
+                                         "after selection.")))
     h2(doc, "A. Problem statement and notation")
     para(doc,
          "A piece P = (e\u2081, \u2026, e_n) is a sequence of note "

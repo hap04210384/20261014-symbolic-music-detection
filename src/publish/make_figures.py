@@ -404,6 +404,204 @@ def _fig1_draw() -> None:
     save(fig, "fig1_architecture")
 
 
+# ---------------------------------------------- fig 1 alternative (design B)
+def fig1_alt() -> None:
+    """Alternative design-B first figure: evidence-funnel narrative.
+    Candidates narrow through L1/L2 while an unbroken recall floor
+    (Thm 1) runs underneath; L3 inspects survivors under a structural
+    lens; confirmed matches ship as adjudicable reports.  Same
+    authoritative numbers as design A."""
+    old = {k: plt.rcParams[k] for k in ("font.family", "font.serif",
+                                        "font.sans-serif")}
+    plt.rcParams.update({"font.family": "sans-serif",
+                         "font.sans-serif": ["Arial", "Helvetica",
+                                             "DejaVu Sans"]})
+    try:
+        _fig1_alt_draw()
+    finally:
+        plt.rcParams.update(old)
+
+
+def _fig1_alt_draw() -> None:
+    fig, ax = plt.subplots(figsize=(10.2, 4.9))
+    fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    ax.axis("off")
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 48)
+
+    CA, CA_DK = "#33566e", "#26425a"
+    CB, CB_DK = "#3f7268", "#2e564e"
+    CC, CC_DK = "#bf8830", "#8f6a2c"
+    CD, CD_DK = "#6b5566", "#4f3d4e"
+    GOOD, GOOD_DK = "#57836a", "#3f6650"
+    DARK, DARK_TX = "#232b30", "#d3dee2"
+    INK, GRAY = "#22292e", "#5c6569"
+    AXGR = "#a8b2b6"
+
+    def mix(c1, c2, t):
+        a = [int(c1[i:i + 2], 16) for i in (1, 3, 5)]
+        b = [int(c2[i:i + 2], 16) for i in (1, 3, 5)]
+        return "#" + "".join(f"{round(x + (y - x) * t):02x}"
+                             for x, y in zip(a, b))
+
+    def txt(x, y, s, fs=6.0, c=INK, w="normal", st="normal", ha="left"):
+        ax.text(x, y, s, fontsize=fs, color=c, weight=w, style=st,
+                ha=ha, va="center", zorder=6, linespacing=1.35)
+
+    def arrow(p0, p1, color=INK, lw=1.4, ls="-"):
+        ax.annotate("", xy=p1, xytext=p0, zorder=8,
+                    arrowprops=dict(arrowstyle="-|>", lw=lw, color=color,
+                                    ls=ls, shrinkA=1, shrinkB=1))
+
+    # ---------------- process spine --------------------------------------
+    SY = 44.0
+    ax.plot([7, 93], [SY, SY], color=AXGR, lw=1.0, zorder=2)
+    miles = [(10, "1", "CORPUS", CA), (32, "2", "L1 SCREEN", CB),
+             (52, "3", "L2 RE-RANK", CB), (72, "4", "L3 CONFIRM", CC),
+             (91, "5", "VERDICT", CD)]
+    for x, num, lab, col in miles:
+        ax.add_patch(plt.Circle((x, SY), 1.5, fc=col, ec="white", lw=1.2,
+                                zorder=4))
+        ax.text(x, SY, num, ha="center", va="center", fontsize=7.5,
+                weight="bold", color="white", zorder=5)
+        ax.text(x, SY - 2.7, lab, ha="center", va="center", fontsize=5.8,
+                weight="bold", color=col, zorder=4)
+
+    # ---------------- corpus card ----------------------------------------
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (3, 14), 13.5, 24, boxstyle="round,pad=0,rounding_size=0.55",
+        fc="white", ec="#d9ddde", lw=1.0, zorder=3))
+    txt(4.2, 36.2, "LAKH MIDI", fs=7.2, w="bold", c=CA_DK)
+    rng = np.random.default_rng(7)
+    for _ in range(30):
+        t0 = rng.uniform(0, 9.2)
+        d = rng.uniform(0.45, 1.3)
+        p = rng.uniform(0.6, 5.2)
+        ax.add_patch(plt.Rectangle(
+            (4.4 + t0, 27.5 + p - 0.3), d, 0.6,
+            fc=mix("#d8e0e8", CA_DK, 0.15 + 0.75 * p / 5.8),
+            ec="none", alpha=0.9, zorder=4))
+    ax.add_patch(plt.Rectangle((4.4, 27.8), 10.1, 5.9, fc="none",
+                               ec=AXGR, lw=0.6, zorder=5))
+    txt(4.2, 24.6, "174,300", fs=11.5, w="bold", c=CA_DK)
+    txt(4.2, 22.3, "pieces", fs=6.0, c=GRAY)
+    txt(4.2, 18.9, "index build 24.7 s", fs=5.8)
+    txt(4.2, 17.5, "query p50 41.9 ms", fs=5.8)
+    tag_y = 15.0
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (4.2, tag_y), 7.6, 1.9, boxstyle="round,pad=0,rounding_size=0.9",
+        fc=CA, ec="none", zorder=4))
+    ax.text(8.0, tag_y + 0.95, "offline · once", ha="center", va="center",
+            fontsize=5.4, weight="bold", color="white", zorder=5)
+
+    # ---------------- funnel (L1) ----------------------------------------
+    ax.add_patch(plt.Polygon([(18, 12), (18, 36), (62, 25), (62, 19)],
+                             closed=True, fc="#edf3f0", ec=CB, lw=1.4,
+                             zorder=2))
+    rng = np.random.default_rng(3)
+    for _ in range(260):
+        x = rng.uniform(19, 61)
+        t = (x - 18) / 44
+        top, bot = 36 - 11 * t, 12 + 7 * t
+        if rng.random() > 0.92 * (1 - t) + 0.04:
+            continue
+        y = rng.uniform(bot + 0.4, top - 0.4)
+        ax.add_patch(plt.Rectangle(
+            (x, y), 0.7, 0.55,
+            fc=mix("#cfe0d9", CB_DK, 0.2 + 0.6 * rng.random()),
+            ec="none", alpha=0.8, zorder=3))
+    txt(18, 39.6, "L1 · TOLERANT ITEM-SET SCREEN — rare-first anytime",
+        fs=7.0, w="bold", c=CB_DK)
+    txt(31, 23.2, "1.66 M", fs=9.0, w="bold", c=CB_DK)
+    txt(31, 21.3, "candidate pairs", fs=5.4, c=GRAY)
+    ax.plot([44, 44], [13, 33.2], color=CC, lw=1.0, ls=":", zorder=4)
+    txt(45, 33.8, "budget B", fs=5.6, w="bold", c=CC_DK)
+
+    # ---------------- L2 gate --------------------------------------------
+    for gx in (52.4, 54.2):
+        ax.plot([gx, gx], [16.2, 27.6], color=CB_DK, lw=2.4,
+                solid_capstyle="butt", zorder=4)
+    txt(53.3, 30.0, "top-C keeps 96.6 %", fs=5.8, w="bold", c=CB_DK,
+        ha="center")
+    ax.plot([53.3, 53.3], [28.9, 27.9], color=CB_DK, lw=0.8, zorder=4)
+
+    # ---------------- recall floor ---------------------------------------
+    ax.add_patch(plt.Rectangle((18, 4.5), 62, 3.0, fc=GOOD, ec="none",
+                               zorder=3))
+    ax.text(49, 6.0, "RECALL FLOOR (Thm 1) — every true copy survives"
+           " · 337 adversarial cells · 0 violations",
+           ha="center", va="center", fontsize=6.2, weight="bold",
+           color="white", zorder=4)
+    for ux in (26, 40, 58):
+        arrow((ux, 7.6), (ux, 9.6), color=GOOD_DK, lw=1.1)
+    txt(49, 1.9, "candidates narrow — the guarantee does not",
+        fs=6.0, c=GRAY, st="italic", ha="center")
+
+    # ---------------- L3 lens --------------------------------------------
+    LC = (74, 24)
+    ax.add_patch(plt.Circle(LC, 8.0, fc="white", ec=CC, lw=2.0, zorder=4))
+    ax.plot([79.8, 82.6], [18.6, 15.6], color=CC, lw=2.6,
+            solid_capstyle="round", zorder=4)
+    txt(74, 34.6, "L3 · STRUCTURAL CONFIRM", fs=6.8, w="bold", c=CC_DK,
+        ha="center")
+    anchors = [3, 4, 6, 7, 9]
+    for row, yy in enumerate((26.6, 22.0)):
+        for i in range(11):
+            hit = i in (a + (0 if row == 0 else 1) for a in anchors)
+            ax.add_patch(plt.Rectangle(
+                (67.6 + i * 1.18, yy), 0.82, 1.0,
+                fc=CC if hit else "#d9cfbf", ec="none", zorder=5))
+    for a in anchors:
+        x0 = 67.6 + a * 1.18 + 0.41
+        x1 = 67.6 + (a + 1) * 1.18 + 0.41
+        ax.plot([x0, x1], [26.6, 23.0], color=CC_DK, lw=0.7, zorder=5)
+    ax.text(74, 28.9, "aligned span", ha="center", fontsize=5.2,
+            color=CC_DK, zorder=6)
+    txt(71.3, 18.6, "FP 2.1 %", fs=6.4, w="bold", c=CC_DK, ha="center")
+    txt(77.2, 18.6, "R 83.9 %", fs=6.4, w="bold", c=GOOD_DK, ha="center")
+    arrow((74, 15.6), (74, 12.6), color=GRAY, lw=1.0, ls="--")
+    txt(74.7, 11.5, "rejected · FP-controlled", fs=5.2, c=GRAY, st="italic")
+
+    # ---------------- verdict report --------------------------------------
+    ax.add_patch(plt.matplotlib.patches.FancyBboxPatch(
+        (84.5, 22), 13.5, 16.5, boxstyle="round,pad=0,rounding_size=0.55",
+        fc=DARK, ec=DARK, lw=1.0, zorder=3))
+    txt(85.7, 37.2, "VERDICT", fs=7.2, w="bold", c="#d8c9a8")
+    mono = [("donor", "piece_0421.mid"),
+            ("span", "bars 33–48"),
+            ("offset", "+2 st · ×1.05"),
+            ("score", "ρ = 0.62 ≥ θ  ✓")]
+    for i, (k, v) in enumerate(mono):
+        yy = 34.4 - i * 2.3
+        ax.text(85.7, yy, k, fontsize=5.8, color="#7f9dab",
+                family="monospace", zorder=5)
+        ax.text(89.3, yy, v, fontsize=5.8, color=DARK_TX,
+                family="monospace", zorder=5)
+    txt(85.7, 23.6, "publisher-readable evidence", fs=5.2,
+        c="#8a9aa4", st="italic")
+
+    # audit chips under the report
+    lx = np.array([0, 0.5, 1.0])
+    det = np.array([32, 66, 100])
+    px = 85.8 + lx * 5.6
+    py = 10.8 + det / 100 * 4.6
+    ax.plot(px, py, color=CD, lw=1.5, marker="o", ms=2.2, zorder=4)
+    ax.plot([85.8, 92.0], [10.8, 10.8], color=AXGR, lw=0.6, zorder=4)
+    ax.plot([85.8, 85.8], [10.8, 15.6], color=AXGR, lw=0.6, zorder=4)
+    txt(92.6, 14.8, "26–34→100 %", fs=5.4, w="bold", c=CD_DK)
+    txt(92.6, 13.3, "attribution 96–100 %", fs=4.8, c=GRAY)
+    txt(85.8, 8.6, "1,658,993 in-the-wild pairs", fs=6.2, w="bold",
+        c=CD_DK)
+    txt(85.8, 7.2, "spliced + transposed covers localized", fs=4.8, c=GRAY)
+
+    # ---------------- flow arrows between stages --------------------------
+    arrow((16.6, 25), (17.8, 24), color=CA_DK, lw=1.4)
+    arrow((62.2, 22), (65.7, 23), color=CC_DK, lw=1.4)
+    arrow((82.4, 24.5), (84.3, 25.5), color=CD_DK, lw=1.4)
+
+    save(fig, "fig1_alt")
+
+
 # ---------------------------------------------------------------- fig 2
 def fig2_scaling() -> None:
     rows = sorted(load("e4/scaling.jsonl"), key=lambda r: r["n_pieces"])
