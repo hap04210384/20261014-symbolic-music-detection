@@ -23,12 +23,12 @@ INKSCAPE = r"C:\Program Files\Inkscape\bin\inkscape.exe"
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman", "DejaVu Serif"],
-    "font.size": 8,            # unified in-figure text (charts)
-    "axes.titlesize": 8.5,     # panel titles
-    "axes.labelsize": 8,       # axis labels
-    "legend.fontsize": 7,      # legends
-    "xtick.labelsize": 7,      # tick labels
-    "ytick.labelsize": 7,
+    "font.size": 8.5,          # unified in-figure text (charts)
+    "axes.titlesize": 9,       # panel titles
+    "axes.labelsize": 8.5,     # axis labels
+    "legend.fontsize": 7.5,    # legends
+    "xtick.labelsize": 7.5,    # tick labels
+    "ytick.labelsize": 7.5,
     "svg.fonttype": "path",   # text -> curves: zero font risk in Word
     "figure.dpi": 150,
 })
@@ -826,11 +826,11 @@ def fig3_anytime() -> None:
     ax.set_title("anytime behaviour, 16 s spans")
     # narrative: rare-first is the lowest curve at every prefix
     ax.text(0.03, 0.06, "rare-first stays lowest:\nthe schedule tightens"
-            " the\ncertified bound at every prefix", fontsize=7,
+            " the\ncertified bound at every prefix", fontsize=7.5,
             color="#1f5fb4", transform=ax.transAxes, va="bottom")
     ax.axvline(0.7, color="#5c6569", ls=":", lw=0.8)
     ax.text(0.97, 0.97, "70% budget: schedules\nconverge, rare-first"
-            " still lowest", fontsize=7, color="#5c6569",
+            " still lowest", fontsize=7.5, color="#5c6569",
             transform=ax.transAxes, va="top", ha="right")
     save(fig, "fig3_anytime")
 
@@ -846,7 +846,7 @@ def fig4_bounds() -> None:
     ax.scatter(b[g], s[g], s=8, c="#1f5fb4", label="guaranteed cells")
     lim = max(b.max(), s.max()) * 1.05
     ax.plot([0, lim], [0, lim], "k--", lw=0.8)
-    ax.text(lim * 0.62, lim * 0.80, "measured = bound", fontsize=7,
+    ax.text(lim * 0.62, lim * 0.80, "measured = bound", fontsize=7.5,
             rotation=24)
     ax.set_xlabel("theoretical evidence lower bound")
     ax.set_ylabel("measured donor evidence")
@@ -860,7 +860,7 @@ def fig4_bounds() -> None:
                edgecolors="#c0392b", lw=1.2, zorder=5)
     ax.annotate("closest cell,\nstill \u2265 bound",
                 (b[i_close], s[i_close]),
-                textcoords="offset points", xytext=(10, -16), fontsize=7,
+                textcoords="offset points", xytext=(10, -16), fontsize=7.5,
                 color="#c0392b",
                 arrowprops=dict(arrowstyle="->", color="#c0392b", lw=0.8))
     save(fig, "fig4_bounds")
@@ -907,13 +907,13 @@ def fig5_cascade() -> None:
             if part[2] == "r=0.5":
                 ax.annotate(f"{part[1]}, \u03c1=0.5", (fp, rec),
                             textcoords="offset points", xytext=(6, -11),
-                            fontsize=7)
+                            fontsize=7.5)
             if part[1] == "C=50" and part[2] == "r=0.5":
                 ax.scatter([fp], [rec], s=140, facecolors="none",
                            edgecolors="#1f5fb4", lw=1.4, zorder=5)
                 ax.annotate("adopted cascade\noperating point", (fp, rec),
                             textcoords="offset points", xytext=(-8, 12),
-                            fontsize=7, color="#1f5fb4", ha="right",
+                            fontsize=7.5, color="#1f5fb4", ha="right",
                             arrowprops=dict(arrowstyle="->", color="#1f5fb4",
                                             lw=0.8))
     ax.set_xlabel("fragment-level false-positive rate")
@@ -927,7 +927,7 @@ def fig5_cascade() -> None:
     ret = [np.mean([r["retention"][str(c)] for r in rows]) for c in cs]
     ax2.bar([str(c) for c in cs], ret, color="#1f5fb4", width=0.55)
     ax2.axhline(0.99, ls="--", lw=0.8, c="#c0392b")
-    ax2.text(1.6, 0.9835, "union feed target 99%", fontsize=7,
+    ax2.text(1.6, 0.9835, "union feed target 99%", fontsize=7.5,
              color="#c0392b")
     ax2.set_ylim(0.75, 1.01)
     ax2.set_xlabel("candidate set size C")
@@ -967,7 +967,7 @@ def fig6_memorization() -> None:
     # narrative: the lambda = 0 band is style-level structure, not copying
     ax.text(0.02, 0.60, "\u03bb = 0 band: style-level shared structure,\n"
             "attributed to the true source in only\n2\u20134% of cases "
-            "(Table XI)", transform=ax.transAxes, fontsize=7,
+            "(Table XI)", transform=ax.transAxes, fontsize=7.5,
             color="#5c6569", va="center")
     save(fig, "fig6_memorization")
 
@@ -1021,11 +1021,11 @@ def fig8_census() -> None:
     ax.set_yscale("log")
     ax.set_xticks(x)
     ax.set_xticklabels([f"[{lo:.2f},{hi:.2f})" for lo, hi in bands],
-                       fontsize=7)
+                       fontsize=7.5)
     ax.set_xlabel("relative containment score")
     ax.set_ylabel("candidate pairs (log)")
-    ax.set_title("(a) all-pairs census, 174,300 pieces", fontsize=8)
-    ax.legend(fontsize=7)
+    ax.set_title("(a) all-pairs census, 174,300 pieces", fontsize=8.5)
+    ax.legend(fontsize=7.5)
     ax.grid(True, axis="y", lw=0.3, alpha=0.4)
 
     summ = json.loads(
@@ -1043,16 +1043,16 @@ def fig8_census() -> None:
             capsize=3, error_kw=dict(lw=0.9))
     for i, (k, _) in enumerate(strata):
         n = summ["per_stratum"][k]["n"]
-        ax2.text(i, hi[i] + 2, f"n={n}", ha="center", fontsize=7)
+        ax2.text(i, hi[i] + 2, f"n={n}", ha="center", fontsize=7.5)
     ax2.set_xticks(range(3))
-    ax2.set_xticklabels([s[1] for s in strata], fontsize=7, rotation=12)
+    ax2.set_xticklabels([s[1] for s in strata], fontsize=7.5, rotation=12)
     ax2.set_ylabel("precision of channel (%)")
     ax2.set_ylim(0, 108)
     ax2.set_title("(b) confirmed-copy precision, stratified audit",
-                  fontsize=8)
+                  fontsize=8.5)
     ax2.grid(True, axis="y", lw=0.3, alpha=0.4)
     for ax_ in (ax, ax2):
-        ax_.tick_params(labelsize=7)
+        ax_.tick_params(labelsize=7.5)
     fig.tight_layout()
     save(fig, "fig8_census")
 
@@ -1105,12 +1105,12 @@ def fig_e1_heatmap() -> None:
                                      [sl for _, _, slist in _e1_groups()
                                       for sl, _ in slist])])
     ax.xaxis.set_ticks_position("top")
-    ax.tick_params(length=0, labelsize=7)
+    ax.tick_params(length=0, labelsize=7.5)
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
             miss = M[i, j] < 100
             ax.text(j, i, f"{M[i, j]:.0f}", ha="center", va="center",
-                    fontsize=7, weight="bold" if miss else "normal",
+                    fontsize=7.5, weight="bold" if miss else "normal",
                     color="#7f0000" if miss else "white")
             if M[i, j] < 95:  # box the materially-degraded cells
                 ax.add_patch(plt.Rectangle(
@@ -1119,8 +1119,8 @@ def fig_e1_heatmap() -> None:
     for e in ["top", "right", "bottom", "left"]:
         ax.spines[e].set_visible(False)
     cb = fig.colorbar(im, ax=ax, shrink=0.5, pad=0.02)
-    cb.ax.tick_params(labelsize=6)
-    cb.set_label("recall (%)", fontsize=7)
+    cb.ax.tick_params(labelsize=7.5)
+    cb.set_label("recall (%)", fontsize=7.5)
     save(fig, "fig_e1_heatmap")
 
 
@@ -1147,21 +1147,21 @@ def fig_e13_margins() -> None:
             # wide panel: room for the full takeaway above the bars
             ax.text(0.13, 0.97, "tie zone (shaded): margin \u2248 0 \u2014"
                     "\nscreening cannot separate donor",
-                    transform=ax.transAxes, fontsize=7, color="#a04040",
+                    transform=ax.transAxes, fontsize=7.5, color="#a04040",
                     va="top")
         else:
             # narrow panel: chip inside the shaded band
             ax.text(0.0, ymax_ * 0.45, "tie zone:\nmargin \u2248 0",
-                    fontsize=7, color="#a04040", ha="center", va="center",
+                    fontsize=7.5, color="#a04040", ha="center", va="center",
                     bbox=dict(fc="white", ec="none", alpha=0.9, pad=1.4),
                     zorder=6)
         ax.text(0.97, 0.96, f"{np.mean(flag) * 100:.0f}% of fragments\n"
                 "flagged", transform=ax.transAxes, ha="right", va="top",
-                fontsize=7)
-        ax.set_xlabel("donor score minus best non-donor", fontsize=7)
-        ax.set_ylabel("fragments", fontsize=7)
-        ax.set_title(title, fontsize=8.5)
-        ax.tick_params(labelsize=7)
+                fontsize=7.5)
+        ax.set_xlabel("donor score minus best non-donor", fontsize=7.5)
+        ax.set_ylabel("fragments", fontsize=7.5)
+        ax.set_title(title, fontsize=9)
+        ax.tick_params(labelsize=7.5)
         ax.set_xlim(-2, 41)
     save(fig, "fig_e13_margins")
 
@@ -1186,22 +1186,22 @@ def fig_e14_rho() -> None:
                 label=label)
         for rho, x, y in zip(("0.3", "0.4", "0.5", "0.6"), fp, rec):
             ax.annotate(rho, (x, y), textcoords="offset points",
-                        xytext=(4, 3), fontsize=7, color=color)
+                        xytext=(4, 3), fontsize=7.5, color=color)
     # narrative: ring the adopted operating point (mid tolerance, rho=0.5)
     fx, fy = curves["mid"]
     ax.scatter([fx[2]], [fy[2]], s=120, facecolors="none",
                edgecolors="#c0392b", lw=1.3, zorder=5)
     ax.annotate("adopted: mid anchors,\n\u03c1 = 0.5 (Table VII)",
                 (fx[2], fy[2]), textcoords="offset points",
-                xytext=(-6, -20), fontsize=7, color="#c0392b", ha="right",
+                xytext=(-6, -20), fontsize=7.5, color="#c0392b", ha="right",
                 arrowprops=dict(arrowstyle="->", color="#c0392b", lw=0.8))
-    ax.set_xlabel("fragment-level FP (%)", fontsize=7)
-    ax.set_ylabel("donor recall (%)", fontsize=7)
+    ax.set_xlabel("fragment-level FP (%)", fontsize=7.5)
+    ax.set_ylabel("donor recall (%)", fontsize=7.5)
     ax.set_title("contiguity threshold \u03c1 by anchor tolerance",
-                 fontsize=8)
-    ax.legend(fontsize=7, frameon=False)
+                 fontsize=8.5)
+    ax.legend(fontsize=7.5, frameon=False)
     ax.grid(True, lw=0.3, alpha=0.4)
-    ax.tick_params(labelsize=7)
+    ax.tick_params(labelsize=7.5)
     save(fig, "fig_e14_rho")
 
 
@@ -1218,13 +1218,13 @@ def fig_e5_ablation() -> None:
     x = [r["factor"] for r in L]
     y = [r["false_candidates"] for r in L]
     ax.plot(x, y, "o-", ms=3.5, lw=1, color="#1f5fb4")
-    ax.set_xlabel("span length factor L", fontsize=7)
-    ax.set_ylabel("false candidates", fontsize=7)
-    ax.set_title("(a) evidence span E5.4", fontsize=8.5)
+    ax.set_xlabel("span length factor L", fontsize=7.5)
+    ax.set_ylabel("false candidates", fontsize=7.5)
+    ax.set_title("(a) evidence span E5.4", fontsize=9)
     if len(y) > 1 and y[-1] != y[0]:
         trend = "longer spans \u2192 more false candidates" \
             if y[-1] > y[0] else "shorter spans \u2192 more false candidates"
-        ax.text(0.04, 0.92, trend, transform=ax.transAxes, fontsize=7,
+        ax.text(0.04, 0.92, trend, transform=ax.transAxes, fontsize=7.5,
                 color="#5c6569", va="top")
 
     ax = axes[1]
@@ -1240,21 +1240,21 @@ def fig_e5_ablation() -> None:
                        edgecolors="#c0392b", lw=1.3, zorder=5)
             ax.annotate("adopted\nk = (2,1,1)", (i, y[i]),
                         textcoords="offset points", xytext=(-12, -4),
-                        fontsize=7, color="#c0392b", ha="right",
+                        fontsize=7.5, color="#c0392b", ha="right",
                         va="center",
                         arrowprops=dict(arrowstyle="->", color="#c0392b",
                                         lw=0.8))
     ax.set_yscale("log")
     ax.set_xticks(range(len(K)))
-    ax.set_xticklabels(labels, fontsize=7, rotation=45)
+    ax.set_xticklabels(labels, fontsize=7.5, rotation=45)
     ax2 = ax.twinx()
     ax2.plot(range(len(K)), [v * 100 for v in recall], "s--", ms=3,
              lw=1, color="#c0392b")
     ax2.set_ylim(60, 110)
-    ax2.set_ylabel("recall (%)", fontsize=7, color="#c0392b")
-    ax2.tick_params(labelsize=7, colors="#c0392b")
-    ax.set_ylabel("false candidates (log)", fontsize=7)
-    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=8.5)
+    ax2.set_ylabel("recall (%)", fontsize=7.5, color="#c0392b")
+    ax2.tick_params(labelsize=7.5, colors="#c0392b")
+    ax.set_ylabel("false candidates (log)", fontsize=7.5)
+    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=9)
 
     ax = axes[2]
     labels = [f"{r['grid_ms']} ms" for r in G]
@@ -1268,15 +1268,15 @@ def fig_e5_ablation() -> None:
                        edgecolors="#c0392b", lw=1.3, zorder=5)
             ax.annotate("adopted (§III-B)", (i, y[i]),
                         textcoords="offset points", xytext=(0, 10),
-                        fontsize=7, color="#c0392b", ha="center")
+                        fontsize=7.5, color="#c0392b", ha="center")
     ax.set_xticks(range(len(G)))
-    ax.set_xticklabels(labels, fontsize=7)
-    ax.set_xlabel("quantization grid", fontsize=7)
-    ax.set_ylabel("false candidates", fontsize=7)
-    ax.set_title("(c) grid granularity E5.7", fontsize=8.5)
+    ax.set_xticklabels(labels, fontsize=7.5)
+    ax.set_xlabel("quantization grid", fontsize=7.5)
+    ax.set_ylabel("false candidates", fontsize=7.5)
+    ax.set_title("(c) grid granularity E5.7", fontsize=9)
 
     for ax in axes:
-        ax.tick_params(labelsize=7)
+        ax.tick_params(labelsize=7.5)
         ax.grid(True, lw=0.3, alpha=0.4)
     save(fig, "fig_e5_ablation")
 
@@ -1295,19 +1295,19 @@ def fig_e20_lsh() -> None:
             edgecolor="white", lw=0.3)
     ax.axvline(0.10, color="#c0392b", ls="--", lw=1.2)
     ax.text(0.105, ax.get_ylim()[1] * 0.93, "tau = 0.10",
-            fontsize=7, color="#c0392b")
+            fontsize=7.5, color="#c0392b")
     ax.axvline(0.05, color="#e67e22", ls=":", lw=1.2)
     ax.text(0.055, ax.get_ylim()[1] * 0.80, "tau = 0.05",
-            fontsize=7, color="#e67e22")
+            fontsize=7.5, color="#e67e22")
     # narrative: where the donor mass actually sits
     pct_low = np.mean(np.array(dj) < 0.10) * 100
     ax.text(0.62, ax.get_ylim()[1] * 0.62,
             f"{pct_low:.0f}% of donors score\nbelow \u03c4 = 0.10:\n"
-            "LSH must starve or flood", fontsize=7, color="#26425a")
-    ax.set_xlabel("donor set-Jaccard (337 planted cells)", fontsize=8)
-    ax.set_ylabel("cells", fontsize=8)
+            "LSH must starve or flood", fontsize=7.5, color="#26425a")
+    ax.set_xlabel("donor set-Jaccard (337 planted cells)", fontsize=8.5)
+    ax.set_ylabel("cells", fontsize=8.5)
     ax.set_title("(a) a contained span scores Jaccard ~0.1 at best",
-                 fontsize=8.5)
+                 fontsize=9)
     ax.grid(True, lw=0.3, alpha=0.4)
 
     ax = axes[1]
@@ -1329,21 +1329,21 @@ def fig_e20_lsh() -> None:
            label="donor confirmed (Jaccard >= tau)")
     ax.axhline(99.1, color="#1f5fb4", ls="--", lw=1.2)
     ax.text(2.45, 96, "tolerant screen:\n334/337 = 99.1%",
-            fontsize=7, color="#1f5fb4", ha="right", va="top")
+            fontsize=7.5, color="#1f5fb4", ha="right", va="top")
     # narrative: the gray-purple gap is candidates without confirmation
     gap = float(np.mean(np.array(dics) - np.array(hits)))
     ax.text(0.02, 0.30, f"gray \u2212 purple gap:\nflooded candidates\n"
-            f"(mean {gap:.0f} pp)", transform=ax.transAxes, fontsize=7,
+            f"(mean {gap:.0f} pp)", transform=ax.transAxes, fontsize=7.5,
             color="#5c6569", va="center")
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=7)
-    ax.set_ylabel("% of 337 cells", fontsize=8)
+    ax.set_xticklabels(labels, fontsize=7.5)
+    ax.set_ylabel("% of 337 cells", fontsize=8.5)
     ax.set_ylim(0, 112)
     ax.set_title("(b) band tuning trades starvation for flooding",
-                 fontsize=8.5)
-    ax.legend(fontsize=7, loc="upper left")
+                 fontsize=9)
+    ax.legend(fontsize=7.5, loc="upper left")
     ax.grid(True, lw=0.3, alpha=0.4)
-    ax.tick_params(labelsize=7)
+    ax.tick_params(labelsize=7.5)
     save(fig, "fig_e20_lsh")
 
 
@@ -1364,11 +1364,11 @@ def fig_e21_memorization() -> None:
             color="#1f5fb4", label="train (250 pieces)")
     ax.plot(ep, [r["val_loss"] for r in log], "-", lw=1,
             color="#c0392b", label="held-out (50 pieces)")
-    ax.set_xlabel("epoch", fontsize=8)
-    ax.set_ylabel("4-field next-event loss (nats)", fontsize=8)
+    ax.set_xlabel("epoch", fontsize=8.5)
+    ax.set_ylabel("4-field next-event loss (nats)", fontsize=8.5)
     ax.set_title("(a) overfitting is real: the gap is memorization",
-                 fontsize=8.5)
-    ax.legend(fontsize=7)
+                 fontsize=9)
+    ax.legend(fontsize=7.5)
     ax.grid(True, lw=0.3, alpha=0.4)
 
     ax = axes[1]
@@ -1378,10 +1378,10 @@ def fig_e21_memorization() -> None:
         ax.plot([r["loss"] for r in sub],
                 [r["pos_pitch_acc"] * 100 for r in sub], mk, ms=4,
                 color=c, label=f"{split} source")
-    ax.set_xlabel("per-piece held likelihood (nats)", fontsize=8)
-    ax.set_ylabel("position-wise pitch agreement (%)", fontsize=8)
-    ax.set_title("(b) memorized is not regurgitated", fontsize=8.5)
-    ax.legend(fontsize=7)
+    ax.set_xlabel("per-piece held likelihood (nats)", fontsize=8.5)
+    ax.set_ylabel("position-wise pitch agreement (%)", fontsize=8.5)
+    ax.set_title("(b) memorized is not regurgitated", fontsize=9)
+    ax.legend(fontsize=7.5)
     ax.grid(True, lw=0.3, alpha=0.4)
 
     ax = axes[2]
@@ -1402,14 +1402,14 @@ def fig_e21_memorization() -> None:
     ax.bar(x + 0.2, src, width=0.38, color="#8e44ad",
            label="source-attributed")
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=7)
-    ax.set_ylabel("% of samples", fontsize=8)
-    ax.set_title("(c) detector view: the lambda = 0 band", fontsize=8.5)
-    ax.legend(fontsize=7)
+    ax.set_xticklabels(labels, fontsize=7.5)
+    ax.set_ylabel("% of samples", fontsize=8.5)
+    ax.set_title("(c) detector view: the lambda = 0 band", fontsize=9)
+    ax.legend(fontsize=7.5)
     ax.grid(True, lw=0.3, alpha=0.4)
 
     for ax in axes:
-        ax.tick_params(labelsize=7)
+        ax.tick_params(labelsize=7.5)
     save(fig, "fig_e21_memorization")
 
 
