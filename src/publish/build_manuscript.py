@@ -588,6 +588,67 @@ def drop_cap(doc, text):
     sect.addprevious(p2)
 
 
+_MATH_TOKEN = re.compile(r"""
+      O\(([^)]*)\)
+    | \u230a0\.5\u00b7\|S\(q\)\|\u230b
+    | min\(\|A\|, \|B\|\)
+    | \|A \u2229 B\| | \|N_k\(item_i\)\| | \|S\(P\)\| | \|S\(q\)\|
+    | \|O_u\| | \|chain\|
+    | score_[uq]\(P\)
+    | budget\(B\)
+    | N_k\(item_i\) | N_k\(x\) | N_k
+    | S\(P\) | S\(q\)
+    | O_u
+    | k_screen | k_confirm | k_pitch | k_bin | k_vel
+    | item_order | item_i | score_u | score_q | p_drop
+    | e_i | e_n | d_i | t_i | p_i | v_i
+    | P_1
+    | [\u0394\u03a3\u03bb\u03c1\u03c4\u03c6\u03b4]
+    | (?<![A-Z]-)\b[BCWPX]\b
+    | \b[qmkNuij]\b
+    """, re.VERBOSE)
+
+_GREEK_WORDS = {"tau": "\u03c4", "rho": "\u03c1", "lambda": "\u03bb",
+                "delta": "\u03b4"}
+
+
+def _emit_run(p, text, italic=False, size=None, bold=False, name=None):
+    r = p.add_run(text)
+    if italic:
+        r.font.italic = True
+    if bold:
+        r.font.bold = True
+    if size is not None:
+        r.font.size = Pt(size)
+    if name:
+        r.font.name = name
+    return r
+
+
+def rich_add(p, text, size=None, bold=False, name=None):
+    """Add text to paragraph, italicizing mathematical variables per IEEE
+    style. Spelled-out Greek names (tau, rho, lambda, delta) are first
+    normalized to their symbols; big-O keeps an upright O with an
+    italic argument."""
+    text = re.sub(r"\b(tau|rho|lambda|delta)\b",
+                  lambda m: _GREEK_WORDS[m.group(1)], text)
+    pos = 0
+    for m in _MATH_TOKEN.finditer(text):
+        if m.start() > pos:
+            _emit_run(p, text[pos:m.start()], size=size, bold=bold,
+                      name=name)
+        if m.group(1) is not None:            # O(...) : upright O
+            _emit_run(p, "O(", size=size, bold=bold, name=name)
+            _emit_run(p, m.group(1), italic=True, size=size, name=name)
+            _emit_run(p, ")", size=size, bold=bold, name=name)
+        else:
+            _emit_run(p, m.group(0), italic=True, size=size, bold=bold,
+                      name=name)
+        pos = m.end()
+    if pos < len(text):
+        _emit_run(p, text[pos:], size=size, bold=bold, name=name)
+
+
 def para(doc, text, indent=0.36, size=10, align="justify"):
     p = doc.add_paragraph()
     if indent:
@@ -595,16 +656,13 @@ def para(doc, text, indent=0.36, size=10, align="justify"):
     p.paragraph_format.space_after = Pt(0)
     if align == "justify":
         p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    r = p.add_run(text)
-    if size != 10:
-        r.font.size = Pt(size)
+    rich_add(p, text, size=None if size == 10 else size)
     return p
 
 
 def caption(doc, text, size=9.5):
     p = doc.add_paragraph(style="Figure Caption")
-    r = p.add_run(text)
-    r.font.size = Pt(size)
+    rich_add(p, text, size=size)
     # keep the caption glued to the figure above it (no orphaned
     # captions across page/column breaks)
     prev = p._p.getprevious()
@@ -638,17 +696,14 @@ def table(doc, header, rows, widths=None, size=9, title=None):
     for j, htxt in enumerate(header):
         cell = t.cell(0, j)
         cell.text = ""
-        r = cell.paragraphs[0].add_run(htxt)
-        r.font.bold = True
-        r.font.size = Pt(size)
-        r.font.name = "Times New Roman"
+        rich_add(cell.paragraphs[0], htxt, size=size, bold=True,
+                 name="Times New Roman")
     for i, row in enumerate(rows):
         for j, val in enumerate(row):
             cell = t.cell(i + 1, j)
             cell.text = ""
-            r = cell.paragraphs[0].add_run(str(val))
-            r.font.size = Pt(size)
-            r.font.name = "Times New Roman"
+            rich_add(cell.paragraphs[0], str(val), size=size,
+                     name="Times New Roman")
     _keep_table(t, heads)
     doc.add_paragraph().paragraph_format.space_after = Pt(2)
     return t
@@ -687,10 +742,7 @@ def three_line_table(doc, header, rows, size=8, title=None, full=False):
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER if j else \
             WD_ALIGN_PARAGRAPH.LEFT
-        r = p.add_run(htxt)
-        r.font.bold = True
-        r.font.size = Pt(size)
-        r.font.name = "Times New Roman"
+        rich_add(p, htxt, size=size, bold=True, name="Times New Roman")
         _cell_edge(cell, "top", 12)
         _cell_edge(cell, "bottom", 6)
     nrows = len(rows)
@@ -704,10 +756,8 @@ def three_line_table(doc, header, rows, size=8, title=None, full=False):
             bold = False
             if isinstance(val, tuple):
                 val, bold = val
-            r = p.add_run(str(val))
-            r.font.bold = bold
-            r.font.size = Pt(size)
-            r.font.name = "Times New Roman"
+            rich_add(p, str(val), size=size, bold=bold,
+                     name="Times New Roman")
             if i == nrows - 1:
                 _cell_edge(cell, "bottom", 12)
     _keep_table(t, heads)
@@ -859,9 +909,9 @@ def add_affiliation_footnote(doc):
 
 def tabletitle(doc, label, title):
     p = doc.add_paragraph(style="Table Title")
-    p.add_run(label)
+    rich_add(p, label)
     p2 = doc.add_paragraph(style="Table Title")
-    p2.add_run(title)
+    rich_add(p2, title)
     return [p, p2]
 
 
