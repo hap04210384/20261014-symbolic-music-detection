@@ -816,7 +816,7 @@ def fig3_anytime() -> None:
     ax.set_ylabel("open candidates (bound)")
     ax.grid(True, which="both", lw=0.3, alpha=0.4)
     ax.legend(loc="center left")
-    ax.set_title("anytime behaviour, 16 s spans")
+    ax.set_title("anytime behavior, 16 s spans")
     # narrative: rare-first is the lowest curve at every prefix
     ax.text(0.03, 0.06, "rare-first stays lowest:\nthe schedule tightens"
             " the\ncertified bound at every prefix", fontsize=7.5,
@@ -1434,7 +1434,7 @@ def fig_e21_memorization() -> None:
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=10.3)
     ax.set_ylabel("% of samples", fontsize=11.6)
-    ax.set_title("(c) detector view: the lambda = 0 band", fontsize=12.3)
+    ax.set_title("(c) detector view: the \u03bb = 0 band", fontsize=12.3)
     ax.legend(fontsize=10.3)
     ax.grid(True, lw=0.3, alpha=0.4)
 

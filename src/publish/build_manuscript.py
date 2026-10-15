@@ -1441,7 +1441,8 @@ def build() -> None:
     caption(doc, "Fig. 3. Index build and query latency versus corpus "
                  "size (log-log); planted recall 100% at all sizes; "
                  "Jaccard scan baseline shown where feasible; MinHash-LSH "
-                 "is fast at every size but retrieves nothing (V-G).")
+                 "is fast at every size yet retrieves nothing "
+                 "(Section V-G).")
     three_line_table(doc,
         ["Pieces", "Build (s)", "Mem (MB)", "p50 (ms)", "p95 (ms)",
          "Planted recall", "Jaccard p50 (ms)", "LSH p50 (ms)",
@@ -1487,7 +1488,7 @@ def build() -> None:
     add_emf(doc, "fig4_bounds", 8.0)
     caption(doc, "Fig. 5. Measured donor evidence versus theoretical "
                  "lower bound, 337 adversarial cells; zero violations.")
-    h2(doc, "C. Anytime behaviour")
+    h2(doc, "C. Anytime behavior")
     para(doc,
          "Fig. 6 shows the open-candidate bound as the rare-first "
          "schedule consumes its budget on 16-second spans, and "
@@ -1571,13 +1572,15 @@ def build() -> None:
               "(236 hard-negative fragments).")
     add_emf(doc, "fig_e14_rho", 8.0)
     caption(doc, "Fig. 8. Confirmation operating curves: donor recall "
-                 "versus fragment-level FP over \u03c1, labelled by "
+                 "versus fragment-level FP over \u03c1, labeled by "
                  "threshold, for three anchor-tolerance regimes.")
     full_width(doc, lambda: (add_emf(doc, "fig5_cascade", 12.8),
-                             caption(doc, "Fig. 9. (a) Operating points "
-                                         "of the three systems on hard "
-                                         "negatives; (b) donor retention "
-                                         "in the top-C candidate feed.")))
+                             caption(doc, "Fig. 9. Operating points and "
+                                         "donor retention on hard "
+                                         "negatives. (a) Operating "
+                                         "points of the three systems; "
+                                         "(b) donor retention in the "
+                                         "top-C candidate feed.")))
     three_line_table(doc,
         ["Layer / system", "Recall", "Fragment-level FP", "Contract"],
         [["L1 tolerant screen", "100%",
@@ -1908,7 +1911,7 @@ def build() -> None:
                                  "confirmation and source "
                                  "attribution for the three "
                                  "sampling groups against the "
-                                 "lambda = 0 / lambda = 1 anchors "
+                                 "\u03bb = 0 / \u03bb = 1 anchors "
                                  "of Table XI.")))
     three_line_table(doc,
         ["Generator", "Group", "n", "Confirmed %",
