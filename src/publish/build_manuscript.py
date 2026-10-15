@@ -819,8 +819,6 @@ def add_affiliation_footnote(doc):
               for fn in root.findall(qn("w:footnote"))) + 1
     paras = [
         _fn_para([
-            ("Manuscript received [month] [day], 2026; revised [month] "
-             "[day], 2026; accepted [month] [day], 2026. ", False),
             (ACK + " ", False),
             ("(Corresponding author: Yalong Zhang, "
              "ylzhang@qzc.edu.cn.)", True),
@@ -909,10 +907,14 @@ def build() -> None:
     # (top of the left column)
     switch_to(doc, SECT_1COL[0], before=1, after=16)
 
+    # footnote anchor, exactly as the template does it: an invisible mark
+    # (customMarkFollows + Symbol space) in an empty 9-pt paragraph -- the
+    # visible "1" is auto-numbered at the footnote itself, page bottom
     rp = parse_xml(
         '<w:p %s><w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:pPr>'
-        '<w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr>'
-        '<w:footnoteReference w:id="%d"/></w:r></w:p>'
+        '<w:r><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr>'
+        '<w:footnoteReference w:customMarkFollows="1" w:id="%d"/>'
+        '<w:sym w:font="Symbol" w:char="F020"/></w:r></w:p>'
         % (nsdecls("w"), fid))
     doc.paragraphs[-1]._p.addnext(rp)
 
@@ -920,8 +922,13 @@ def build() -> None:
     p = doc.add_paragraph(style="Normal")
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p.paragraph_format.space_before = Pt(1)
-    r = p.add_run("Abstract\u2014")
+    r = p.add_run("Abstract")
     r.bold = True
+    r.italic = True
+    r.font.size = Pt(9)
+    r = p.add_run("\u2014")
+    r.bold = True
+    r.font.size = Pt(9)
     r2 = p.add_run(
          "Detecting copied material in symbolic music corpora at publisher "
          "scale is hard because candidate systems must simultaneously "
@@ -949,14 +956,21 @@ def build() -> None:
          f"on {N['e63_pairs']:,} in-the-wild duplicate pairs show the "
          "system localizing spliced segments and transposed covers with "
          "publisher-readable alignment evidence.")
-    r2.bold = False
+    r2.bold = True
+    r2.font.size = Pt(9)
     p = doc.add_paragraph(style="Normal")
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    r = p.add_run("Index Terms\u2014")
+    r = p.add_run("Index Terms")
     r.bold = True
+    r.italic = True
+    r.font.size = Pt(9)
+    r = p.add_run("\u2014")
+    r.bold = True
+    r.font.size = Pt(9)
     r2 = p.add_run("Anytime algorithms, copyright, music information "
                    "retrieval, plagiarism screening, symbolic music.")
-    r2.bold = False
+    r2.bold = True
+    r2.font.size = Pt(9)
 
     # --- I. introduction ----------------------------------------------------
     h1(doc, "I. Introduction")
