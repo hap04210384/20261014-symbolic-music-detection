@@ -1048,7 +1048,7 @@ def fig8_census() -> None:
 
 # ---------------------------------------------------------------- new figs
 def _e1_groups():
-    """Shared group order for the recall matrix (Table I / heatmap)."""
+    """Shared group order for the recall matrix (Table III / heatmap)."""
     return [
         ("Verbatim", "verbatim", [("identity", "None")]),
         ("Transpose", "transpose",

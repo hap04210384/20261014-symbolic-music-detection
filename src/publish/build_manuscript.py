@@ -982,7 +982,8 @@ def build() -> None:
          "music (MIDI and its derivatives) and a query\u2014a new "
          "submission, a generated sample, or a suspected infringement"
          "\u2014find every piece that shares a substantively copied span "
-         "with the query, rank the candidates, and show the evidence. "
+         "with the query, rank the candidates, and show the evidence. ")
+    para(doc,
          "The requirement list is demanding. Recall must survive the "
          "noise of real-world reuse: transposition, tempo change, "
          "re-instrumentation, transcription jitter from audio-to-MIDI "
@@ -1003,7 +1004,9 @@ def build() -> None:
          "algorithmic elegance, but exact enumeration explodes "
          "combinatorially at the support levels copying detection "
          "requires (we quantify this in Section V-A), and pattern sets "
-         "are not ranked candidates. Cover-song identification has moved "
+         "are not ranked candidates.")
+    para(doc,
+         "Cover-song identification has moved "
          "to learned audio embeddings [15]\u2013[17], while plagiarism "
          "detection specifically has been addressed with chroma-based "
          "forensics [18], bipartite graph matching [19], and melodic-"
@@ -1037,7 +1040,9 @@ def build() -> None:
          "(3) the screen's rare-first schedule tightens the certified "
          f"open-candidate bound by {N['e3_hot'] / N['e3_rare']:.1f}\u00d7 "
          "over a hot-first schedule at 70% budget, with identical "
-         "full-budget recall; "
+         "full-budget recall. ")
+    para(doc,
+         "Two further findings complete the picture: "
          "(4) detection on a controlled memorization spectrum rises "
          f"monotonically to {N['e62_l1'] * 100:.0f}% at full copying; "
          "and (5) a full-corpus census over 174,300 pieces measures "
@@ -1066,7 +1071,9 @@ def build() -> None:
          "hot-first under partial budgets (by "
          f"{N['e3_hot'] / N['e3_rare']:.1f}\u00d7 at 70% budget) and that "
          "the bound is computable after any schedule prefix, turning an "
-         "engineering heuristic into a schedulable guarantee; "
+         "engineering heuristic into a schedulable guarantee. ")
+    para(doc,
+         "The last two contributions are systems-level: "
          "(4) a strict-tolerance ordered-chain confirmation layer that "
          "outputs note-level alignment evidence, reaching 2.1% "
          "fragment-level false positives at 83.9% recall on "
@@ -1139,7 +1146,9 @@ def build() -> None:
          "matching, but their cost is per-candidate: applied as "
          "corpus-wide filters they do not scale, and applied after a "
          "cheap filter they inherit the filter's recall, which none of "
-         "these systems bounds. Our screen layer can be read as a "
+         "these systems bounds. ")
+    para(doc,
+         "Our screen layer can be read as a "
          "recall-guaranteed candidate generator for exactly such "
          "aligners: it hands confirmation a top-C set small enough "
          "that exact structural alignment becomes affordable, while "
@@ -1159,7 +1168,9 @@ def build() -> None:
          "auditing of generative music models has only recently been "
          "demonstrated [28], influence-level attribution has been "
          "explored with audio embeddings [29], and the legal status of "
-         "such training data remains contested [30]. Publishers "
+         "such training data remains contested [30]. ")
+    para(doc,
+         "Publishers "
          "consequently need batch screening tools rather than per-sample "
          "membership oracles. Our controlled experiments (Section VI-A) "
          "emulate the memorization spectrum without training neural "
@@ -1246,7 +1257,9 @@ def build() -> None:
          "information. An interval-sketch variant (pitch replaced by "
          "the chromatic interval to the next note) provides "
          "transposition invariance for retrieval of transposed "
-         "material. Items are remapped to gapless dense integer IDs "
+         "material. ")
+    para(doc,
+         "Items are remapped to gapless dense integer IDs "
          "per corpus revision, so that the inverted index consists "
          "of contiguous posting lists; this costs one sort of the "
          "vocabulary and pays off in cache behavior and in a compact "
@@ -1255,7 +1268,7 @@ def build() -> None:
          "The corpus index is an inverted index from item to sorted "
          "piece-ID lists, built once in a linear pass (each piece "
          "contributes |S(P)| postings). Build time and memory grow "
-         "linearly with corpus size (Fig. 3, Table II); incremental "
+         "linearly with corpus size (Fig. 3, Table I); incremental "
          "updates append postings for new pieces without rebuilding.")
     h2(doc, "C. L1: tolerant screening with a provable bound")
     para(doc,
@@ -1302,7 +1315,7 @@ def build() -> None:
          "readout after every position. Measured end to end, the "
          f"index builds in {N['e4_build']} s and queries run at "
          f"p50 = {N['e4_p50']} ms on the full "
-         f"{N['e4_max']:,}-piece corpus (Table II).")
+         f"{N['e4_max']:,}-piece corpus (Table I).")
     h2(doc, "D. L2/L3: re-ranking and structural confirmation")
     para(doc,
          "The screen is deliberately permissive; verbatim counts "
@@ -1314,12 +1327,16 @@ def build() -> None:
          "score is the longest chain of matches with both note order "
          "and candidate position strictly increasing \u2014 a "
          "longest-common-subsequence computation restricted to "
-         "anchor pairs, not a heuristic local alignment. Anchors are "
+         "anchor pairs, not a heuristic local alignment. ")
+    para(doc,
+         "Anchors are "
          "strict-tolerance matches; their j \u2212 i offsets are "
          "voted, and when the strict vote is inconclusive the "
          "interval-sketch offsets estimate the transposition, which "
          "is then removed by re-expressing the query in interval "
-         "form and re-running confirmation once. The dynamic program "
+         "form and re-running confirmation once. ")
+    para(doc,
+         "The dynamic program "
          "runs inside the anchor-constrained window, so its cost is "
          "O(W\u00b7m) for window W and m anchors, with a traceback "
          "that recovers the chain itself. A candidate is confirmed "
@@ -1367,13 +1384,16 @@ def build() -> None:
          "suite uses the first 3,000 pieces of shard 0. The GigaMIDI "
          "corpus [21] indicates that symbolic collections at the "
          "million-piece scale are now routine, which is the operating "
-         "regime the screen layer is built for. "
+         "regime the screen layer is built for. ")
+    para(doc,
          "Planted copies. Spans of 2/4/8/16 seconds are extracted from "
          "donor pieces and subjected to six transformation families: "
          "verbatim, transposition (\u00b11\u20136 semitones), tempo "
          "scale (1.05\u20131.20), note split/merge, re-instrumentation "
          "with voice dropping, and a transcription model combining "
-         "onset jitter with note dropout. Hard negatives. For each "
+         "onset jitter with note dropout. ")
+    para(doc,
+         "Hard negatives. For each "
          "query, the 20 most style-similar corpus pieces by a "
          "duration-weighted pitch-class histogram are collected as a "
          "negative pool; pairs whose verbatim evidence against the "
@@ -1382,7 +1402,8 @@ def build() -> None:
          "contains fewer than 8 notes or items are skipped, so the "
          "valid-fragment count differs slightly between experiment "
          "generations (238 in screening, 236 in confirmation, 233 in "
-         "the cascade suite). "
+         "the cascade suite). ")
+    para(doc,
          "Baselines. Set-Jaccard corpus scan, SIATEC-family pattern "
          "discovery [2], and n-gram Jaccard (Section V-A); FIM engines "
          "from our prior work [31], [32] serve as enumeration "
@@ -1397,7 +1418,7 @@ def build() -> None:
          "regenerates every table and figure, and reproduces the "
          "manuscript numbers from scratch.")
     para(doc,
-         "Operating parameters. Table I summarizes the production "
+         "Operating parameters. Table II summarizes the production "
          "configuration used unless a section states otherwise; the "
          "ablations of Section V-F justify each choice.")
     three_line_table(doc,
@@ -1418,13 +1439,13 @@ def build() -> None:
          ["Anytime budget B", "full (half ablated)",
           "rare-first schedule length"]],
         size=8,
-        title="TABLE I. Production operating parameters.")
+        title="TABLE II. Production operating parameters.")
 
     # --- V. results -----------------------------------------------------------
     h1(doc, "V. Results")
     h2(doc, "A. Scale and baseline feasibility")
     para(doc,
-         f"Fig. 3 reports scaling on subsampled corpora and Table II "
+         f"Fig. 3 reports scaling on subsampled corpora and Table I "
          f"gives the corresponding numbers. Index build "
          f"reaches {N['e4_build']} s at {N['e4_max']:,} pieces and query "
          f"latency {N['e4_p50']} ms (p50), with planted recall 100% at "
@@ -1462,7 +1483,7 @@ def build() -> None:
          "Planted recall", "Jaccard p50 (ms)", "LSH p50 (ms)",
          "LSH recall"],
         e4_table_rows(), size=8, full=True,
-        title="TABLE II. Index scaling and baseline feasibility; "
+        title="TABLE I. Index scaling and baseline feasibility; "
               "Jaccard scan infeasible beyond 10,000 pieces; MinHash-LSH "
               "(128 permutations, 16 bands x 8 rows, tau = 0.10) returns "
               "empty candidate sets at every size.")
@@ -1544,7 +1565,9 @@ def build() -> None:
          "length. This is a property of item-level "
          "encodings\u2014pop repertoire shares large amounts of "
          "grid-quantized material\u2014and it motivates the "
-         "confirmation layer. Sample sizes are small (238 fragments; "
+         "confirmation layer. ")
+    para(doc,
+         "Sample sizes are small (238 fragments; "
          "95% half-width \u2248 1.8 pp near 2% incidence and \u2248 6.3 "
          "pp near 50%), so we treat single-percentage-point "
          "differences as ties and rely on margins larger than the "
@@ -1571,9 +1594,10 @@ def build() -> None:
          f"Table VII and Fig. 8 map the full recall/FP trade-off "
          f"over three anchor-tolerance regimes and four contiguity "
          f"thresholds. "
-         f"Table VIII places the full cascade against its single-layer "
-         "ablations. The cascade's remaining bottleneck is candidate "
-         f"retention: verbatim top-C keeps {N['e7_ret20'] * 100:.1f}% "
+         f"Table VIII and Fig. 9 place the full cascade against "
+         f"its single-layer ablations. The cascade's remaining "
+         f"bottleneck is candidate retention: verbatim top-C keeps "
+         f"{N['e7_ret20'] * 100:.1f}% "
          f"(C=20) and {N['e7_ret50'] * 100:.1f}% (C=50) of donors; the "
          "union of tolerant and verbatim top-C feeds\u2014adopted in "
          "the final system\u2014lifts retention above 99%.")
@@ -1650,7 +1674,9 @@ def build() -> None:
          f"Fig. 11(a)); just {N['e20_dj_ge10']} of 337 donors reach "
          f"Jaccard 0.10. Jaccard measures relative overlap, so a "
          f"contained copy is structurally invisible to it no matter how "
-         f"faithfully the 40 shared items are preserved. Tuning the "
+         f"faithfully the 40 shared items are preserved. ")
+    para(doc,
+         f"Tuning the "
          f"band configuration moves the operating point along a "
          f"recall-versus-candidate-volume trade-off, not past it "
          f"(Table X): with the standard 16 x 8 bands at tau = 0.10 the "
@@ -1714,7 +1740,9 @@ def build() -> None:
          "residual hits are style-level shared structures, attributed "
          "to the source piece in only 2-4% of cases\u2014through 44-56% "
          f"at \u03bb=0.5, to {N['e62_l1'] * 100:.0f}% at \u03bb=1 with "
-         "96-100% correct source attribution. Fragmented partial "
+         "96-100% correct source attribution. ")
+    para(doc,
+         "Fragmented partial "
          "memorization (\u03bb=0.25, per-note Bernoulli copies) "
          "escapes the contiguity threshold: an honest boundary of "
          "chain-based confirmation that mirrors the distributed-"
@@ -1781,7 +1809,9 @@ def build() -> None:
          f"{N['e18_sketch_ge40'] / 1e9:.1f}B (sketch) candidate "
          f"pairs; at the case-study operating point "
          f"(relative \u22650.35) the total is "
-         f"{N['e18_rel35'] / 1e9:.2f}B.  A self-screen of the whole "
+         f"{N['e18_rel35'] / 1e9:.2f}B. ")
+    para(doc,
+         f"A self-screen of the whole "
          f"corpus at the observed per-query cost (median "
          f"{N['e18_exact_p50']:.0f} ms exact, "
          f"{N['e18_sketch_p50']:.0f} ms sketch, p95 "
@@ -1797,7 +1827,9 @@ def build() -> None:
          "adjudicated a stratified random sample (40 pairs per "
          "stratum) with the Layer-2 chain criterion, run in both "
          "directions with transposition fallback (Table XIII, "
-         "Fig. 14(b)).  The exact channel is a high-precision "
+         "Fig. 14(b)). ")
+    para(doc,
+         "The exact channel is a high-precision "
          f"instrument at the top of its range: {N['e19f_exact_band3_p'] * 100:.0f}% "
          f"of exact pairs with relative score \u22650.90 are confirmed "
          "copies (Wilson 95% CI "
@@ -1877,7 +1909,9 @@ def build() -> None:
          f"{N['e21_loss_untrained']:.1f} nats mean, AUC = "
          f"{N['e21_auc']:.2f}), and the most-memorized pieces sit "
          f"at {N['e21_tail']:.2f} nats\u2014the model demonstrably "
-         f"knows them.  Yet open-ended sampling does not "
+         f"knows them. ")
+    para(doc,
+         f"Yet open-ended sampling does not "
          f"regurgitate them: across {N['e21_cal_n']} calibration "
          f"probes seeded from pieces spanning the full memorization "
          f"range, position-wise pitch agreement with the true "
@@ -1896,7 +1930,9 @@ def build() -> None:
          f"{N['e21_random_trained_det'] * 100:.0f}% with source "
          f"attribution near chance in every group, the same "
          f"style-level confirmation band as the copy-free "
-         f"(lambda = 0) cells of Table XI.  In other words, a "
+         f"(lambda = 0) cells of Table XI. ")
+    para(doc,
+         f"In other words, a "
          f"real overfit transformer at this scale behaves, from "
          f"the detector's viewpoint, like the lambda = 0 corner "
          f"of the emulated spectrum\u2014and unlike lambda = 1, "
@@ -1968,7 +2004,9 @@ def build() -> None:
          "confirmation requires contiguity: copies fragmented below "
          "the \u03c1 threshold evade detection, so the system's proper "
          "role is high-precision screening with evidence, not "
-         "autonomous adjudication. Third, the guarantees are "
+         "autonomous adjudication. ")
+    para(doc,
+         "Third, the guarantees are "
          "conditional on the declared noise model; transformations "
          "outside tolerance (large transposition without sketch "
          "retrieval, heavy swing quantization) must be covered by "
@@ -1983,7 +2021,9 @@ def build() -> None:
          "Hard negatives are harvested by pitch-class histogram "
          "similarity, which finds harmonically confusable peers but "
          "may miss style-similar pairs with different key "
-         "distributions; the memorization study spans both a "
+         "distributions. ")
+    para(doc,
+         "The memorization study spans both a "
          "transparent n-gram/copy emulation and an actually "
          "trained generator, but the latter is a 0.9M-parameter "
          "CPU-scale transformer whose memorization is "
@@ -2009,7 +2049,9 @@ def build() -> None:
          "tolerance can in principle evade by exceeding it; the "
          "honest response is to widen the envelope (coarser "
          "tolerance, interval-sketch retrieval) and re-audit, which "
-         "the cell-by-cell methodology supports cheaply. Finally, "
+         "the cell-by-cell methodology supports cheaply. ")
+    para(doc,
+         "Finally, "
          "the system's output is evidence for a human decision, not "
          "a legal determination: a confirmed chain localizes shared "
          "material and estimates transposition, while questions of "
