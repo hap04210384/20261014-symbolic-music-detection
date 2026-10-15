@@ -601,8 +601,10 @@ _MATH_TOKEN = re.compile(r"""
     | O_u
     | k_screen | k_confirm | k_pitch | k_bin | k_vel
     | item_order | item_i | score_u | score_q | p_drop
-    | e_i | e_n | d_i | t_i | p_i | v_i
-    | P_1
+    | [eptvd]_\{?[\u2080-\u20890-9a-z]\}?
+    | [eptvdq][\u2080-\u2089]
+    | P_\{?[\u2080-\u20890-9N]\}?
+    | P[\u2080-\u2089]
     | [\u0394\u03a3\u03bb\u03c1\u03c4\u03c6\u03b4]
     | (?<![A-Z]-)\b[BCWPX]\b
     | \b[qmkNuij]\b
