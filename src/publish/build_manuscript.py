@@ -1910,7 +1910,7 @@ def build() -> None:
          f"ranking exposes it.  Copy detection and memorization "
          f"auditing are complementary instruments, not "
          f"substitutes.")
-    full_width(doc, lambda: (add_emf(doc, "fig_e21_memorization", 16.0),
+    full_width(doc, lambda: (add_emf(doc, "fig_e21_memorization", 18.2),
                              caption(doc,
                                  "Fig. 15. Trained-generator "
                                  "memorization audit.  (a) Training "

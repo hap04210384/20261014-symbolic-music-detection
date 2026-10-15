@@ -1376,43 +1376,45 @@ def fig_e21_memorization() -> None:
     mem = load("e21/memorization.jsonl")
     e62 = load("e62/memorization.jsonl")
 
-    # display-size normalization: 9.6in canvas displayed at 16cm shrinks
-    # fonts x0.656 vs the 3.5in reference; scale all fonts x1.371 back.
+    # display-size normalization: 9.6in canvas displayed at 18.2cm (full
+    # text width) shrinks fonts x0.732 vs the 3.5in reference; scale all
+    # fonts x0.875 vs the previous 16cm embedding to keep the displayed
+    # text size identical to the other figures.
     _saved_rc = {k: plt.rcParams[k] for k in (
         "font.size", "axes.titlesize", "axes.labelsize",
         "legend.fontsize", "xtick.labelsize", "ytick.labelsize")}
     plt.rcParams.update({
-        "font.size": 11.6, "axes.titlesize": 12.3,
-        "axes.labelsize": 11.6, "legend.fontsize": 10.3,
-        "xtick.labelsize": 10.3, "ytick.labelsize": 10.3})
+        "font.size": 10.15, "axes.titlesize": 10.76,
+        "axes.labelsize": 10.15, "legend.fontsize": 9.01,
+        "xtick.labelsize": 9.01, "ytick.labelsize": 9.01})
     fig, axes = plt.subplots(1, 3, figsize=(9.6, 2.78),
                              width_ratios=[1, 1, 1.08])
 
     ax = axes[0]
     ep = [r["epoch"] for r in log]
-    ax.plot(ep, [r["train_loss"] for r in log], "-", lw=1,
+    ax.plot(ep, [r["train_loss"] for r in log], "-", lw=0.87,
             color="#1f5fb4", label="train (250 pieces)")
-    ax.plot(ep, [r["val_loss"] for r in log], "-", lw=1,
+    ax.plot(ep, [r["val_loss"] for r in log], "-", lw=0.87,
             color="#c0392b", label="held-out (50 pieces)")
-    ax.set_xlabel("epoch", fontsize=11.6)
-    ax.set_ylabel("4-field next-event loss (nats)", fontsize=11.6)
+    ax.set_xlabel("epoch", fontsize=10.15)
+    ax.set_ylabel("4-field next-event loss (nats)", fontsize=10.15)
     ax.set_title("(a) overfitting is real: the gap is memorization",
-                 fontsize=12.3)
-    ax.legend(fontsize=10.3)
-    ax.grid(True, lw=0.3, alpha=0.4)
+                 fontsize=10.76)
+    ax.legend(fontsize=9.01)
+    ax.grid(True, lw=0.26, alpha=0.4)
 
     ax = axes[1]
     style = {"trained": ("o", "#1f5fb4"), "untrained": ("x", "#c0392b")}
     for split, (mk, c) in style.items():
         sub = [r for r in cal if r["split"] == split]
         ax.plot([r["loss"] for r in sub],
-                [r["pos_pitch_acc"] * 100 for r in sub], mk, ms=4,
+                [r["pos_pitch_acc"] * 100 for r in sub], mk, ms=3.5,
                 color=c, label=f"{split} source")
-    ax.set_xlabel("per-piece held likelihood (nats)", fontsize=11.6)
-    ax.set_ylabel("position-wise pitch agreement (%)", fontsize=11.6)
-    ax.set_title("(b) memorized is not regurgitated", fontsize=12.3)
-    ax.legend(fontsize=10.3)
-    ax.grid(True, lw=0.3, alpha=0.4)
+    ax.set_xlabel("per-piece held likelihood (nats)", fontsize=10.15)
+    ax.set_ylabel("position-wise pitch agreement (%)", fontsize=10.15)
+    ax.set_title("(b) memorized is not regurgitated", fontsize=10.76)
+    ax.legend(fontsize=9.01)
+    ax.grid(True, lw=0.26, alpha=0.4)
 
     ax = axes[2]
     l0 = [r for r in e62 if r["cell"] == "m8_l0.0"]
@@ -1432,16 +1434,16 @@ def fig_e21_memorization() -> None:
     ax.bar(x + 0.2, src, width=0.38, color="#8e44ad",
            label="source-attributed")
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=10.3)
-    ax.set_ylabel("% of samples", fontsize=11.6)
-    ax.set_title("(c) detector view: the \u03bb = 0 band", fontsize=12.3)
-    ax.legend(fontsize=10.3)
-    ax.grid(True, lw=0.3, alpha=0.4)
+    ax.set_xticklabels(labels, fontsize=9.01)
+    ax.set_ylabel("% of samples", fontsize=10.15)
+    ax.set_title("(c) detector view: the \u03bb = 0 band", fontsize=10.76)
+    ax.legend(fontsize=9.01)
+    ax.grid(True, lw=0.26, alpha=0.4)
 
     for ax in axes[:2]:
-        ax.tick_params(labelsize=10.3)
-    axes[2].tick_params(labelsize=10.0)
-    axes[2].set_xticklabels(labels, fontsize=9.0)
+        ax.tick_params(labelsize=9.01)
+    axes[2].tick_params(labelsize=8.75)
+    axes[2].set_xticklabels(labels, fontsize=7.87)
     fig.tight_layout()
     plt.rcParams.update(_saved_rc)
     save(fig, "fig_e21_memorization")
