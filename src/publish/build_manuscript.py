@@ -903,7 +903,7 @@ def build() -> None:
     for i, (name, mark) in enumerate([
             ("Xuemei Li", "1"), ("Jianping Deng", "1"),
             ("Meng Huang", "2"), ("Bao Wang", "2"),
-            ("Yalong Zhang", "2")]):
+            ("Yalong Zhang", "2*")]):
         if i:
             p.add_run(", " if i < 4 else ", and ")
         p.add_run(name)
