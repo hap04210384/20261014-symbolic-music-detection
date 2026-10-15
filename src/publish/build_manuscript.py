@@ -1805,12 +1805,16 @@ def build() -> None:
          f"estimates inherit the adjudicator's precision and "
          f"recall (Section V-C); they are survey estimates from a "
          f"1/8 sample, not enumerations.")
-    add_emf(doc, "fig8_census", 8.6)
-    caption(doc, "Fig. 14. Full-corpus census (174,300 pieces, stride-8 "
-                 "survey extrapolated \u00d78).  (a) Candidate-pair "
-                 "population by relative-score band and channel (log "
-                 "scale).  (b) Confirmed-copy precision of the stored "
-                 "audit-grade strata, Wilson 95% CI; n=40 per stratum.")
+    full_width(doc, lambda: (add_emf(doc, "fig8_census", 16.5),
+                             caption(doc, "Fig. 14. Full-corpus census "
+                                         "(174,300 pieces, stride-8 "
+                                         "survey extrapolated \u00d78).  "
+                                         "(a) Candidate-pair population by "
+                                         "relative-score band and channel "
+                                         "(log scale).  (b) Confirmed-copy "
+                                         "precision of the stored "
+                                         "audit-grade strata, Wilson 95% "
+                                         "CI; n=40 per stratum.")))
     three_line_table(doc,
         ["Channel", "Relative score", "Stored pairs",
          "Precision % [95% CI]", "Est. confirmed (corpus)"],

@@ -822,8 +822,16 @@ def fig3_anytime() -> None:
     ax.set_xlabel("budget (fraction of positions processed)")
     ax.set_ylabel("open candidates (bound)")
     ax.grid(True, which="both", lw=0.3, alpha=0.4)
-    ax.legend(loc="upper right")
+    ax.legend(loc="center left")
     ax.set_title("anytime behaviour, 16 s spans")
+    # narrative: rare-first is the lowest curve at every prefix
+    ax.text(0.03, 0.06, "rare-first stays lowest:\nthe schedule tightens"
+            " the\ncertified bound at every prefix", fontsize=7,
+            color="#1f5fb4", transform=ax.transAxes, va="bottom")
+    ax.axvline(0.7, color="#5c6569", ls=":", lw=0.8)
+    ax.text(0.97, 0.97, "70% budget: schedules\nconverge, rare-first"
+            " still lowest", fontsize=7, color="#5c6569",
+            transform=ax.transAxes, va="top", ha="right")
     save(fig, "fig3_anytime")
 
 
@@ -845,6 +853,16 @@ def fig4_bounds() -> None:
     ax.legend(loc="lower right")
     viol = int(np.sum(s < b))
     ax.set_title(f"337 cells, {viol} bound violations")
+    # narrative: ring the cell closest to the diagonal -- it still passes
+    gap = np.where(g, s - b, np.inf)
+    i_close = int(np.argmin(gap))
+    ax.scatter([b[i_close]], [s[i_close]], s=90, facecolors="none",
+               edgecolors="#c0392b", lw=1.2, zorder=5)
+    ax.annotate("closest cell,\nstill \u2265 bound",
+                (b[i_close], s[i_close]),
+                textcoords="offset points", xytext=(10, -16), fontsize=7,
+                color="#c0392b",
+                arrowprops=dict(arrowstyle="->", color="#c0392b", lw=0.8))
     save(fig, "fig4_bounds")
 
 
@@ -872,7 +890,7 @@ def fig5_cascade() -> None:
             rec = float((ret & conf).mean())
             fp = float(np.mean([len(r[f"cascade_C{c}"]["rho_grid"][str(rho)][
                 "fp"]) > 0 for r in rows]))
-            pts.append((fp, rec, f"cascade C={c}"))
+            pts.append((fp, rec, f"cascade C={c} r={rho}"))
     fig, (ax, ax2) = plt.subplots(1, 2, figsize=(6.8, 2.6))
     seen = set()
     for fp, rec, lab in pts:
@@ -885,8 +903,19 @@ def fig5_cascade() -> None:
         else:
             ax.plot(fp, rec, mk, ms=6, color=c, ls="None")
         if fam == "cascade":
-            ax.annotate(lab.split()[1], (fp, rec), textcoords="offset points",
-                        xytext=(4, -9), fontsize=6)
+            part = lab.split()
+            if part[2] == "r=0.5":
+                ax.annotate(f"{part[1]}, \u03c1=0.5", (fp, rec),
+                            textcoords="offset points", xytext=(6, -11),
+                            fontsize=7)
+            if part[1] == "C=50" and part[2] == "r=0.5":
+                ax.scatter([fp], [rec], s=140, facecolors="none",
+                           edgecolors="#1f5fb4", lw=1.4, zorder=5)
+                ax.annotate("adopted cascade\noperating point", (fp, rec),
+                            textcoords="offset points", xytext=(-8, 12),
+                            fontsize=7, color="#1f5fb4", ha="right",
+                            arrowprops=dict(arrowstyle="->", color="#1f5fb4",
+                                            lw=0.8))
     ax.set_xlabel("fragment-level false-positive rate")
     ax.set_ylabel("donor recall")
     ax.set_xlim(-0.03, 1.03)
@@ -935,6 +964,11 @@ def fig6_memorization() -> None:
     ax.grid(True, axis="y", lw=0.3, alpha=0.4)
     ax.legend(loc="upper left")
     ax.set_title("memorization spectrum, 750 generated pieces")
+    # narrative: the lambda = 0 band is style-level structure, not copying
+    ax.text(0.02, 0.60, "\u03bb = 0 band: style-level shared structure,\n"
+            "attributed to the true source in only\n2\u20134% of cases "
+            "(Table XI)", transform=ax.transAxes, fontsize=7,
+            color="#5c6569", va="center")
     save(fig, "fig6_memorization")
 
 
@@ -1099,14 +1133,28 @@ def fig_e13_margins() -> None:
     tol_flag = [len(r["tolerant"]["fp_pool"]) > 0 for r in rows]
     verb_flag = [len(r["verbatim"]["fp_pool"]) > 0 for r in rows]
     fig, axes = plt.subplots(1, 2, figsize=(6.8, 2.1))
-    for ax, margins, flag, title in [
+    for pi, (ax, margins, flag, title) in enumerate([
             (axes[0], tol_margins, tol_flag,
              "(a) L1 tolerant screen: donor margin"),
             (axes[1], verb_margins, verb_flag,
-             "(b) L2 verbatim: donor margin")]:
+             "(b) L2 verbatim: donor margin")]):
         ax.hist(margins, bins=np.arange(-1.5, 42, 1.5) - 0.75,
                 color="#7f9ec9", ec="#4a6fa5", lw=0.4)
         ax.axvline(0, color="#c0392b", lw=1.2, ls="--")
+        ax.axvspan(-1.5, 1.5, color="#f7e6e6", zorder=0)
+        ymax_ = ax.get_ylim()[1]
+        if pi == 0:
+            # wide panel: room for the full takeaway above the bars
+            ax.text(0.13, 0.97, "tie zone (shaded): margin \u2248 0 \u2014"
+                    "\nscreening cannot separate donor",
+                    transform=ax.transAxes, fontsize=7, color="#a04040",
+                    va="top")
+        else:
+            # narrow panel: chip inside the shaded band
+            ax.text(0.0, ymax_ * 0.45, "tie zone:\nmargin \u2248 0",
+                    fontsize=7, color="#a04040", ha="center", va="center",
+                    bbox=dict(fc="white", ec="none", alpha=0.9, pad=1.4),
+                    zorder=6)
         ax.text(0.97, 0.96, f"{np.mean(flag) * 100:.0f}% of fragments\n"
                 "flagged", transform=ax.transAxes, ha="right", va="top",
                 fontsize=7)
@@ -1126,17 +1174,27 @@ def fig_e14_rho() -> None:
                ("mid", "#c0392b", "o", "mid"),
                ("loose", "#27ae60", "^", "loose")]
     fig, ax = plt.subplots(figsize=(3.4, 2.2))
+    curves = {}
     for key, color, marker, label in regimes:
         rec, fp = [], []
         for rho in ("0.3", "0.4", "0.5", "0.6"):
             grid = [r[key]["rho_grid"][rho] for r in rows]
             rec.append(100.0 * np.mean([g["donor_confirmed"] for g in grid]))
             fp.append(100.0 * np.mean([len(g["fp_pool"]) > 0 for g in grid]))
+        curves[key] = (fp, rec)
         ax.plot(fp, rec, marker=marker, ms=3.5, lw=1, color=color,
                 label=label)
         for rho, x, y in zip(("0.3", "0.4", "0.5", "0.6"), fp, rec):
             ax.annotate(rho, (x, y), textcoords="offset points",
-                        xytext=(4, 3), fontsize=5.5, color=color)
+                        xytext=(4, 3), fontsize=7, color=color)
+    # narrative: ring the adopted operating point (mid tolerance, rho=0.5)
+    fx, fy = curves["mid"]
+    ax.scatter([fx[2]], [fy[2]], s=120, facecolors="none",
+               edgecolors="#c0392b", lw=1.3, zorder=5)
+    ax.annotate("adopted: mid anchors,\n\u03c1 = 0.5 (Table VII)",
+                (fx[2], fy[2]), textcoords="offset points",
+                xytext=(-6, -20), fontsize=7, color="#c0392b", ha="right",
+                arrowprops=dict(arrowstyle="->", color="#c0392b", lw=0.8))
     ax.set_xlabel("fragment-level FP (%)", fontsize=7)
     ax.set_ylabel("donor recall (%)", fontsize=7)
     ax.set_title("contiguity threshold \u03c1 by anchor tolerance",
@@ -1162,7 +1220,12 @@ def fig_e5_ablation() -> None:
     ax.plot(x, y, "o-", ms=3.5, lw=1, color="#1f5fb4")
     ax.set_xlabel("span length factor L", fontsize=7)
     ax.set_ylabel("false candidates", fontsize=7)
-    ax.set_title("(a) evidence span E5.4", fontsize=8)
+    ax.set_title("(a) evidence span E5.4", fontsize=8.5)
+    if len(y) > 1 and y[-1] != y[0]:
+        trend = "longer spans \u2192 more false candidates" \
+            if y[-1] > y[0] else "shorter spans \u2192 more false candidates"
+        ax.text(0.04, 0.92, trend, transform=ax.transAxes, fontsize=7,
+                color="#5c6569", va="top")
 
     ax = axes[1]
     labels = [f"({r['k_pitch']},{r['k_bin']},{r['k_vel']})" for r in K]
@@ -1170,6 +1233,17 @@ def fig_e5_ablation() -> None:
     recall = [int(r["recall"].split("/")[0]) / int(r["recall"].split("/")[1])
               for r in K]
     ax.bar(range(len(K)), y, color="#7f9ec9", ec="#4a6fa5", lw=0.5)
+    # narrative: ring the adopted tolerance vector k = (2, 1, 1)
+    for i, r in enumerate(K):
+        if (r["k_pitch"], r["k_bin"], r["k_vel"]) == (2, 1, 1):
+            ax.scatter([i], [y[i]], s=170, facecolors="none",
+                       edgecolors="#c0392b", lw=1.3, zorder=5)
+            ax.annotate("adopted\nk = (2,1,1)", (i, y[i]),
+                        textcoords="offset points", xytext=(-12, -4),
+                        fontsize=7, color="#c0392b", ha="right",
+                        va="center",
+                        arrowprops=dict(arrowstyle="->", color="#c0392b",
+                                        lw=0.8))
     ax.set_yscale("log")
     ax.set_xticks(range(len(K)))
     ax.set_xticklabels(labels, fontsize=7, rotation=45)
@@ -1180,18 +1254,26 @@ def fig_e5_ablation() -> None:
     ax2.set_ylabel("recall (%)", fontsize=7, color="#c0392b")
     ax2.tick_params(labelsize=7, colors="#c0392b")
     ax.set_ylabel("false candidates (log)", fontsize=7)
-    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=8)
+    ax.set_title("(b) tolerance vector (kp,kb,kv) E5.5", fontsize=8.5)
 
     ax = axes[2]
     labels = [f"{r['grid_ms']} ms" for r in G]
     y = [r["false_candidates"] for r in G]
     ax.plot(range(len(G)), y, "o-", ms=3.5, lw=1, color="#1f5fb4",
             label="false candidates")
+    # narrative: ring the adopted 125 ms quantization grid
+    for i, r in enumerate(G):
+        if r["grid_ms"] == 125:
+            ax.scatter([i], [y[i]], s=130, facecolors="none",
+                       edgecolors="#c0392b", lw=1.3, zorder=5)
+            ax.annotate("adopted (§III-B)", (i, y[i]),
+                        textcoords="offset points", xytext=(0, 10),
+                        fontsize=7, color="#c0392b", ha="center")
     ax.set_xticks(range(len(G)))
     ax.set_xticklabels(labels, fontsize=7)
     ax.set_xlabel("quantization grid", fontsize=7)
     ax.set_ylabel("false candidates", fontsize=7)
-    ax.set_title("(c) grid granularity E5.7", fontsize=8)
+    ax.set_title("(c) grid granularity E5.7", fontsize=8.5)
 
     for ax in axes:
         ax.tick_params(labelsize=7)
@@ -1217,6 +1299,11 @@ def fig_e20_lsh() -> None:
     ax.axvline(0.05, color="#e67e22", ls=":", lw=1.2)
     ax.text(0.055, ax.get_ylim()[1] * 0.80, "tau = 0.05",
             fontsize=7, color="#e67e22")
+    # narrative: where the donor mass actually sits
+    pct_low = np.mean(np.array(dj) < 0.10) * 100
+    ax.text(0.62, ax.get_ylim()[1] * 0.62,
+            f"{pct_low:.0f}% of donors score\nbelow \u03c4 = 0.10:\n"
+            "LSH must starve or flood", fontsize=7, color="#26425a")
     ax.set_xlabel("donor set-Jaccard (337 planted cells)", fontsize=8)
     ax.set_ylabel("cells", fontsize=8)
     ax.set_title("(a) a contained span scores Jaccard ~0.1 at best",
@@ -1243,6 +1330,11 @@ def fig_e20_lsh() -> None:
     ax.axhline(99.1, color="#1f5fb4", ls="--", lw=1.2)
     ax.text(2.45, 96, "tolerant screen:\n334/337 = 99.1%",
             fontsize=7, color="#1f5fb4", ha="right", va="top")
+    # narrative: the gray-purple gap is candidates without confirmation
+    gap = float(np.mean(np.array(dics) - np.array(hits)))
+    ax.text(0.02, 0.30, f"gray \u2212 purple gap:\nflooded candidates\n"
+            f"(mean {gap:.0f} pp)", transform=ax.transAxes, fontsize=7,
+            color="#5c6569", va="center")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=7)
     ax.set_ylabel("% of 337 cells", fontsize=8)
