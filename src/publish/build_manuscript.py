@@ -1089,6 +1089,17 @@ def build() -> None:
          "reports controlled experiments; Section VI reports "
          "real-world studies. Section VII discusses limitations and "
          "deployment considerations, and Section VIII concludes.")
+    para(doc,
+         "Fig. 1 previews the whole system as an evidence funnel: "
+         "candidate sets narrow through the L1 screen and the L2 "
+         "top-C gate while the recall floor (Thm 1) stays unbroken; "
+         "L3 inspects survivors under a structural lens, and confirmed "
+         "matches ship as adjudicable reports.")
+    full_width(doc, lambda: (add_emf(doc, "fig1_alt", 16.0),
+                             caption(doc, "Fig. 1. The evidence-funnel "
+                                         "view of the copy-detection "
+                                         "pipeline: candidates narrow — "
+                                         "the guarantee does not.")))
 
     # --- II. related work ---------------------------------------------------
     h1(doc, "II. Related Work")
@@ -1154,11 +1165,11 @@ def build() -> None:
     # --- III. system --------------------------------------------------------
     h1(doc, "III. System")
     para(doc,
-         "Fig. 1 shows the pipeline. All layers operate on a shared "
+         "Fig. 2 shows the pipeline. All layers operate on a shared "
          "event encoding; the screen and the confirmation use different "
          "tolerances by design.")
     full_width(doc, lambda: (add_emf(doc, "fig1_architecture", 16.0),
-                             caption(doc, "Fig. 1 (design A). Two-layer "
+                             caption(doc, "Fig. 2. Two-layer "
                                          "copy detection pipeline. (a) A "
                                          "publisher-scale corpus is "
                                          "encoded once into a rare-first "
@@ -1174,21 +1185,8 @@ def build() -> None:
                                          "memorization and in-the-wild "
                                          "audits close the loop. Black "
                                          "arrows mark data flow; amber "
-                                         "arrows mark guarantee and "
-                                         "evidence flow.")))
-    full_width(doc, lambda: (add_emf(doc, "fig1_alt", 16.0),
-                             caption(doc, "Fig. 1 (design B, candidate). "
-                                         "The same pipeline drawn as an "
-                                         "evidence funnel: candidate sets "
-                                         "narrow through the L1 screen and "
-                                         "the L2 top-C gate while the "
-                                         "recall floor (Thm 1) stays "
-                                         "unbroken; L3 inspects survivors "
-                                         "under a structural lens, and "
-                                         "confirmed matches ship as "
-                                         "adjudicable reports. One of "
-                                         "designs A and B will be kept "
-                                         "after selection.")))
+                                         "markers trace one query end to "
+                                         "end.")))
     h2(doc, "A. Problem statement and notation")
     para(doc,
          "A piece P = (e\u2081, \u2026, e_n) is a sequence of note "
@@ -1242,7 +1240,7 @@ def build() -> None:
          "The corpus index is an inverted index from item to sorted "
          "piece-ID lists, built once in a linear pass (each piece "
          "contributes |S(P)| postings). Build time and memory grow "
-         "linearly with corpus size (Fig. 2, Table II); incremental "
+         "linearly with corpus size (Fig. 3, Table II); incremental "
          "updates append postings for new pieces without rebuilding.")
     h2(doc, "C. L1: tolerant screening with a provable bound")
     para(doc,
@@ -1411,7 +1409,7 @@ def build() -> None:
     h1(doc, "V. Results")
     h2(doc, "A. Scale and baseline feasibility")
     para(doc,
-         f"Fig. 2 reports scaling on subsampled corpora and Table II "
+         f"Fig. 3 reports scaling on subsampled corpora and Table II "
          f"gives the corresponding numbers. Index build "
          f"reaches {N['e4_build']} s at {N['e4_max']:,} pieces and query "
          f"latency {N['e4_p50']} ms (p50), with planted recall 100% at "
@@ -1439,7 +1437,7 @@ def build() -> None:
          "cutoff), which is precisely why the architecture places FIM "
          "semantics on the query side.")
     add_emf(doc, "fig2_scaling", 8.0)
-    caption(doc, "Fig. 2. Index build and query latency versus corpus "
+    caption(doc, "Fig. 3. Index build and query latency versus corpus "
                  "size (log-log); planted recall 100% at all sizes; "
                  "Jaccard scan baseline shown where feasible; MinHash-LSH "
                  "is fast at every size but retrieves nothing (V-G).")
@@ -1454,14 +1452,14 @@ def build() -> None:
               "empty candidate sets at every size.")
     h2(doc, "B. Recall matrix and the evidence bound")
     para(doc,
-         f"Table III summarizes and Fig. 3 visualizes the 337-cell "
+         f"Table III summarizes and Fig. 4 visualizes the 337-cell "
          f"recall matrix. Verbatim "
          f"cells hit 100% as constructed; overall recall is "
          f"{N['e1_ok']}/{N['e1_total']} = "
          f"{N['e1_ok'] / N['e1_total'] * 100:.1f}%, and every failure "
          "lies outside the declared tolerance (e.g., transposition by "
          "6 semitones against a \u00b12 guarantee). "
-         f"Fig. 4 verifies the bound: across all "
+         f"Fig. 5 verifies the bound: across all "
          f"{N['e2_n']} cells the measured donor evidence never falls "
          f"below the theoretical lower bound ({N['e2_viol']} "
          "violations; margins in Table IV), which is the empirical "
@@ -1474,7 +1472,7 @@ def build() -> None:
               "planted-copy cells (five seeds per cell; k_pitch = 2, "
               "k_bin = 1). Bold marks cells below 100 %.")
     add_emf(doc, "fig_e1_heatmap", 8.0)
-    caption(doc, "Fig. 3. Recall heatmap of the 337-cell matrix; rows "
+    caption(doc, "Fig. 4. Recall heatmap of the 337-cell matrix; rows "
                  "are transformation and strength, columns span length. "
                  "The three sub-100 % cells pair extreme noise with the "
                  "shortest spans.")
@@ -1486,11 +1484,11 @@ def build() -> None:
               "theoretical lower bound) per transformation; a negative "
               "margin would be a bound violation.")
     add_emf(doc, "fig4_bounds", 8.0)
-    caption(doc, "Fig. 4. Measured donor evidence versus theoretical "
+    caption(doc, "Fig. 5. Measured donor evidence versus theoretical "
                  "lower bound, 337 adversarial cells; zero violations.")
     h2(doc, "C. Anytime behaviour")
     para(doc,
-         "Fig. 5 shows the open-candidate bound as the rare-first "
+         "Fig. 6 shows the open-candidate bound as the rare-first "
          "schedule consumes its budget on 16-second spans, and "
          "Table V quantifies all three schedules. Early in the "
          "schedule the bound is vacuous by construction: after few "
@@ -1508,7 +1506,7 @@ def build() -> None:
          "queue can trade the bound against throughput, and an audit "
          "can stop early without losing a certified answer.")
     add_emf(doc, "fig3_anytime", 8.0)
-    caption(doc, "Fig. 5. Open-candidate bound versus processed budget "
+    caption(doc, "Fig. 6. Open-candidate bound versus processed budget "
                  "for three schedules; 16 s spans, 1,000-piece corpus.")
     three_line_table(doc,
         ["Budget", "Rare-first open", "Random open", "Hot-first open",
@@ -1525,7 +1523,7 @@ def build() -> None:
          "raising the threshold cannot repair it: recall falls below "
          "80% before the false-positive rate reaches 43%. Verbatim "
          "counts alone rank well (donor in top-20: 93.7%) but still "
-         "flag 22% of fragments. Fig. 6 and Table VI break the "
+         "flag 22% of fragments. Fig. 7 and Table VI break the "
          "phenomenon down by donor-margin distribution and fragment "
          "length. This is a property of item-level "
          "encodings\u2014pop repertoire shares large amounts of "
@@ -1536,7 +1534,7 @@ def build() -> None:
          "differences as ties and rely on margins larger than the "
          "half-width.")
     full_width(doc, lambda: (add_emf(doc, "fig_e13_margins", 16.0),
-                             caption(doc, "Fig. 6. Donor score margin "
+                             caption(doc, "Fig. 7. Donor score margin "
                                          "(donor minus best non-donor) "
                                          "on 238 hard-negative fragments; "
                                          "the annotated rate is the "
@@ -1554,7 +1552,7 @@ def build() -> None:
          f"Strict-tolerance chain confirmation reaches a 2.1% "
          f"fragment-level false-positive rate at 83.9% recall "
          f"(\u03c1=0.5), and 7.2% at 98.3% recall (\u03c1=0.4); "
-         f"Table VII and Fig. 7 map the full recall/FP trade-off "
+         f"Table VII and Fig. 8 map the full recall/FP trade-off "
          f"over three anchor-tolerance regimes and four contiguity "
          f"thresholds. "
          f"Table VIII places the full cascade against its single-layer "
@@ -1571,11 +1569,11 @@ def build() -> None:
               "by anchor-tolerance regime and contiguity threshold \u03c1 "
               "(236 hard-negative fragments).")
     add_emf(doc, "fig_e14_rho", 8.0)
-    caption(doc, "Fig. 7. Confirmation operating curves: donor recall "
+    caption(doc, "Fig. 8. Confirmation operating curves: donor recall "
                  "versus fragment-level FP over \u03c1, labelled by "
                  "threshold, for three anchor-tolerance regimes.")
     full_width(doc, lambda: (add_emf(doc, "fig5_cascade", 16.0),
-                             caption(doc, "Fig. 8. (a) Operating points "
+                             caption(doc, "Fig. 9. (a) Operating points "
                                          "of the three systems on hard "
                                          "negatives; (b) donor retention "
                                          "in the top-C candidate feed.")))
@@ -1603,10 +1601,10 @@ def build() -> None:
          "applies; false positives and latency trade off along the "
          "tolerance vector exactly as the bound predicts; and finer "
          "grids monotonically reduce false positives at sub-linear "
-         "vocabulary growth. Fig. 9 plots the three ablation families "
+         "vocabulary growth. Fig. 10 plots the three ablation families "
          "and Table IX tabulates them.")
     full_width(doc, lambda: (add_emf(doc, "fig_e5_ablation", 16.0),
-                             caption(doc, "Fig. 9. Component ablations: "
+                             caption(doc, "Fig. 10. Component ablations: "
                                          "(a) evidence span length; "
                                          "(b) tolerance vector (bars: "
                                          "false candidates, log scale; "
@@ -1629,7 +1627,7 @@ def build() -> None:
          f"set-Jaccard oracle scores the donor at only "
          f"{N['e20_dj_p25']:.2f} / {N['e20_dj_p50']:.2f} / "
          f"{N['e20_dj_p75']:.2f} (quartiles over the 337 cells; "
-         f"Fig. 10(a)); just {N['e20_dj_ge10']} of 337 donors reach "
+         f"Fig. 11(a)); just {N['e20_dj_ge10']} of 337 donors reach "
          f"Jaccard 0.10. Jaccard measures relative overlap, so a "
          f"contained copy is structurally invisible to it no matter how "
          f"faithfully the 40 shared items are preserved. Tuning the "
@@ -1672,7 +1670,7 @@ def build() -> None:
               "discriminating configurations starve the donor.")
     full_width(doc, lambda: (add_emf(doc, "fig_e20_lsh", 16.0),
                              caption(doc,
-                                 "Fig. 10. The containment-versus-"
+                                 "Fig. 11. The containment-versus-"
                                  "Jaccard geometry behind Table X. "
                                  "(a) donor Jaccard distribution over "
                                  "the 337 planted cells (quartiles "
@@ -1691,7 +1689,7 @@ def build() -> None:
          "probability \u03bb, sweeping m\u2208{2,4,8} and "
          "\u03bb\u2208{0, 0.25, ..., 1}; 750 generated pieces are "
          "screened with the production cascade. Detection "
-         "(Fig. 11, Table XI) rises monotonically: 26-34% at "
+         "(Fig. 12, Table XI) rises monotonically: 26-34% at "
          "\u03bb=0\u2014these "
          "residual hits are style-level shared structures, attributed "
          "to the source piece in only 2-4% of cases\u2014through 44-56% "
@@ -1705,7 +1703,7 @@ def build() -> None:
          "transformer and asks whether real overfitting reproduces "
          "this spectrum.")
     add_emf(doc, "fig6_memorization", 8.0)
-    caption(doc, "Fig. 11. Detection rate (bars) and source attribution "
+    caption(doc, "Fig. 12. Detection rate (bars) and source attribution "
                  "(ticks) over the memorization spectrum, by n-gram "
                  "order.")
     three_line_table(doc,
@@ -1728,10 +1726,10 @@ def build() -> None:
          "+3-semitone transposed cover is fully recovered with the "
          "transposition correctly estimated at \u22123; a piece with a "
          "30-second span of another work spliced into its middle is "
-         "localized to the exact segment (Fig. 12); and a "
+         "localized to the exact segment (Fig. 13); and a "
          "style-similar negative is correctly rejected.")
     add_emf(doc, "fig7_case", 8.0)
-    caption(doc, "Fig. 12. Alignment map for the spliced-span case: "
+    caption(doc, "Fig. 13. Alignment map for the spliced-span case: "
                  "query note index versus corpus piece note index; the "
                  "diagonal band is the copied 30 s segment.")
     three_line_table(doc,
@@ -1756,7 +1754,7 @@ def build() -> None:
          f"({N['e18_exact_queries']:,} non-trivial queries per "
          f"channel; all counts extrapolate {8}\u00d7), under the same "
          f"dual exact/interval-sketch configuration "
-         f"(min-evidence 40, k=0).  Fig. 13(a) shows the candidate "
+         f"(min-evidence 40, k=0).  Fig. 14(a) shows the candidate "
          f"population by relative-score band.  At the absolute "
          f"\u226540-evidence floor the two channels report "
          f"{N['e18_exact_ge40'] / 1e9:.1f}B (exact) and "
@@ -1779,7 +1777,7 @@ def build() -> None:
          "adjudicated a stratified random sample (40 pairs per "
          "stratum) with the Layer-2 chain criterion, run in both "
          "directions with transposition fallback (Table XIII, "
-         "Fig. 13(b)).  The exact channel is a high-precision "
+         "Fig. 14(b)).  The exact channel is a high-precision "
          f"instrument at the top of its range: {N['e19f_exact_band3_p'] * 100:.0f}% "
          f"of exact pairs with relative score \u22650.90 are confirmed "
          "copies (Wilson 95% CI "
@@ -1807,7 +1805,7 @@ def build() -> None:
          f"recall (Section V-C); they are survey estimates from a "
          f"1/8 sample, not enumerations.")
     add_emf(doc, "fig8_census", 8.6)
-    caption(doc, "Fig. 13. Full-corpus census (174,300 pieces, stride-8 "
+    caption(doc, "Fig. 14. Full-corpus census (174,300 pieces, stride-8 "
                  "survey extrapolated \u00d78).  (a) Candidate-pair "
                  "population by relative-score band and channel (log "
                  "scale).  (b) Confirmed-copy precision of the stored "
@@ -1862,7 +1860,7 @@ def build() -> None:
          f"continuation averages {N['e21_cal_pos_mean'] * 100:.0f}% "
          f"(max {N['e21_cal_pos_max'] * 100:.0f}%) and 4-gram "
          f"overlap peaks at {N['e21_cal_ov4_max'] * 100:.0f}% "
-         f"(Fig. 14(b)).  Sampling at temperature 0.8 diverges "
+         f"(Fig. 15(b)).  Sampling at temperature 0.8 diverges "
          f"from memorized content almost immediately.")
     para(doc,
          f"The production cascade agrees with this reading "
@@ -1890,7 +1888,7 @@ def build() -> None:
          f"substitutes.")
     full_width(doc, lambda: (add_emf(doc, "fig_e21_memorization", 16.0),
                              caption(doc,
-                                 "Fig. 14. Trained-generator "
+                                 "Fig. 15. Trained-generator "
                                  "memorization audit.  (a) Training "
                                  "and held-out loss over "
                                  f"{N['e21_epochs']} epochs; the "
