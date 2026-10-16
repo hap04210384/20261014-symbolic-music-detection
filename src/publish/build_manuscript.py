@@ -1395,6 +1395,25 @@ def build() -> None:
          "items; the bound is tight when the span is the only "
          "overlap. \u220e",
          indent=0.4)
+    full_width(doc, lambda: (add_emf(doc, "fig1_architecture", 16.0),
+                             caption(doc, "Fig. 2. Two-layer "
+                                         "copy detection pipeline. (a) A "
+                                         "publisher-scale corpus is "
+                                         "encoded once into a rare-first "
+                                         "item-set index. (b) The L1 "
+                                         "screen queries that index under "
+                                         "an anytime budget with a "
+                                         "provable recall lower bound "
+                                         "(Thm 1, 337-cell audit). (c) L2 "
+                                         "re-ranks and L3 confirms on "
+                                         "ordered note chains, gating on "
+                                         "ρ = 0.62 ≥ 0.5. (d) Confirmed matches "
+                                         "ship as adjudicable reports; "
+                                         "memorization and in-the-wild "
+                                         "audits close the loop. Black "
+                                         "arrows mark data flow; amber "
+                                         "markers trace one query end to "
+                                         "end.")))
     h2(doc, "B. Event encoding and index construction")
     para(doc,
          "Each piece is quantized onto a fixed grid (125 ms per bin "
@@ -1415,25 +1434,6 @@ def build() -> None:
          "posting lists; this costs one sort of the vocabulary and "
          "pays off in cache behavior and in a compact Fenwick-based "
          "open-set bookkeeping at query time.")
-    full_width(doc, lambda: (add_emf(doc, "fig1_architecture", 16.0),
-                             caption(doc, "Fig. 2. Two-layer "
-                                         "copy detection pipeline. (a) A "
-                                         "publisher-scale corpus is "
-                                         "encoded once into a rare-first "
-                                         "item-set index. (b) The L1 "
-                                         "screen queries that index under "
-                                         "an anytime budget with a "
-                                         "provable recall lower bound "
-                                         "(Thm 1, 337-cell audit). (c) L2 "
-                                         "re-ranks and L3 confirms on "
-                                         "ordered note chains, gating on "
-                                         "ρ = 0.62 ≥ 0.5. (d) Confirmed matches "
-                                         "ship as adjudicable reports; "
-                                         "memorization and in-the-wild "
-                                         "audits close the loop. Black "
-                                         "arrows mark data flow; amber "
-                                         "markers trace one query end to "
-                                         "end.")))
     para(doc,
          "The corpus index is an inverted index from item to sorted "
          "piece-ID lists, built once in a linear pass (each piece "
@@ -1624,8 +1624,7 @@ def build() -> None:
     h1(doc, "V. Results")
     h2(doc, "A. Scale and baseline feasibility")
     para(doc,
-         f"Fig. 3 reports scaling on subsampled corpora and Table II "
-         f"gives the corresponding numbers. Index build "
+         f"Index build "
          f"reaches {N['e4_build']} s at {N['e4_max']:,} pieces and query "
          f"latency {N['e4_p50']} ms (p50), with planted recall 100% at "
          "every size. The set-Jaccard scan, the strongest naive "
@@ -1649,7 +1648,9 @@ def build() -> None:
          "infeasible at the support levels copying detection requires "
          "(over 11 million frequent pairs at N=300 under the standard "
          "cutoff), which is precisely why the architecture places FIM "
-         "semantics on the query side.")
+         "semantics on the query side. Fig. 3 reports scaling on "
+         "subsampled corpora and Table II gives the corresponding "
+         "numbers.")
     three_line_table(doc,
         ["Pieces", "Build (s)", "Mem (MB)", "p50 (ms)", "p95 (ms)",
          "Planted recall", "Jaccard p50 (ms)", "LSH p50 (ms)",
@@ -1664,12 +1665,6 @@ def build() -> None:
              "uniform ladder and build times are not monotone in row "
              "order; scaling conclusions rely on within-generation "
              "interpolation rather than on adjacent-row differences.")
-    add_emf(doc, "fig2_scaling", 8.0)
-    caption(doc, "Fig. 3. Index build and query latency versus corpus "
-                 "size (log-log); planted recall 100% at all sizes; "
-                 "Jaccard scan baseline shown where feasible; MinHash-LSH "
-                 "is fast at every size yet retrieves nothing "
-                 "(Section V-G).")
     h2(doc, "B. Recall matrix and the evidence bound")
     para(doc,
          f"Table III summarizes and Fig. 4 visualizes the 337-cell "
@@ -1677,12 +1672,12 @@ def build() -> None:
          f"cells hit 100% as constructed; overall recall is "
          f"{N['e1_ok']}/{N['e1_total']} = "
          f"{N['e1_ok'] / N['e1_total'] * 100:.1f}%, and every failure "
-         "lies outside the declared tolerance (e.g., transposition by "
-         "6 semitones against a \u00b12 guarantee). "
+         "lies outside the declared tolerance (6-semitone transposition "
+         "exceeds the \u00b12 guarantee). "
          f"Fig. 5 verifies the bound: across all "
          f"{N['e2_n']} cells the measured donor evidence never falls "
          f"below the theoretical lower bound ({N['e2_viol']} "
-         "violations; margins in Table IV), which is the empirical "
+         "violations; margins in Table IV), the empirical "
          "anchor of the recall "
          "contract.")
     three_line_table(doc,
@@ -1691,6 +1686,20 @@ def build() -> None:
         title="TABLE III. Recall (%) of the L1 tolerant screen on 337 "
               "planted-copy cells (five seeds per cell; k_pitch = 2, "
               "k_bin = 1). Bold marks cells below 100 %.")
+    add_emf(doc, "fig2_scaling", 8.0)
+    caption(doc, "Fig. 3. Index build and query latency versus corpus "
+                 "size (log-log); planted recall 100% at all sizes; "
+                 "Jaccard scan baseline shown where feasible; MinHash-LSH "
+                 "is fast at every size yet retrieves nothing "
+                 "(Section V-G).")
+    add_emf(doc, "fig_e1_heatmap", 8.0)
+    caption(doc, "Fig. 4. Recall heatmap of the 337-cell matrix; rows "
+                 "are transformation and strength, columns span length. "
+                 "The three sub-100 % cells pair extreme noise with the "
+                 "shortest spans.")
+    add_emf(doc, "fig4_bounds", 8.0)
+    caption(doc, "Fig. 5. Measured donor evidence versus theoretical "
+                 "lower bound, 337 adversarial cells; zero violations.")
     h2(doc, "C. Anytime behavior")
     para(doc,
          "Fig. 6 shows the open-candidate bound as the rare-first "
@@ -1710,11 +1719,6 @@ def build() -> None:
          "open set itself, available after any prefix: a screening "
          "queue can trade the bound against throughput, and an audit "
          "can stop early without losing a certified answer.")
-    add_emf(doc, "fig_e1_heatmap", 8.0)
-    caption(doc, "Fig. 4. Recall heatmap of the 337-cell matrix; rows "
-                 "are transformation and strength, columns span length. "
-                 "The three sub-100 % cells pair extreme noise with the "
-                 "shortest spans.")
     three_line_table(doc,
         ["Transformation", "Cells", "Mean margin", "Min margin",
          "Violations"],
@@ -1722,9 +1726,6 @@ def build() -> None:
         title="TABLE IV. Donor evidence margin (donor score minus "
               "theoretical lower bound) per transformation; a negative "
               "margin would be a bound violation.")
-    add_emf(doc, "fig4_bounds", 8.0)
-    caption(doc, "Fig. 5. Measured donor evidence versus theoretical "
-                 "lower bound, 337 adversarial cells; zero violations.")
     add_emf(doc, "fig3_anytime", 8.0)
     caption(doc, "Fig. 6. Open-candidate bound versus processed budget "
                  "for three schedules; 16 s spans, 1,000-piece corpus.")
