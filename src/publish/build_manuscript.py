@@ -562,6 +562,9 @@ def h1(doc, text):
 
 def h2(doc, text):
     p = doc.add_paragraph(style="Heading 2")
+    # 1 pt tighter than the template's 6 pt: imperceptible, but the
+    # eighteen subsections together return ~18 pt of column space
+    p.paragraph_format.space_before = Pt(5)
     p.add_run(text)
 
 
@@ -695,7 +698,10 @@ def para(doc, text, indent=0.36, size=10, align="justify"):
     return p
 
 
-def caption(doc, text, size=9.5):
+def caption(doc, text, size=8):
+    # 8 pt matches the template's Figure Caption style (we had drifted
+    # to 9.5 pt); across the fifteen figure captions this also returns
+    # ~80 pt of column space
     p = doc.add_paragraph(style="Figure Caption")
     rich_add(p, text, size=size)
     # keep the caption glued to the figure above it (no orphaned
@@ -796,7 +802,10 @@ def three_line_table(doc, header, rows, size=8, title=None, full=False):
             if i == nrows - 1:
                 _cell_edge(cell, "bottom", 12)
     _keep_table(t, heads)
-    doc.add_paragraph().paragraph_format.space_after = Pt(2)
+    _sp = doc.add_paragraph()
+    _sp.paragraph_format.space_after = Pt(0)
+    _sp._p.get_or_add_pPr().append(parse_xml(
+        '<w:rPr %s><w:sz w:val="4"/></w:rPr>' % nsdecls("w")))
     if full:
         switch_to(doc, SECT_1COL[0])
     return t
@@ -860,9 +869,11 @@ def switch_to(doc, sect_el, before=None, after=None):
     if after is not None:
         p.paragraph_format.space_after = Pt(after)
     pPr = p._p.get_or_add_pPr()
-    if before is not None or after is not None:
-        pPr.append(parse_xml('<w:rPr %s><w:sz w:val="18"/></w:rPr>'
-                             % nsdecls("w")))
+    # keep the break-paragraph mark small (6 pt) even in the neutral
+    # case: a full-width island carries two of these, and a 10-pt mark
+    # leaves dead space that can push the whole island to the next page
+    pPr.append(parse_xml('<w:rPr %s><w:sz w:val="12"/></w:rPr>'
+                         % nsdecls("w")))
     pPr.append(_copy.deepcopy(sect_el))
 
 
@@ -1333,25 +1344,6 @@ def build() -> None:
          "Fig. 2 shows the pipeline. All layers operate on a shared "
          "event encoding; the screen and the confirmation use different "
          "tolerances by design.")
-    full_width(doc, lambda: (add_emf(doc, "fig1_architecture", 16.0),
-                             caption(doc, "Fig. 2. Two-layer "
-                                         "copy detection pipeline. (a) A "
-                                         "publisher-scale corpus is "
-                                         "encoded once into a rare-first "
-                                         "item-set index. (b) The L1 "
-                                         "screen queries that index under "
-                                         "an anytime budget with a "
-                                         "provable recall lower bound "
-                                         "(Thm 1, 337-cell audit). (c) L2 "
-                                         "re-ranks and L3 confirms on "
-                                         "ordered note chains, gating on "
-                                         "ρ = 0.62 ≥ 0.5. (d) Confirmed matches "
-                                         "ship as adjudicable reports; "
-                                         "memorization and in-the-wild "
-                                         "audits close the loop. Black "
-                                         "arrows mark data flow; amber "
-                                         "markers trace one query end to "
-                                         "end.")))
     h2(doc, "A. Problem statement and notation")
     para(doc,
          "A piece P = (e\u2081, \u2026, e_n) is a sequence of note "
@@ -1397,13 +1389,32 @@ def build() -> None:
          "information. An interval-sketch variant (pitch replaced by "
          "the chromatic interval to the next note) provides "
          "transposition invariance for retrieval of transposed "
-         "material. ")
+         "material.")
     para(doc,
-         "Items are remapped to gapless dense integer IDs "
-         "per corpus revision, so that the inverted index consists "
-         "of contiguous posting lists; this costs one sort of the "
-         "vocabulary and pays off in cache behavior and in a compact "
-         "Fenwick-based open-set bookkeeping at query time.")
+         "Items are remapped to gapless dense integer IDs per corpus "
+         "revision, so that the inverted index consists of contiguous "
+         "posting lists; this costs one sort of the vocabulary and "
+         "pays off in cache behavior and in a compact Fenwick-based "
+         "open-set bookkeeping at query time.")
+    full_width(doc, lambda: (add_emf(doc, "fig1_architecture", 16.0),
+                             caption(doc, "Fig. 2. Two-layer "
+                                         "copy detection pipeline. (a) A "
+                                         "publisher-scale corpus is "
+                                         "encoded once into a rare-first "
+                                         "item-set index. (b) The L1 "
+                                         "screen queries that index under "
+                                         "an anytime budget with a "
+                                         "provable recall lower bound "
+                                         "(Thm 1, 337-cell audit). (c) L2 "
+                                         "re-ranks and L3 confirms on "
+                                         "ordered note chains, gating on "
+                                         "ρ = 0.62 ≥ 0.5. (d) Confirmed matches "
+                                         "ship as adjudicable reports; "
+                                         "memorization and in-the-wild "
+                                         "audits close the loop. Black "
+                                         "arrows mark data flow; amber "
+                                         "markers trace one query end to "
+                                         "end.")))
     para(doc,
          "The corpus index is an inverted index from item to sorted "
          "piece-ID lists, built once in a linear pass (each piece "
@@ -1619,12 +1630,6 @@ def build() -> None:
          "(over 11 million frequent pairs at N=300 under the standard "
          "cutoff), which is precisely why the architecture places FIM "
          "semantics on the query side.")
-    add_emf(doc, "fig2_scaling", 8.0)
-    caption(doc, "Fig. 3. Index build and query latency versus corpus "
-                 "size (log-log); planted recall 100% at all sizes; "
-                 "Jaccard scan baseline shown where feasible; MinHash-LSH "
-                 "is fast at every size yet retrieves nothing "
-                 "(Section V-G).")
     three_line_table(doc,
         ["Pieces", "Build (s)", "Mem (MB)", "p50 (ms)", "p95 (ms)",
          "Planted recall", "Jaccard p50 (ms)", "LSH p50 (ms)",
@@ -1644,6 +1649,12 @@ def build() -> None:
         "interpolation rather than on adjacent-row differences.")
     tr.font.size = Pt(8)
     tr.font.name = "Times New Roman"
+    add_emf(doc, "fig2_scaling", 8.0)
+    caption(doc, "Fig. 3. Index build and query latency versus corpus "
+                 "size (log-log); planted recall 100% at all sizes; "
+                 "Jaccard scan baseline shown where feasible; MinHash-LSH "
+                 "is fast at every size yet retrieves nothing "
+                 "(Section V-G).")
     h2(doc, "B. Recall matrix and the evidence bound")
     para(doc,
          f"Table III summarizes and Fig. 4 visualizes the 337-cell "
@@ -1665,21 +1676,6 @@ def build() -> None:
         title="TABLE III. Recall (%) of the L1 tolerant screen on 337 "
               "planted-copy cells (five seeds per cell; k_pitch = 2, "
               "k_bin = 1). Bold marks cells below 100 %.")
-    add_emf(doc, "fig_e1_heatmap", 8.0)
-    caption(doc, "Fig. 4. Recall heatmap of the 337-cell matrix; rows "
-                 "are transformation and strength, columns span length. "
-                 "The three sub-100 % cells pair extreme noise with the "
-                 "shortest spans.")
-    three_line_table(doc,
-        ["Transformation", "Cells", "Mean margin", "Min margin",
-         "Violations"],
-        e2_table_rows(), size=8,
-        title="TABLE IV. Donor evidence margin (donor score minus "
-              "theoretical lower bound) per transformation; a negative "
-              "margin would be a bound violation.")
-    add_emf(doc, "fig4_bounds", 8.0)
-    caption(doc, "Fig. 5. Measured donor evidence versus theoretical "
-                 "lower bound, 337 adversarial cells; zero violations.")
     h2(doc, "C. Anytime behavior")
     para(doc,
          "Fig. 6 shows the open-candidate bound as the rare-first "
@@ -1699,6 +1695,21 @@ def build() -> None:
          "open set itself, available after any prefix: a screening "
          "queue can trade the bound against throughput, and an audit "
          "can stop early without losing a certified answer.")
+    add_emf(doc, "fig_e1_heatmap", 8.0)
+    caption(doc, "Fig. 4. Recall heatmap of the 337-cell matrix; rows "
+                 "are transformation and strength, columns span length. "
+                 "The three sub-100 % cells pair extreme noise with the "
+                 "shortest spans.")
+    three_line_table(doc,
+        ["Transformation", "Cells", "Mean margin", "Min margin",
+         "Violations"],
+        e2_table_rows(), size=8,
+        title="TABLE IV. Donor evidence margin (donor score minus "
+              "theoretical lower bound) per transformation; a negative "
+              "margin would be a bound violation.")
+    add_emf(doc, "fig4_bounds", 8.0)
+    caption(doc, "Fig. 5. Measured donor evidence versus theoretical "
+                 "lower bound, 337 adversarial cells; zero violations.")
     add_emf(doc, "fig3_anytime", 8.0)
     caption(doc, "Fig. 6. Open-candidate bound versus processed budget "
                  "for three schedules; 16 s spans, 1,000-piece corpus.")
@@ -1729,20 +1740,6 @@ def build() -> None:
          "pp near 50%), so we treat single-percentage-point "
          "differences as ties and rely on margins larger than the "
          "half-width.")
-    full_width(doc, lambda: (add_emf(doc, "fig_e13_margins", 16.0),
-                             caption(doc, "Fig. 7. Donor score margin "
-                                         "(donor minus best non-donor) "
-                                         "on 238 hard-negative fragments; "
-                                         "the annotated rate is the "
-                                         "fragment-level flag rate of "
-                                         "each layer.")))
-    three_line_table(doc,
-        ["Span (s)", "Fragments", "L1 tolerant FP (%)",
-         "L2 verbatim FP (%)", "L2 donor in top-20 (%)"],
-        e13_table_rows(), size=8,
-        title="TABLE VI. Single-layer screening on style-similar hard "
-              "negatives (80 donors, transcribed fragments), by "
-              "fragment length.")
     h2(doc, "E. Confirmation precision and the cascade")
     para(doc,
          f"Strict-tolerance chain confirmation reaches a 2.1% "
@@ -1758,6 +1755,20 @@ def build() -> None:
          f"(C=20) and {N['e7_ret50'] * 100:.1f}% (C=50) of donors; the "
          "union of tolerant and verbatim top-C feeds\u2014adopted in "
          "the final system\u2014lifts retention above 99%.")
+    full_width(doc, lambda: (add_emf(doc, "fig_e13_margins", 16.0),
+                             caption(doc, "Fig. 7. Donor score margin "
+                                         "(donor minus best non-donor) "
+                                         "on 238 hard-negative fragments; "
+                                         "the annotated rate is the "
+                                         "fragment-level flag rate of "
+                                         "each layer.")))
+    three_line_table(doc,
+        ["Span (s)", "Fragments", "L1 tolerant FP (%)",
+         "L2 verbatim FP (%)", "L2 donor in top-20 (%)"],
+        e13_table_rows(), size=8,
+        title="TABLE VI. Single-layer screening on style-similar hard "
+              "negatives (80 donors, transcribed fragments), by "
+              "fragment length.")
     para(doc,
          "Both metrics share one denominator: the 236 fragment queries of "
          "the confirmation suite, each a true transcription copy of one of "
@@ -1786,13 +1797,6 @@ def build() -> None:
     caption(doc, "Fig. 8. Confirmation operating curves: donor recall "
                  "versus fragment-level FP over \u03c1, labeled by "
                  "threshold, for three anchor-tolerance regimes.")
-    full_width(doc, lambda: (add_emf(doc, "fig5_cascade", 12.8),
-                             caption(doc, "Fig. 9. Operating points and "
-                                         "donor retention on hard "
-                                         "negatives. (a) Operating "
-                                         "points of the three systems; "
-                                         "(b) donor retention in the "
-                                         "top-C candidate feed.")))
     three_line_table(doc,
         ["Layer / system", "Recall", "Fragment-level FP", "Contract"],
         [["L1 tolerant screen", "100%",
@@ -1824,6 +1828,13 @@ def build() -> None:
          "across all ablation settings, so every configuration is "
          "compared on identical evidence. Fig. 10 plots the three "
          "ablation families and Table IX tabulates them.")
+    full_width(doc, lambda: (add_emf(doc, "fig5_cascade", 12.8),
+                             caption(doc, "Fig. 9. Operating points and "
+                                         "donor retention on hard "
+                                         "negatives. (a) Operating "
+                                         "points of the three systems; "
+                                         "(b) donor retention in the "
+                                         "top-C candidate feed.")))
     full_width(doc, lambda: (add_emf(doc, "fig_e5_ablation", 18.2),
                              caption(doc, "Fig. 10. Component ablations "
                                          "over the confirmation and "
@@ -1991,6 +2002,16 @@ def build() -> None:
           "rejected"]],
         size=8,
         title="TABLE XII. Case-study evidence summary (E6.3).")
+    full_width(doc, lambda: (add_emf(doc, "fig8_census", 13.2),
+                             caption(doc, "Fig. 14. Full-corpus census "
+                                         "(174,300 pieces, stride-8 "
+                                         "survey extrapolated \u00d78).  "
+                                         "(a) Candidate-pair population by "
+                                         "relative-score band and channel "
+                                         "(log scale).  (b) Confirmed-copy "
+                                         "precision of the stored "
+                                         "audit-grade strata, Wilson 95% "
+                                         "CI; n=40 per stratum.")))
     h2(doc, "C. Full-corpus duplicate census")
     para(doc,
          f"Scaling the case-study protocol to the full corpus "
@@ -2055,16 +2076,6 @@ def build() -> None:
          f"criterion measured in this section itself; they are survey "
          f"estimates from a "
          f"1/8 sample, not enumerations.")
-    full_width(doc, lambda: (add_emf(doc, "fig8_census", 13.2),
-                             caption(doc, "Fig. 14. Full-corpus census "
-                                         "(174,300 pieces, stride-8 "
-                                         "survey extrapolated \u00d78).  "
-                                         "(a) Candidate-pair population by "
-                                         "relative-score band and channel "
-                                         "(log scale).  (b) Confirmed-copy "
-                                         "precision of the stored "
-                                         "audit-grade strata, Wilson 95% "
-                                         "CI; n=40 per stratum.")))
     three_line_table(doc,
         ["Channel", "Relative score", "Stored pairs",
          "Precision % [95% CI]", "Est. confirmed (corpus)"],
@@ -2300,9 +2311,6 @@ def build() -> None:
         pf.first_line_indent = Cm(-0.75)
         # References style auto-numbers the list; do NOT add a literal "[n]" prefix
         p.add_run(ref)
-
-    # full-width closing line after the reference list
-    full_width(doc, lambda: spacer(doc))
 
     # --- core properties ------------------------------------------------------------
     cp = doc.core_properties
