@@ -764,10 +764,12 @@ def _cell_edge(cell, edge, sz):
     borders.append(el)
 
 
-def three_line_table(doc, header, rows, size=8, title=None, full=False):
+def three_line_table(doc, header, rows, size=8, title=None, full=False,
+                     note=None):
     """Booktabs-style: heavy top rule, thin rule under header, heavy
     bottom rule; no verticals.  full=True places the table in a
-    single-column (spanning) section."""
+    single-column (spanning) section.  note (small text) is typeset
+    inside the spanning section, directly under the table."""
     if full:
         switch_to(doc, SECT_2COL[0])
     heads = []
@@ -806,6 +808,12 @@ def three_line_table(doc, header, rows, size=8, title=None, full=False):
     _sp.paragraph_format.space_after = Pt(0)
     _sp._p.get_or_add_pPr().append(parse_xml(
         '<w:rPr %s><w:sz w:val="4"/></w:rPr>' % nsdecls("w")))
+    if note:
+        np_ = doc.add_paragraph()
+        np_.paragraph_format.space_before = Pt(2)
+        nr = np_.add_run(note)
+        nr.font.size = Pt(8)
+        nr.font.name = "Times New Roman"
     if full:
         switch_to(doc, SECT_1COL[0])
     return t
@@ -1135,7 +1143,9 @@ def build() -> None:
          "point (Section V-G). Relative overlap has no threshold at "
          "which a contained copy becomes visible, so resemblance cannot "
          "be tuned into recall; containment must be verified "
-         "query-side, not estimated corpus-side. This negative result "
+         "query-side, not estimated corpus-side (Proposition 1 "
+         "formalizes the invisibility; Section V-G measures it). This "
+         "negative result "
          "is what motivates the architecture: the screen's contract "
          "must be stated on evidence, not on similarity.")
     para(doc,
@@ -1146,7 +1156,31 @@ def build() -> None:
          "similarity analysis of real copyright cases [20]; these audio- "
          "and embedding-centric methods, like query-by-humming lineage "
          "[13], [14], do not provide a symbolic, per-query recall "
-         "guarantee of the kind a publisher can contract against.")
+         "guarantee of the kind a publisher can contract against. "
+         "Fig. 1 previews the whole system as an evidence funnel: "
+         "candidate sets narrow through the L1 screen and the L2 "
+         "top-C gate while the recall floor (Thm 1) stays unbroken; "
+         "L3 inspects survivors under a structural lens, and confirmed "
+         "matches ship as adjudicable reports.")
+    full_width(doc, lambda: (add_emf(doc, "fig1_alt", 16.0),
+                             caption(doc, "Fig. 1. The evidence funnel of "
+                                         "the proposed pipeline, with one "
+                                         "query traced end to end (amber "
+                                         "markers). Left: the Lakh MIDI "
+                                         "corpus is encoded once into a "
+                                         "rare-first item-set index "
+                                         "(1.05 GB, 41.9 ms p50). Center: "
+                                         "the L1 tolerant screen "
+                                         "enumerates 1.66 M candidates "
+                                         "under an anytime budget with a "
+                                         "per-prefix recall floor (Thm 1). "
+                                         "Right: L3 structural "
+                                         "confirmation aligns ordered "
+                                         "note chains\u2014invariant to "
+                                         "pitch, tempo, and splicing\u2014"
+                                         "and certifies the copied span "
+                                         "(\u03c1 = 0.62 \u2265 0.5) as "
+                                         "a publisher-readable verdict.")))
     para(doc,
          "This paper's thesis is architectural: the three requirements "
          "decompose across two layers with different contracts. The "
@@ -1158,7 +1192,10 @@ def build() -> None:
          "of notes with their inter-onset intervals. We additionally "
          "require the first layer to be anytime [8]: under a partial "
          "budget it must return the best partial answer together with a "
-         "sound bound on what remains open.")
+         "sound bound on what remains open. To our knowledge, no prior "
+         "copy-detection system states and audits its screening "
+         "contract as a per-query recall guarantee under a declared "
+         "noise model.")
     para(doc,
          "Our findings, all measured on the Lakh MIDI corpus "
          f"(full corpus, {N['e4_max']:,} pieces), are: "
@@ -1196,7 +1233,10 @@ def build() -> None:
          "(1) an architectural decomposition of copy detection into a "
          "provable-recall screening problem and a structural "
          "confirmation problem, with formal contracts for each layer, "
-         "validated by a controlled negative result: no single "
+         "motivated by a negative result that is also a theorem "
+         "(Proposition 1: no corpus-side resemblance threshold attains "
+         "complete recall on contained copies) and validated "
+         "empirically: no single "
          "item-level method reaches decision-grade precision, and no "
          "purely structural method scales; "
          "(2) a tolerant item-set screen whose per-query recall is "
@@ -1234,31 +1274,6 @@ def build() -> None:
          "reports controlled experiments; Section VI reports "
          "real-world studies. Section VII discusses limitations and "
          "deployment considerations, and Section VIII concludes.")
-    para(doc,
-         "Fig. 1 previews the whole system as an evidence funnel: "
-         "candidate sets narrow through the L1 screen and the L2 "
-         "top-C gate while the recall floor (Thm 1) stays unbroken; "
-         "L3 inspects survivors under a structural lens, and confirmed "
-         "matches ship as adjudicable reports.")
-    full_width(doc, lambda: (add_emf(doc, "fig1_alt", 16.0),
-                             caption(doc, "Fig. 1. The evidence funnel of "
-                                         "the proposed pipeline, with one "
-                                         "query traced end to end (amber "
-                                         "markers). Left: the Lakh MIDI "
-                                         "corpus is encoded once into a "
-                                         "rare-first item-set index "
-                                         "(1.05 GB, 41.9 ms p50). Center: "
-                                         "the L1 tolerant screen "
-                                         "enumerates 1.66 M candidates "
-                                         "under an anytime budget with a "
-                                         "per-prefix recall floor (Thm 1). "
-                                         "Right: L3 structural "
-                                         "confirmation aligns ordered "
-                                         "note chains\u2014invariant to "
-                                         "pitch, tempo, and splicing\u2014"
-                                         "and certifies the copied span "
-                                         "(\u03c1 = 0.62 \u2265 0.5) as "
-                                         "a publisher-readable verdict.")))
 
     # --- II. related work ---------------------------------------------------
     h1(doc, "II. Related Work")
@@ -1376,6 +1391,20 @@ def build() -> None:
          "strict structural comparison. The system's bet is that the "
          "two can be separated cleanly enough to prove the first and "
          "measure the second.")
+    para(doc,
+         "Proposition 1 (containment invisibility of resemblance). "
+         "Fix \u03c4 > 0 and a query Q with q items. For any corpus "
+         "piece P with p distinct items, J(Q, P) \u2264 q/p: the donor "
+         "of a planted span scores below \u03c4 whenever p > q/\u03c4, "
+         "however faithfully the copied items are preserved. No fixed "
+         "corpus-side resemblance threshold therefore attains complete "
+         "recall on contained copies, and no MinHash-LSH configuration "
+         "repairs this, since banding only reparametrizes the same "
+         "Jaccard operating point. Proof: the intersection contains at "
+         "most the q query items and the union contains all p piece "
+         "items; the bound is tight when the span is the only "
+         "overlap. \u220e",
+         indent=0.4)
     h2(doc, "B. Event encoding and index construction")
     para(doc,
          "Each piece is quantized onto a fixed grid (125 ms per bin "
@@ -1429,7 +1458,8 @@ def build() -> None:
          "tolerance (pitch \u00b12 semitones, duration/IOI \u00b11 "
          "bin, velocity \u00b11 bin). Formally:")
     para(doc,
-         "Theorem 1 (evidence lower bound). Let q have q positions, "
+         "Theorem 1 (tolerant evidence lower bound and certified open "
+         "set). Let a query have q positions, "
          "processed in any order, and let score_u(P) be piece P's "
          "tolerant score after u positions. For every piece P whose "
          "copied span deviates within tolerance at every position, "
@@ -1638,17 +1668,12 @@ def build() -> None:
         title="TABLE II. Index scaling and baseline feasibility; "
               "Jaccard scan infeasible beyond 10,000 pieces; MinHash-LSH "
               "(128 permutations, 16 bands x 8 rows, tau = 0.10) returns "
-              "empty candidate sets at every size.")
-    tnote = doc.add_paragraph()
-    tnote.paragraph_format.space_before = Pt(0)
-    tr = tnote.add_run(
-        "Rows are corpus-size subsamples drawn across different "
-        "experiment generations, so the piece counts are not a "
-        "uniform ladder and build times are not monotone in row "
-        "order; scaling conclusions rely on within-generation "
-        "interpolation rather than on adjacent-row differences.")
-    tr.font.size = Pt(8)
-    tr.font.name = "Times New Roman"
+              "empty candidate sets at every size.",
+        note="Rows are corpus-size subsamples drawn across different "
+             "experiment generations, so the piece counts are not a "
+             "uniform ladder and build times are not monotone in row "
+             "order; scaling conclusions rely on within-generation "
+             "interpolation rather than on adjacent-row differences.")
     add_emf(doc, "fig2_scaling", 8.0)
     caption(doc, "Fig. 3. Index build and query latency versus corpus "
                  "size (log-log); planted recall 100% at all sizes; "
@@ -1855,7 +1880,9 @@ def build() -> None:
     h2(doc, "G. Set-similarity retrieval: the MinHash-LSH baseline")
     para(doc,
          f"Why does the LSH index return nothing? The reason is "
-         f"geometric, not engineering. A planted query of the recall "
+         f"geometric, not engineering\u2014Proposition 1 makes it a "
+         f"statement about Jaccard, not about this implementation. "
+         f"A planted query of the recall "
          f"matrix embeds a 40-item span in 300 noise items and probes a "
          f"corpus of pieces of ~700 items each, so even a perfect "
          f"set-Jaccard oracle scores the donor at only "
@@ -2311,6 +2338,9 @@ def build() -> None:
         pf.first_line_indent = Cm(-0.75)
         # References style auto-numbers the list; do NOT add a literal "[n]" prefix
         p.add_run(ref)
+
+    # full-width closing line after the reference list
+    full_width(doc, lambda: spacer(doc))
 
     # --- core properties ------------------------------------------------------------
     cp = doc.core_properties
