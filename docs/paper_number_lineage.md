@@ -10,7 +10,7 @@
 | 图2 规模曲线 | **174,300 曲（全语料）建索引 24.75s、内存 1053MB；查询 p50 41.9ms / p95 123.5ms；planted 召回 47/47**；100,000 曲：16.71s / 615MB / 23.1ms / 44/44；Jaccard 基线在 10,000 曲 p50 238ms（≈20× 慢于本系统 12ms），之上不可行 | `tools/e4_scaling.py` → `runs/e4/scaling.jsonl` | `cd1cd5c`（新增行在 `dac551b` 模板轮之后写入） |
 | 主表 E1 | 337 格召回 99.1%（334/337；失败格全在保证边界外） | `tools/e1_matrix.py` → `runs/e1/matrix.jsonl` | `ea05d04` |
 | 图4 E2 | 理论下界 337 格 0 违例；保证内命中 100% | `tools/e2_bounds.py` → `runs/e2/bounds.jsonl` | `ea05d04` |
-| 图3 E3 | 50% 预算时候选数 rare/random/hot = 7.9/16.4/128.6（16× 洁净）；60/60 供体 100% 预算找回；界恒有效 | `tools/e3_anytime.py` → `runs/e3/anytime.jsonl` | `5edce32` |
+| 图3 E3 | 16s 跨度：开放候选界（命中+剩余界）50% 预算时三种调度均为 1000.0（全库，构造上平凡，正文引用）；70% 预算 rare/random/hot = 793.9/839.3/866.2；纯命中数 50% 预算 = 7.9/16.4/128.6（rare 16× 优于 hot）；100% 预算 30/30 供体找回（16s 组）；界恒有效 | `tools/e3_anytime.py` → `runs/e3/anytime.jsonl` | `5edce32` |
 | 消融 E5 | L×1.5：FP 21.5k→12.1k、召回恒定 100%；k 扫描 (0,0,0)→(2,1,1) 召回 23/29→29/29、FP 338→18.9k；网格 250/125/62ms 召回全 100% | `tools/e5_ablation.py` → `runs/e5/ablation.jsonl` | `d8345ca` |
 | E1.3 发现 | tolerant 层：frag-FP 93.3%、供体 top-20 37%；verbatim 层：top-20 93.7%、margin p50 45、frag-FP 22%（236 片段，风格最相似 20 曲为负例池） | `tools/e13_hard_negatives.py` → `runs/e13/v2_screening.jsonl` | `382570d` |
 | 主表 E1.4 | 严容差 (1,0,0)：ρ=0.5 → FP 2.1%、召回 83.9%；ρ=0.4 → FP 7.2%、召回 98.3%（验收 <5% 达标） | `tools/e14_structural_confirm.py` → `runs/e14/confirm.jsonl` | `f762811` |
