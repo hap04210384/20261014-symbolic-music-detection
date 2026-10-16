@@ -947,6 +947,12 @@ def add_affiliation_footnote(doc):
              "of Electrical and Information Engineering, Quzhou University, "
              "Quzhou 324000, China.", False),
         ]),
+        _fn_para([
+            ("The source code and all experiment scripts that regenerate "
+             "every number, table, and figure in this paper are publicly "
+             "available at https://github.com/hap04210384/"
+             "20261014-symbolic-music-detection.", False),
+        ]),
     ]
     fn = parse_xml('<w:footnote %s w:id="%d">%s</w:footnote>'
                    % (nsdecls("w"), fid, "".join(paras)))
