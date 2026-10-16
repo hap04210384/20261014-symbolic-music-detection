@@ -638,7 +638,7 @@ def _emit_run(p, text, italic=False, size=None, bold=False, name=None):
     return r
 
 
-_SUBSPLIT = re.compile(r"_([A-Za-z]{1,2})")
+_SUBSPLIT = re.compile(r"_([A-Za-z])(?![A-Za-z])")
 
 
 def _emit_math_tok(p, tok, size=None, bold=False, name=None):
@@ -1408,7 +1408,7 @@ def build() -> None:
          "The corpus index is an inverted index from item to sorted "
          "piece-ID lists, built once in a linear pass (each piece "
          "contributes |S(P)| postings). Build time and memory grow "
-         "linearly with corpus size (Fig. 3); incremental "
+         "linearly with corpus size; incremental "
          "updates append postings for new pieces without rebuilding.")
     h2(doc, "C. L1: tolerant screening with a provable bound")
     para(doc,
