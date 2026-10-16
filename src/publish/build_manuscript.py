@@ -1011,21 +1011,16 @@ def build() -> None:
 
     # affiliations, funding and the corresponding-author note go to a
     # first-page footnote, as the IEEE Transactions template requires.
-    # The continuous section break lives in a single near-zero-height
-    # paragraph (1-pt mark, no spacing); the invisible footnote anchor
-    # (customMarkFollows + Symbol space, as in the template) opens the
-    # abstract paragraph itself.  Both the break and the anchor must be
-    # kept out of the one-column section -- either one anchored there
-    # pushes the whole abstract to page 2 in rendering
+    # The continuous section break is stored in the authors paragraph
+    # itself (the last paragraph of the one-column section), so no
+    # separate break paragraph -- which LibreOffice renders as a full
+    # 10-pt blank line -- sits between the authors and the abstract.
+    # The invisible footnote anchor (customMarkFollows + Symbol space,
+    # as in the template) opens the abstract paragraph itself.
     fid = add_affiliation_footnote(doc)
 
-    pbrk = doc.add_paragraph()
-    pbrk.paragraph_format.space_before = Pt(0)
-    pbrk.paragraph_format.space_after = Pt(2)
-    pbrk_pr = pbrk._p.get_or_add_pPr()
-    pbrk_pr.append(parse_xml('<w:rPr %s><w:sz w:val="2"/><w:szCs w:val="2"/>'
-                             '</w:rPr>' % nsdecls("w")))
-    pbrk_pr.append(_copy.deepcopy(SECT_1COL[0]))
+    p_auth_pr = doc.paragraphs[-1]._p.get_or_add_pPr()
+    p_auth_pr.append(_copy.deepcopy(SECT_1COL[0]))
 
     # --- abstract / index terms (two-column) --------------------- ----------------------------------------
     p = doc.add_paragraph(style="Normal")
