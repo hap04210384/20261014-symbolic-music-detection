@@ -137,11 +137,6 @@ REFERENCES = [
  "2024.",
  "S. Stober and T. W. Dornis, \u201cGenerative AI training and copyright "
  "law,\u201d arXiv preprint arXiv:2502.15858, 2025.",
- "Y. Zhang et al., \u201cAnytime frequent itemset mining: A threshold-free "
- "progressive item-activation framework with CPU\u2013GPU heterogeneous "
- "collaboration,\u201d under review.",
- "Y. Zhang et al., \u201cTensorFIM: Exact maximal frequent itemset mining "
- "on tensor cores,\u201d under review.",
  "R. Fagin, A. Lotem, and M. Naor, \u201cOptimal aggregation algorithms "
  "for middleware,\u201d in Proc. ACM Symp. Principles of Database Systems "
  "(PODS), 2001.",
@@ -161,8 +156,8 @@ REFERENCES = [
 _CITE_REMAP = {3: 1, 5: 2, 4: 3, 12: 4, 2: 5, 9: 6, 10: 7, 15: 8, 16: 9,
                17: 10, 18: 11, 19: 12, 20: 13, 13: 14, 14: 15, 8: 16,
                1: 17, 6: 18, 7: 19, 11: 20, 23: 21, 24: 22, 25: 23,
-               26: 24, 27: 25, 22: 26, 28: 27, 29: 28, 30: 29, 33: 30,
-               34: 31, 21: 32, 31: 33, 32: 34, 35: 35, 36: 36}
+               26: 24, 27: 25, 22: 26, 28: 27, 29: 28, 30: 29, 31: 30,
+               32: 31, 21: 32, 33: 33, 34: 34}
 _REFS_IN_CITE_ORDER = sorted(_CITE_REMAP, key=lambda o: _CITE_REMAP[o])
 
 # ---------------------------------------------------------------- numbers
@@ -1341,9 +1336,9 @@ def build() -> None:
          "guarantee a publisher can schedule around.")
     para(doc,
          "The bound instantiates a classical pattern. Threshold "
-         "algorithms for top-k aggregation [33] maintain a partial-score "
+         "algorithms for top-k aggregation [31] maintain a partial-score "
          "bound under which no unseen candidate can qualify, and "
-         "branch-and-bound search [34] carries an admissible estimate "
+         "branch-and-bound search [32] carries an admissible estimate "
          "of everything not yet explored. Theorem 1 transfers this "
          "contract to tolerant item-set evidence: because every "
          "unprocessed position can contribute at most one to any piece, "
@@ -1590,21 +1585,22 @@ def build() -> None:
          "the cascade suite). ")
     para(doc,
          "Baselines. Set-Jaccard corpus scan, SIATEC-family pattern "
-         "discovery [2], and n-gram Jaccard (Section V-A); FIM engines "
-         "from our prior work [31], [32] serve as enumeration "
-         "baselines. Both engines are independent of the present "
-         "system\u2014they enumerate patterns corpus-side, whereas the "
-         "screen verifies containment query-side\u2014and serve here "
-         "solely as feasibility references.")
+         "discovery [2], and n-gram Jaccard (Section V-A); the two "
+         "frequent-itemset engines of our companion papers (under "
+         "review) serve as enumeration baselines. They are independent "
+         "of\u2014and not contributions of\u2014this paper; for "
+         "completeness, Algorithm 1 gives "
+         "pseudocode of the full pipeline, and the released source "
+         "contains both engines' complete implementation details.")
     para(doc,
-         "Environment. All experiments run on a single commodity "
-         "workstation (12th-generation Intel Core i9, 128 GB RAM) in "
-         "pure Python 3.12 with NumPy; no GPU accelerates any stage, "
-         "so all latencies are conservative CPU-only figures. Every "
-         "experiment is scripted end to end: the released pipeline "
-         "re-downloads the corpus shards, rebuilds the index, "
-         "regenerates every table and figure, and reproduces the "
-         "manuscript numbers from scratch.")
+         "Environment. All experiments run on one commodity "
+         "workstation (12th-generation Intel Core i9, 128 GB RAM); "
+         "the computation engines are C++, the harness (corpus "
+         "preparation, index building, measurement, figure and table "
+         "generation) is Python 3.12 with NumPy, and all quoted "
+         "latencies are CPU-only figures. The released pipeline "
+         "re-downloads the corpus shards, rebuilds the index, and "
+         "regenerates every table and figure from scratch.")
     para(doc,
          "Operating parameters. Table I summarizes the production "
          "configuration used unless a section states otherwise; the "
@@ -1654,8 +1650,7 @@ def build() -> None:
          "empty candidate set. Section V-G analyses this geometry "
          "directly on the recall-matrix protocol. "
          "Corpus-side FIM "
-         "enumeration\u2014the engines of our previous work "
-         "[31], [32]\u2014was measured "
+         "enumeration\u2014the two companion engines\u2014was measured "
          "infeasible at the support levels copying detection requires "
          "(over 11 million frequent pairs at N=300 under the standard "
          "cutoff), which is precisely why the architecture places FIM "
@@ -1920,7 +1915,7 @@ def build() -> None:
          f"not, do not express containment.")
     para(doc,
          "Could containment-aware LSH close this gap? Containment "
-         "estimators [35], [36] replace resemblance with the ratio "
+         "estimators [33], [34] replace resemblance with the ratio "
          "|A \u2229 B| / min(|A|, |B|), which in principle sees a "
          "contained copy; two obstacles remain. First, they still "
          "operate on unordered sets: containment is blind to note "
