@@ -308,7 +308,7 @@ def nums():
 
 
 def e1_table_rows():
-    """Aggregate runs/e1/matrix.jsonl into Table I rows:
+    """Aggregate runs/e1/matrix.jsonl into Table II rows:
     transformation group x strength, recall % per span length."""
     rows = load("e1/matrix.jsonl")
     lengths = [2, 4, 8, 16]
@@ -602,8 +602,8 @@ def drop_cap(doc, text):
 _MATH_TOKEN = re.compile(r"""
       O\(([^)]*)\)
     | \u230a0\.5\u00b7\|S\(q\)\|\u230b
-    | min\(\|A\|, \|B\|\)
-    | \|A \u2229 B\| | \|N_k\(item_i\)\| | \|S\(P\)\| | \|S\(q\)\|
+    | min\(\|A\|,[ ]\|B\|\)
+    | \|A[ ]\u2229[ ]B\| | \|N_k\(item_i\)\| | \|S\(P\)\| | \|S\(q\)\|
     | \|O_u\| | \|chain\|
     | score_[uq]\(P\)
     | budget\(B\)
@@ -617,7 +617,7 @@ _MATH_TOKEN = re.compile(r"""
     | P_\{?[\u2080-\u20890-9N]\}?
     | P[\u2080-\u2089]
     | [\u0394\u03a3\u03bb\u03c1\u03c4\u03c6\u03b4]
-    | (?<![A-Z]-)\b[BCWPX]\b
+    | (?<![A-Z]-)(?<!TABLE[ ])(?<![Tt]able[ ])\b[BCWPX]\b
     | \b[qmkNuij]\b
     """, re.VERBOSE)
 
@@ -1408,7 +1408,7 @@ def build() -> None:
          "The corpus index is an inverted index from item to sorted "
          "piece-ID lists, built once in a linear pass (each piece "
          "contributes |S(P)| postings). Build time and memory grow "
-         "linearly with corpus size (Fig. 3, Table I); incremental "
+         "linearly with corpus size (Fig. 3); incremental "
          "updates append postings for new pieces without rebuilding.")
     h2(doc, "C. L1: tolerant screening with a provable bound")
     para(doc,
@@ -1457,7 +1457,7 @@ def build() -> None:
          "readout after every position. Measured end to end, the "
          f"index builds in {N['e4_build']} s and queries run at "
          f"p50 = {N['e4_p50']} ms on the full "
-         f"{N['e4_max']:,}-piece corpus (Table I).")
+         f"{N['e4_max']:,}-piece corpus.")
     h2(doc, "D. L2/L3: re-ranking and structural confirmation")
     para(doc,
          "The screen is deliberately permissive; verbatim counts "
@@ -1565,7 +1565,7 @@ def build() -> None:
          "regenerates every table and figure, and reproduces the "
          "manuscript numbers from scratch.")
     para(doc,
-         "Operating parameters. Table II summarizes the production "
+         "Operating parameters. Table I summarizes the production "
          "configuration used unless a section states otherwise; the "
          "ablations of Section V-F justify each choice.")
     three_line_table(doc,
@@ -1586,13 +1586,13 @@ def build() -> None:
          ["Anytime budget B", "full (half ablated)",
           "rare-first schedule length"]],
         size=8,
-        title="TABLE II. Production operating parameters.")
+        title="TABLE I. Production operating parameters.")
 
     # --- V. results -----------------------------------------------------------
     h1(doc, "V. Results")
     h2(doc, "A. Scale and baseline feasibility")
     para(doc,
-         f"Fig. 3 reports scaling on subsampled corpora and Table I "
+         f"Fig. 3 reports scaling on subsampled corpora and Table II "
          f"gives the corresponding numbers. Index build "
          f"reaches {N['e4_build']} s at {N['e4_max']:,} pieces and query "
          f"latency {N['e4_p50']} ms (p50), with planted recall 100% at "
@@ -1630,7 +1630,7 @@ def build() -> None:
          "Planted recall", "Jaccard p50 (ms)", "LSH p50 (ms)",
          "LSH recall"],
         e4_table_rows(), size=8, full=True,
-        title="TABLE I. Index scaling and baseline feasibility; "
+        title="TABLE II. Index scaling and baseline feasibility; "
               "Jaccard scan infeasible beyond 10,000 pieces; MinHash-LSH "
               "(128 permutations, 16 bands x 8 rows, tau = 0.10) returns "
               "empty candidate sets at every size.")
