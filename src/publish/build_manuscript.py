@@ -2360,7 +2360,7 @@ def build() -> None:
          "every number, table, and figure in this paper are publicly "
          "available at https://github.com/hap04210384/"
          "20261014-symbolic-music-detection.",
-         indent=0, size=9)
+         size=9)
 
     # --- references (funding note lives in the first-page footnote) ---------------
     p = doc.add_paragraph(style="Reference Head")
