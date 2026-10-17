@@ -880,7 +880,7 @@ def switch_to(doc, sect_el, before=None, after=None):
     pPr.append(_copy.deepcopy(sect_el))
 
 
-def spacer(doc, before=None, after=None):
+def spacer(doc, before=None, after=None, sz=18, line=None):
     """Empty spacer paragraph with a 9-pt mark, as between the template's
     title/authors blocks."""
     p = doc.add_paragraph()
@@ -888,9 +888,11 @@ def spacer(doc, before=None, after=None):
         p.paragraph_format.space_before = Pt(before)
     if after is not None:
         p.paragraph_format.space_after = Pt(after)
+    if line is not None:
+        p.paragraph_format.line_spacing = Pt(line)
     pPr = p._p.get_or_add_pPr()
-    pPr.append(parse_xml('<w:rPr %s><w:sz w:val="18"/></w:rPr>'
-                         % nsdecls("w")))
+    pPr.append(parse_xml('<w:rPr %s><w:sz w:val="%d"/></w:rPr>'
+                         % (nsdecls("w"), sz)))
 
 
 # ------------------------------------------------------------- 2) footnotes
@@ -947,12 +949,6 @@ def add_affiliation_footnote(doc):
              "of Electrical and Information Engineering, Quzhou University, "
              "Quzhou 324000, China.", False),
         ]),
-        _fn_para([
-            ("The source code and all experiment scripts that regenerate "
-             "every number, table, and figure in this paper are publicly "
-             "available at https://github.com/hap04210384/"
-             "20261014-symbolic-music-detection.", False),
-        ]),
     ]
     fn = parse_xml('<w:footnote %s w:id="%d">%s</w:footnote>'
                    % (nsdecls("w"), fid, "".join(paras)))
@@ -984,6 +980,24 @@ def build() -> None:
     N = nums()
     # --- load two-column Transactions-style template, keep styles & sections
     doc = Document(str(TEMPLATE))
+    # the template's default page header carries the instruction line
+    # "> REPLACE THIS LINE WITH YOUR MANUSCRIPT ID NUMBER ..." on every
+    # page; strip that paragraph, keep the page-number field
+    for _pp in doc.part.package.parts:
+        if str(_pp.partname).startswith("/word/header"):
+            # NOTE: do not touch _pp.blob elsewhere first — XmlPart caches
+            # its element tree on blob access and save() re-serializes from
+            # the tree, discarding any _blob we might set
+            _root = _pp._element
+            _hit = False
+            for _p in _root.findall(qn("w:p")):
+                _txt = "".join(_t.text or ""
+                               for _t in _p.findall(".//" + qn("w:t")))
+                if "REPLACE THIS LINE" in _txt:
+                    _root.remove(_p)
+                    _hit = True
+            if _hit:
+                break
     body = doc.element.body
     sectPrs = list(body.iter(qn("w:sectPr")))
     SECT_1COL[0] = _copy.deepcopy(sectPrs[0])   # one-column front matter
@@ -998,6 +1012,13 @@ def build() -> None:
     for sect in (SECT_1COL[0], SECT_2COL[0], final_sect):
         for pg in sect.findall(qn("w:pgNumType")):
             sect.remove(pg)
+    # the body-level final sectPr governs only the (empty) section after
+    # the closing full-width line; make it one-column like that line so
+    # LibreOffice does not force a blank trailing page for the column
+    # change back to two columns
+    _cols = final_sect.find(qn("w:cols"))
+    if _cols is not None:
+        _cols.set(qn("w:num"), "1")
 
     # --- front matter (one column) -------------------------------------
     p = doc.add_paragraph(style="Title")
@@ -2329,8 +2350,23 @@ def build() -> None:
          "contiguity threshold, and recall guarantees under "
          "transformations outside the current tolerance envelope.")
 
+    # --- data availability (full-width section before the reference list) -----------
+    def _emit_availability():
+        p = doc.add_paragraph(style="Heading 1")
+        p.paragraph_format.space_before = Pt(2)
+        p.paragraph_format.space_after = Pt(1)
+        p.add_run("DATA AVAILABILITY")
+        para(doc,
+             "The source code and all experiment scripts that regenerate "
+             "every number, table, and figure in this paper are publicly "
+             "available at https://github.com/hap04210384/"
+             "20261014-symbolic-music-detection.",
+             indent=0, size=9)
+    full_width(doc, _emit_availability)
+
     # --- references (funding note lives in the first-page footnote) ---------------
     p = doc.add_paragraph(style="Reference Head")
+    p.paragraph_format.space_before = Pt(2)
     p.add_run("References")
     for i, old_no in enumerate(_REFS_IN_CITE_ORDER, 1):
         ref = REFERENCES[old_no - 1]
@@ -2338,11 +2374,15 @@ def build() -> None:
         pf = p.paragraph_format
         pf.left_indent = Cm(0.75)
         pf.first_line_indent = Cm(-0.75)
+        # exact 9-pt leading: the 8-pt reference list is the last block of
+        # the paper, and this returns the ~10 pt the final empty section
+        # paragraph needs to stay off a blank trailing page
+        pf.line_spacing = Pt(9)
         # References style auto-numbers the list; do NOT add a literal "[n]" prefix
         p.add_run(ref)
 
     # full-width closing line after the reference list
-    full_width(doc, lambda: spacer(doc))
+    full_width(doc, lambda: spacer(doc, sz=12, line=8))
 
     # --- core properties ------------------------------------------------------------
     cp = doc.core_properties
