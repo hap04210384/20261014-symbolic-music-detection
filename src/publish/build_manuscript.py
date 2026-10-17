@@ -2350,19 +2350,17 @@ def build() -> None:
          "contiguity threshold, and recall guarantees under "
          "transformations outside the current tolerance envelope.")
 
-    # --- data availability (full-width section before the reference list) -----------
-    def _emit_availability():
-        p = doc.add_paragraph(style="Heading 1")
-        p.paragraph_format.space_before = Pt(2)
-        p.paragraph_format.space_after = Pt(1)
-        p.add_run("DATA AVAILABILITY")
-        para(doc,
-             "The source code and all experiment scripts that regenerate "
-             "every number, table, and figure in this paper are publicly "
-             "available at https://github.com/hap04210384/"
-             "20261014-symbolic-music-detection.",
-             indent=0, size=9)
-    full_width(doc, _emit_availability)
+    # --- data availability (two-column section before the reference list) -----------
+    p = doc.add_paragraph(style="Heading 1")
+    p.paragraph_format.space_before = Pt(2)
+    p.paragraph_format.space_after = Pt(1)
+    p.add_run("DATA AVAILABILITY")
+    para(doc,
+         "The source code and all experiment scripts that regenerate "
+         "every number, table, and figure in this paper are publicly "
+         "available at https://github.com/hap04210384/"
+         "20261014-symbolic-music-detection.",
+         indent=0, size=9)
 
     # --- references (funding note lives in the first-page footnote) ---------------
     p = doc.add_paragraph(style="Reference Head")
