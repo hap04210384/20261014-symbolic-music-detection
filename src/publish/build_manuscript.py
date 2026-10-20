@@ -2359,7 +2359,10 @@ def build() -> None:
          "The source code and all experiment scripts that regenerate "
          "every number, table, and figure in this paper are publicly "
          "available at https://github.com/hap04210384/"
-         "20261014-symbolic-music-detection.",
+         "20261014-symbolic-music-detection. The experiments use only "
+         "public corpora, primarily the Lakh MIDI dataset, which readers "
+         "download from their original sources as documented in the "
+         "repository; no non-public data is used.",
          size=9)
 
     # --- references (funding note lives in the first-page footnote) ---------------
