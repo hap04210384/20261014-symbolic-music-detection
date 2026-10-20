@@ -2362,8 +2362,7 @@ def build() -> None:
          "20261014-symbolic-music-detection. The experiments use only "
          "public corpora, primarily the Lakh MIDI dataset, which readers "
          "download from their original sources as documented in the "
-         "repository; no non-public data is used.",
-         size=9)
+         "repository; no non-public data is used.")
 
     # --- references (funding note lives in the first-page footnote) ---------------
     p = doc.add_paragraph(style="Reference Head")
