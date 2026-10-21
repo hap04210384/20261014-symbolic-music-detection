@@ -14,8 +14,8 @@ B 论文复用 A 论文的两台引擎。仓库链接来自两篇在投论文的
 
 | 引擎 | URL | 本地位置 | 状态 |
 |---|---|---|---|
-| AnyFIM | https://github.com/hap04210384/Anytime-Frequent-Itemset-Mining | `kimi_work/src/engine_anyfim/` | ✅ 已就位（本地副本，commit f2fbd69，MIT） |
-| TensorFIM | https://github.com/hap04210384/TensorFIM | `kimi_work/src/engine_tensorfim/` | ✅ 已就位（本地副本，commit 7067017，含预编译引擎与 gold 集） |
+| AnyFIM | https://github.com/hap04210384/Anytime-Frequent-Itemset-Mining | `Manuscript_work/src/engine_anyfim/` | ✅ 已就位（本地副本，commit f2fbd69，MIT） |
+| TensorFIM | https://github.com/hap04210384/TensorFIM | `Manuscript_work/src/engine_tensorfim/` | ✅ 已就位（本地副本，commit 7067017，含预编译引擎与 gold 集） |
 
 **已核实（2026-10-11）**：本地副本 commit 与 GitHub main HEAD 逐字符一致；
 溯源登记见 `src/SOURCES.txt`。引擎源码按规则不入 B 的 git 库（.gitignore 已排除）。

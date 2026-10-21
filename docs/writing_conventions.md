@@ -4,7 +4,7 @@
 
 ## 1. 文件名与格式
 
-- 论文稿件文件名统一为 **`Manuscript.docx`**，**位置固定在 `kimi_work/` 根目录**（与 README、docs/ 同级，不放子目录）。
+- 论文稿件文件名统一为 **`Manuscript.docx`**，**位置固定在 `Manuscript_work/` 根目录**（与 README、docs/ 同级，不放子目录）。
 - 最终交付形态为 Word（.docx）。LaTeX 源文件（如期刊要求）另存于 `docs/latex/`，但以 Word 版为准。
 
 ## 2. Word 文档属性（元数据）
@@ -76,5 +76,5 @@ doc.add_picture("results/fig3.emf", width=Cm(8.5))
 ## 6. 生成脚本位置
 
 统一的稿件生成脚本将放在 `src/publish/build_manuscript.py`：
-读取 `results/` 下的 EMF 图表与指标表 → 生成 `kimi_work/Manuscript.docx` →
+读取 `results/` 下的 EMF 图表与指标表 → 生成 `Manuscript_work/Manuscript.docx` →
 自动校验元数据作者字段。建好前，手工生成也必须遵守本规范。
